@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Zano extension",
+  "description": "Zano browser wallet extension",
+  "version": "1.0",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "zano_extension.png"
+  }
+}
