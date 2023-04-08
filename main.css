@@ -1,8 +1,0 @@
-.container {
-  width: 400px;
-  height: 600px;
-  background-color: #bbbbbb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}

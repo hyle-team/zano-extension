@@ -1,0 +1,18 @@
+@use "reset";
+@use "global";
+@use "fonts";
+
+.App {
+   position: relative;
+   width: 360px;
+   height: 600px;
+   overflow-x: hidden;
+   overflow-y: auto;
+   background-color: #0C0C3A;
+   padding-top: 72px;
+}
+
+.container{
+   margin: 0 15px;
+   max-width: 100%;
+}
