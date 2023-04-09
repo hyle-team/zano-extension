@@ -1,6 +1,12 @@
 @use "sass:math";
 @import "src/styles/variables";
 
+.wallet {
+   &:not(:last-child) {
+      margin-bottom: 20px;
+   }
+}
+
 // =========================================================
 .clipboardModal {
    position: absolute;
@@ -38,7 +44,7 @@
 .infoWallet {
    background: radial-gradient(100% 188.88% at 0% 0%, #16D1D6 0%, #274CFF 100%);
    border-radius: 16px;
-   padding: 16px;
+   padding: 16px 16px 10px 16px;
    &:not(:last-child) {
       margin-bottom: 16px;
    }
@@ -51,12 +57,20 @@
    column-gap: 20px;
    margin-bottom: 8px;
    line-height: math.div(21.5, 18);
-   .infoWalletStatus {
-      display: block;
-      border-radius: 50%;
-      background-color: #fff;
-      width: 10px;
-      height: 10px;
+}
+
+.infoWalletStatus {
+   position: relative;
+   display: block;
+   border-radius: 50%;
+   background-color: #fff;
+   width: 10px;
+   height: 10px;
+   &:hover {
+      .status {
+         opacity: 1;
+         visibility: visible;
+      }
    }
 }
 
@@ -64,7 +78,7 @@
    font-weight: 600;
    font-size: 32px;
    line-height: math.div(38, 32);
-   margin-bottom: 8px;
+   margin-bottom: 0px;
    .percentСhange {
       color: #ffcbcb;
       font-size: 18px;
@@ -88,7 +102,42 @@
       opacity: 0.5;
    }
    .copyButton {
+      transform: translate(25%, 0);
+   }
+}
 
+// Status modal
+.status {
+   position: absolute;
+   z-index: 2;
+   min-width: 180px;
+   top: calc(100% + 4px);
+   right: 0;
+   background: #11316B;
+   border-radius: 8px;
+   font-size: 14px;
+   line-height: math.div(17, 14);
+   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+
+   transition: all 0.2s ease 0s;
+   transition-property: opacity, visibility;
+   opacity: 0;
+   visibility: hidden;
+   .statusTitle {
+      display: block;
+      padding: 10px 12px 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+   }
+   .statusContent {
+      padding: 8px 12px 12px 12px;
+   }
+   .statusAddress {
+      font-weight: 500;
+      margin-bottom: 5px;
+   }
+   .statusText {
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.8);
    }
 }
 

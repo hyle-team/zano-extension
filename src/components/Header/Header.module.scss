@@ -16,14 +16,33 @@
    column-gap: 30px;
    padding: 0 15px;
    text-align: center;
-   
+
 }
 
 .headerInfo {
    color: $blueColor;
    display: flex;
-   justify-content:center;
+   justify-content: center;
    align-items: center;
+}
+
+.lockButton {
+   display: flex;
+   column-gap: 6px;
+   justify-content: center;
+   align-items: center;
+   border: 2px solid #1F8FEB;
+   border-radius: 8px;
+   color: #ffffff;
+   height: 47px;
+   width: 100%;
+   transition: background-color 0.2s ease 0s;
+   svg {
+      font-size: 15px;
+   }
+   &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+   }
 }
 
 // =========================================================
@@ -51,7 +70,7 @@
       top: 0;
       left: 0;
       background: rgba(0, 0, 0, 0.46);
-      animation: show-menu-bg 0.2s ease-in-out;
+      animation: show-menu-bg 0.2s ease;
    }
    @keyframes show-menu-bg {
       0% {
@@ -71,7 +90,7 @@
    display: flex;
    flex-direction: column;
    background: #11316B;
-   animation: show-burger-menu 0.2s ease-in-out;
+   animation: show-burger-menu 0.2s ease;
    @keyframes show-burger-menu {
       0% {
          transform: translate(-100%, 0);
@@ -101,25 +120,27 @@
    align-items: center;
    text-align: left;
    height: 50px;
-   font-size: 18px;
    font-weight: 600;
-   color: rgba(255, 255, 255, 0.7);
+   opacity: 0.7;
+   transition: opacity 0.2s ease 0s;
+   font-size: 20px;
+   svg {
+      width: 24px;
+      flex: 0 0 24px;
+   }
+   &:nth-child(1) {
+      svg {
+         font-size: 18px;
+      }
+   }
+   &:nth-child(2) {
+      svg {
+         font-size: 22px;
+      }
+   }
    &:hover {
-      color: #ffffff;
+      opacity: 1;
    }
 }
 
-.lockButton {
-   display: flex;
-   column-gap: 6px;
-   justify-content: center;
-   align-items: center;
-   border: 2px solid #1F8FEB;
-   border-radius: 8px;
-   color: #ffffff;
-   height: 47px;
-   width: 100%;
-   svg {
-      font-size: 15px;
-   }
-}
+

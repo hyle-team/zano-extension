@@ -1,5 +1,10 @@
 @import "_variables";
 
+::-webkit-scrollbar {
+   display: none;
+   scrollbar-width: none;
+}
+
 * {
    padding: 0px;
    margin: 0px;
