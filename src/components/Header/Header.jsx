@@ -11,68 +11,68 @@ import React, { useState } from "react";
 import s from "./Header.module.scss";
 
 const Header = () => {
-   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
-   const toggleBurgerMenu = () => {
-      if (menuVisible) {
-         setMenuVisible(false);
-      } else {
-         setMenuVisible(true);
-      }
-   };
+  const toggleBurgerMenu = () => {
+    if (menuVisible) {
+      setMenuVisible(false);
+    } else {
+      setMenuVisible(true);
+    }
+  };
 
-   return (
-      <header className={s.header}>
-         <button onClick={toggleBurgerMenu} className={`${s.burger}`}>
-            <BurgerIcon/>
-         </button>
+  return (
+    <header className={s.header}>
+      <button onClick={toggleBurgerMenu} className={`${s.burger}`}>
+        <BurgerIcon />
+      </button>
 
-         <BurgerMenu
-            menuVisible={menuVisible}
-            toggleBurgerMenu={toggleBurgerMenu}
-         />
+      <BurgerMenu
+        menuVisible={menuVisible}
+        toggleBurgerMenu={toggleBurgerMenu}
+      />
 
-         <div className={s.headerSelect}>Wallet Name 1</div>
+      <div className={s.headerSelect}>Wallet Name 1</div>
 
-         <button className={`${s.headerInfo}`}>
-            <InfoIcon/>
-         </button>
-      </header>
-   );
+      <button className={`${s.headerInfo}`}>
+        <InfoIcon />
+      </button>
+    </header>
+  );
 };
 
 export default Header;
 
 // Components
-const BurgerMenu = ({menuVisible, toggleBurgerMenu}) => {
-   return (
-      <>
-         {menuVisible && (
-            <div className={s.menu} onClick={toggleBurgerMenu}>
-               <div className={s.menuBody} onClick={(e) => e.stopPropagation()}>
-                  <div className={s.menuHeader}>
-                     <Logo/>
-                     <button className="round-button" onClick={toggleBurgerMenu}>
-                        <CrossIcon/>
-                     </button>
-                  </div>
-                  <div className={s.menuLinks}>
-                     <a href="" className={s.menuLink}>
-                        <PlusIcon/> Add Wallet
-                     </a>
-                     <a href="" className={s.menuLink}>
-                        <UsersIcon/> Contacts
-                     </a>
-                     <a href="" className={s.menuLink}>
-                        <GearIcon/> Settings
-                     </a>
-                  </div>
-                  <MyButton>
-                     <LockIcon/> Lock Zano
-                  </MyButton>
-               </div>
+const BurgerMenu = ({ menuVisible, toggleBurgerMenu }) => {
+  return (
+    <>
+      {menuVisible && (
+        <div className={s.menu} onClick={toggleBurgerMenu}>
+          <div className={s.menuBody} onClick={(e) => e.stopPropagation()}>
+            <div className={s.menuHeader}>
+              <Logo />
+              <button className="round-button" onClick={toggleBurgerMenu}>
+                <CrossIcon />
+              </button>
             </div>
-         )}
-      </>
-   );
+            <div className={s.menuLinks}>
+              <a href="" className={s.menuLink}>
+                <PlusIcon /> Add Wallet
+              </a>
+              <a href="" className={s.menuLink}>
+                <UsersIcon /> Contacts
+              </a>
+              <a href="" className={s.menuLink}>
+                <GearIcon /> Settings
+              </a>
+            </div>
+            <MyButton>
+              <LockIcon /> Lock Zano
+            </MyButton>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
