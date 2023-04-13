@@ -1,11 +1,11 @@
-import { ReactComponent as BurgerIcon } from "../../assets/svg/burger.svg";
-import { ReactComponent as CrossIcon } from "../../assets/svg/cross.svg";
-import { ReactComponent as GearIcon } from "../../assets/svg/gear.svg";
-import { ReactComponent as InfoIcon } from "../../assets/svg/info.svg";
-import { ReactComponent as LockIcon } from "../../assets/svg/lock.svg";
-import { ReactComponent as Logo } from "../../assets/svg/logo.svg";
-import { ReactComponent as PlusIcon } from "../../assets/svg/plus.svg";
-import { ReactComponent as UsersIcon } from "../../assets/svg/users.svg";
+import BurgerIcon from "../../assets/svg/burger.svg";
+import CrossIcon from "../../assets/svg/cross.svg";
+import GearIcon from "../../assets/svg/gear.svg";
+import InfoIcon from "../../assets/svg/info.svg";
+import LockIcon from "../../assets/svg/lock.svg";
+import Logo from "../../assets/svg/logo.svg";
+import PlusIcon from "../../assets/svg/plus.svg";
+import UsersIcon from "../../assets/svg/users.svg";
 import MyButton from "../../components/UI/MyButton/MyButton";
 import React, { useState } from "react";
 import s from "./Header.module.scss";
@@ -24,7 +24,7 @@ const Header = () => {
   return (
     <header className={s.header}>
       <button onClick={toggleBurgerMenu} className={`${s.burger}`}>
-        <BurgerIcon />
+        <img src={BurgerIcon} alt="Burger" />
       </button>
 
       <BurgerMenu
@@ -35,7 +35,7 @@ const Header = () => {
       <div className={s.headerSelect}>Wallet Name 1</div>
 
       <button className={`${s.headerInfo}`}>
-        <InfoIcon />
+        <img src={InfoIcon} alt="InfoIcon" />
       </button>
     </header>
   );
@@ -51,24 +51,24 @@ const BurgerMenu = ({ menuVisible, toggleBurgerMenu }) => {
         <div className={s.menu} onClick={toggleBurgerMenu}>
           <div className={s.menuBody} onClick={(e) => e.stopPropagation()}>
             <div className={s.menuHeader}>
-              <Logo />
+              <img src={Logo} alt="Logo" />
               <button className="round-button" onClick={toggleBurgerMenu}>
-                <CrossIcon />
+                <img src={CrossIcon} alt="CrossIcon" />
               </button>
             </div>
             <div className={s.menuLinks}>
               <a href="" className={s.menuLink}>
-                <PlusIcon /> Add Wallet
+                <img src={PlusIcon} alt="PlusIcon" /> Add Wallet
               </a>
               <a href="" className={s.menuLink}>
-                <UsersIcon /> Contacts
+                <img src={UsersIcon} alt="UsersIcon" /> Contacts
               </a>
               <a href="" className={s.menuLink}>
-                <GearIcon /> Settings
+                <img src={GearIcon} alt="GearIcon" /> Settings
               </a>
             </div>
             <MyButton>
-              <LockIcon /> Lock Zano
+              <img src={LockIcon} alt="LockIcon" /> Lock Zano
             </MyButton>
           </div>
         </div>

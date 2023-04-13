@@ -1,6 +1,6 @@
-import { ReactComponent as CopyIcon } from "../../assets/svg/copy.svg";
-import { ReactComponent as ReceiveIcon } from "../../assets/svg/receive.svg";
-import { ReactComponent as SendIcon } from "../../assets/svg/send.svg";
+import CopyIcon from "../../assets/svg/copy.svg";
+import ReceiveIcon from "../../assets/svg/receive.svg";
+import SendIcon from "../../assets/svg/send.svg";
 import s from "./Wallet.module.scss";
 import copy from "copy-to-clipboard";
 import React, { useState } from "react";
@@ -60,17 +60,17 @@ const Wallet = () => {
             onClick={() => copyToClipboard(walletAddress)}
             className={`${s.copyButton} round-button`}
           >
-            <CopyIcon />
+            <img src={CopyIcon} alt="CopyIcon" />
           </button>
         </div>
       </div>
 
       <div className={s.actionsWallet}>
         <button className={s.actionsButton}>
-          <SendIcon /> Send
+          <img src={SendIcon} alt="SendIcon" /> Send
         </button>
         <button className={s.actionsButton}>
-          <ReceiveIcon /> Receive
+          <img src={ReceiveIcon} alt="ReceiveIcon" /> Receive
         </button>
       </div>
 

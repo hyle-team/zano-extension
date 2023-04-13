@@ -1,5 +1,5 @@
-import { ReactComponent as ArrowIcon } from "../../../assets/svg/arrow-square.svg";
-import { ReactComponent as LoadingIcon } from "../../../assets/svg/loading.svg";
+import ArrowIcon from "../../../assets/svg/arrow-square.svg";
+import LoadingIcon from "../../../assets/svg/loading.svg";
 import React from "react";
 import s from "./History.module.scss";
 
@@ -33,13 +33,13 @@ const History = () => {
           <button key={index} className={s.historyItem}>
             {historyItem.inProcess && (
               <div className={s.historyLoading}>
-                <LoadingIcon />
+                <img src={LoadingIcon} alt="LoadingIcon" />
               </div>
             )}
 
             <div className={s.historyTop}>
               <div className={iconClasses}>
-                <ArrowIcon />
+                <img src={ArrowIcon} alt="ArrowIcon" />
               </div>
               <span>{[historyItem.value, historyItem.ticker].join(" ")}</span>
             </div>
