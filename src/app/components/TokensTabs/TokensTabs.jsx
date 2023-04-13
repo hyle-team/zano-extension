@@ -1,6 +1,6 @@
-import Assets from "components/TokensTabs/Assets/Assets";
-import History from "components/TokensTabs/History/History";
-import s from "components/TokensTabs/TokensTabs.module.scss";
+import Assets from "./Assets/Assets";
+import History from "./History/History";
+import s from "./TokensTabs.module.scss";
 import React, { useState } from "react";
 
 const TokensTabs = () => {

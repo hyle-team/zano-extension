@@ -1,10 +1,10 @@
-import { ReactComponent as CrossIcon } from "assets/svg/cross.svg";
-import { ReactComponent as PlusIcon } from "assets/svg/plus.svg";
-import { ReactComponent as BitcoinIcon } from "assets/tokens-svg/bitcoin.svg";
-import { ReactComponent as CustomTokenIcon } from "assets/tokens-svg/custom-token.svg";
-import { ReactComponent as EthIcon } from "assets/tokens-svg/eth.svg";
-import { ReactComponent as ZanoIcon } from "assets/tokens-svg/zano.svg";
-import MyButton from "components/.UI/MyButton/MyButton";
+import { ReactComponent as CrossIcon } from "../../../assets/svg/cross.svg";
+import { ReactComponent as PlusIcon } from "../../../assets/svg/plus.svg";
+import { ReactComponent as BitcoinIcon } from "../../../assets/tokens-svg/bitcoin.svg";
+import { ReactComponent as CustomTokenIcon } from "../../../assets/tokens-svg/custom-token.svg";
+import { ReactComponent as EthIcon } from "../../../assets/tokens-svg/eth.svg";
+import { ReactComponent as ZanoIcon } from "../../../assets/tokens-svg/zano.svg";
+import MyButton from "../../../components/UI/MyButton/MyButton";
 import React from "react";
 import s from "./Assets.module.scss";
 

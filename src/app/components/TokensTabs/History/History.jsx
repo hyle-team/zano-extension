@@ -1,5 +1,5 @@
-import { ReactComponent as ArrowIcon } from "assets/svg/arrow-square.svg";
-import { ReactComponent as LoadingIcon } from "assets/svg/loading.svg";
+import { ReactComponent as ArrowIcon } from "../../../assets/svg/arrow-square.svg";
+import { ReactComponent as LoadingIcon } from "../../../assets/svg/loading.svg";
 import React from "react";
 import s from "./History.module.scss";
 

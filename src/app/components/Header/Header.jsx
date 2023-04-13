@@ -1,12 +1,12 @@
-import { ReactComponent as BurgerIcon } from "assets/svg/burger.svg";
-import { ReactComponent as CrossIcon } from "assets/svg/cross.svg";
-import { ReactComponent as GearIcon } from "assets/svg/gear.svg";
-import { ReactComponent as InfoIcon } from "assets/svg/info.svg";
-import { ReactComponent as LockIcon } from "assets/svg/lock.svg";
-import { ReactComponent as Logo } from "assets/svg/logo.svg";
-import { ReactComponent as PlusIcon } from "assets/svg/plus.svg";
-import { ReactComponent as UsersIcon } from "assets/svg/users.svg";
-import MyButton from "components/.UI/MyButton/MyButton";
+import { ReactComponent as BurgerIcon } from "../../assets/svg/burger.svg";
+import { ReactComponent as CrossIcon } from "../../assets/svg/cross.svg";
+import { ReactComponent as GearIcon } from "../../assets/svg/gear.svg";
+import { ReactComponent as InfoIcon } from "../../assets/svg/info.svg";
+import { ReactComponent as LockIcon } from "../../assets/svg/lock.svg";
+import { ReactComponent as Logo } from "../../assets/svg/logo.svg";
+import { ReactComponent as PlusIcon } from "../../assets/svg/plus.svg";
+import { ReactComponent as UsersIcon } from "../../assets/svg/users.svg";
+import MyButton from "../../components/UI/MyButton/MyButton";
 import React, { useState } from "react";
 import s from "./Header.module.scss";
 

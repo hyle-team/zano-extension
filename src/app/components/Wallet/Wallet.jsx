@@ -1,7 +1,7 @@
-import { ReactComponent as CopyIcon } from "assets/svg/copy.svg";
-import { ReactComponent as ReceiveIcon } from "assets/svg/receive.svg";
-import { ReactComponent as SendIcon } from "assets/svg/send.svg";
-import s from "components/Wallet/Wallet.module.scss";
+import { ReactComponent as CopyIcon } from "../../assets/svg/copy.svg";
+import { ReactComponent as ReceiveIcon } from "../../assets/svg/receive.svg";
+import { ReactComponent as SendIcon } from "../../assets/svg/send.svg";
+import s from "./Wallet.module.scss";
 import copy from "copy-to-clipboard";
 import React, { useState } from "react";
 

@@ -1,7 +1,7 @@
-import Header from "components/Header/Header";
-import TokensTabs from "components/TokensTabs/TokensTabs";
-import Wallet from "components/Wallet/Wallet";
-import "styles/App.scss";
+import Header from "./components/Header/Header";
+import TokensTabs from "./components/TokensTabs/TokensTabs";
+import Wallet from "./components/Wallet/Wallet";
+import "./styles/App.scss";
 
 function App() {
   return (
