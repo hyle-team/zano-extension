@@ -3,7 +3,10 @@
   "name": "Zano Companion",
   "version": "1.0",
   "description": "A browser extension for Zano wallet app",
-  "permissions": ["<all_urls>"],
+  "permissions": ["storage", "activeTab", "scripting"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11112;"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": {
@@ -22,8 +25,8 @@
     }
   ],
   "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
+    "16": "images/zano_16px.png",
+    "48": "images/zano_48px.png",
+    "128": "images/zano_128px.png"
   }
 }

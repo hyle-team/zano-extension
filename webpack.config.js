@@ -1,5 +1,7 @@
 const path = require("path");
 const { merge } = require("webpack-merge");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const common = require("./webpack.common.js");
 
 const appConfig = {
@@ -8,6 +10,13 @@ const appConfig = {
     path: path.resolve(__dirname, "build"),
     filename: "static/js/app.bundle.js",
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+      filename: "index.html",
+      inject: "body",
+    }),
+  ],
 };
 
 const backgroundConfig = {
@@ -26,8 +35,20 @@ const contentConfig = {
   },
 };
 
+const copyConfig = {
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "public/images", to: "images" },
+        { from: "public/manifest.json", to: "manifest.json" },
+        { from: "public/robots.txt", to: "robots.txt" },
+      ],
+    }),
+  ],
+};
+
 module.exports = [
-  merge(common, appConfig),
+  merge(common, appConfig, copyConfig),
   merge(common, backgroundConfig),
   merge(common, contentConfig),
 ];
