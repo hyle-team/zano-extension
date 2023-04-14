@@ -1,1 +1,47 @@
 @use "sass:math";
+@import "src/app/styles/variables";
+
+.plug {
+  height: 100%;
+  padding-bottom: 17px;
+}
+
+.plugBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plugLogo {
+  max-width: 175px;
+  width: 100%;
+  margin: 0 auto;
+  img {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.plugContent {
+  max-width: 247px;
+  text-align: center;
+  font-size: 18px;
+  line-height: math.div(21, 18);
+  transform: translate(0, -30px);
+}
+
+.plugImage {
+  margin-bottom: 20px;
+}
+
+.plugButton {
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
+  font-size: 18px;
+  line-height: math.div(21, 18);
+  text-align: center;
+  color: #1F8FEB;
+  padding: 15px;
+}
