@@ -24,9 +24,6 @@ const Wallet = () => {
     }, 2000);
   };
 
-  console.log(state.percentChange);
-  console.log(state.percentChange > 0);
-
   const renderBalance = () => {
     if (state.displayUsd) {
       return (
