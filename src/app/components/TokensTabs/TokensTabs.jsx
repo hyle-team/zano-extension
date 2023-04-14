@@ -1,7 +1,7 @@
 import Assets from "./Assets/Assets";
 import History from "./History/History";
 import s from "./TokensTabs.module.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 
 const TokensTabs = () => {
   const [activeTab, setActiveTab] = useState(0);

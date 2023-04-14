@@ -1,4 +1,4 @@
-import React from "react";
+import { useContext } from "react";
 import crossIcon from "../../../assets/svg/cross.svg";
 import plusIcon from "../../../assets/svg/plus.svg";
 import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
@@ -7,53 +7,35 @@ import ethIcon from "../../../assets/tokens-svg/eth.svg";
 import zanoIcon from "../../../assets/tokens-svg/zano.svg";
 import MyButton from "../../../components/UI/MyButton/MyButton";
 import s from "./Assets.module.scss";
+import { Store } from "../../../store/store-reducer";
 
-const assetsMap = [
-  {
-    name: "ZANO",
-    icon: <img src={zanoIcon} alt="ZanoIcon" />,
-    balance: 120,
-    ticker: "ZANO",
-    value: 128.96,
-  },
-  {
-    name: "Wrapped Bitcoin",
-    icon: <img src={bitcoinIcon} alt="bitcoin icon" />,
-    balance: 0.212,
-    ticker: "WBTC",
-    value: 4096.96,
-  },
-  {
-    name: "Wrapped Ethereum",
-    icon: <img src={ethIcon} alt="EthIcon" />,
-    balance: 2.1,
-    ticker: "WETH",
-    value: 3020.12,
-  },
-  {
-    name: "Custom Asset",
-    icon: <img src={customTokenIcon} alt="CustomTokenIcon" />,
-    balance: 15.52,
-    ticker: "TSDS",
-    value: 3020.12,
-  },
-];
+const getIconImage = (asset) => {
+  switch (asset.name) {
+    case "ZANO":
+      return <img src={zanoIcon} alt="ZanoIcon" />;
+    case "Wrapped Bitcoin":
+      return <img src={bitcoinIcon} alt="bitcoin icon" />;
+    case "Wrapped Ethereum":
+      return <img src={ethIcon} alt="EthIcon" />;
+    default:
+      return <img src={customTokenIcon} alt="CustomTokenIcon" />;
+  }
+};
 
 const Assets = () => {
-  const remove = () => {
-    alert("remove");
-  };
+  const { state } = useContext(Store);
+  const remove = () => console.log("remove icon click");
 
   return (
     <div>
-      {assetsMap.map((asset) => (
+      {state.wallet.assets.map((asset) => (
         <div className={s.asset}>
           <button className={s.assetRemoveBtn} onClick={remove}>
             <img src={crossIcon} alt="CrossIcon" />
           </button>
           <button className={s.assetBody}>
             <span className={s.assetTitle}>
-              {asset.icon}
+              {getIconImage(asset)}
               {asset.name}
             </span>
             <span className={s.assetInfo}>

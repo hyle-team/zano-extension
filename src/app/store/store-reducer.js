@@ -20,7 +20,27 @@ const initialState = {
       "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
     alias: "ravaga",
     balance: 1000,
-    assets: [],
+    assets: [
+      { name: "ZANO", ticker: "ZANO", balance: 1000, value: 1000 },
+      {
+        name: "Wrapped Bitcoin",
+        ticker: "WBTC",
+        balance: 0.212,
+        value: 4096.96,
+      },
+      {
+        name: "Wrapped Ethereum",
+        ticker: "WETH",
+        balance: 2.1,
+        value: 3020.12,
+      },
+      {
+        name: "Confidential Token",
+        ticker: "CT",
+        balance: 15.52,
+        value: 672.84,
+      },
+    ],
     transactions: [],
   },
   displayUsd: true,
