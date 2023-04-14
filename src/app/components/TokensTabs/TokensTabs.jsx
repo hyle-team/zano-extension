@@ -4,7 +4,7 @@ import s from "./TokensTabs.module.scss";
 import React, { useState } from "react";
 
 const TokensTabs = () => {
-  const [activeTab, setActiveTab] = useState(1);
+  const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
     { label: "assets", content: <Assets /> },
