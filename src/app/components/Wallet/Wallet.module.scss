@@ -7,6 +7,10 @@
   }
 }
 
+.dotsButton {
+  transform: translate(25%, 0);
+}
+
 // =========================================================
 .clipboardModal {
   position: absolute;
@@ -106,41 +110,6 @@
   }
 }
 
-// Status modal
-.status {
-  position: absolute;
-  z-index: 2;
-  min-width: 180px;
-  top: calc(100% + 4px);
-  right: 0;
-  background: #11316b;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: math.div(17, 14);
-  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
-
-  transition: all 0.2s ease 0s;
-  transition-property: opacity, visibility;
-  opacity: 0;
-  visibility: hidden;
-  .statusTitle {
-    display: block;
-    padding: 10px 12px 8px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  .statusContent {
-    padding: 8px 12px 12px 12px;
-  }
-  .statusAddress {
-    font-weight: 500;
-    margin-bottom: 5px;
-  }
-  .statusText {
-    font-weight: 300;
-    color: rgba(255, 255, 255, 0.8);
-  }
-}
-
 // =========================================================
 .actionsWallet {
   display: grid;
@@ -161,7 +130,7 @@
   font-size: 21px;
   line-height: math.div(25, 21);
   transition: background-color 0.2s ease 0s;
-  svg {
+  img {
     flex: 0 0 20px;
   }
   &:hover {

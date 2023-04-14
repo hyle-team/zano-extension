@@ -1,38 +1,38 @@
-import CrossIcon from "../../../assets/svg/cross.svg";
-import PlusIcon from "../../../assets/svg/plus.svg";
-import BitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
-import CustomTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
-import EthIcon from "../../../assets/tokens-svg/eth.svg";
-import ZanoIcon from "../../../assets/tokens-svg/zano.svg";
-import MyButton from "../../../components/UI/MyButton/MyButton";
 import React from "react";
+import crossIcon from "../../../assets/svg/cross.svg";
+import plusIcon from "../../../assets/svg/plus.svg";
+import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
+import customTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
+import ethIcon from "../../../assets/tokens-svg/eth.svg";
+import zanoIcon from "../../../assets/tokens-svg/zano.svg";
+import MyButton from "../../../components/UI/MyButton/MyButton";
 import s from "./Assets.module.scss";
 
 const assetsMap = [
   {
     name: "ZANO",
-    icon: <img src={ZanoIcon} alt="ZanoIcon" />,
+    icon: <img src={zanoIcon} alt="ZanoIcon" />,
     balance: 120,
     ticker: "ZANO",
     value: 128.96,
   },
   {
     name: "Wrapped Bitcoin",
-    icon: <img src={BitcoinIcon} alt="BitcoinIcon" />,
+    icon: <img src={bitcoinIcon} alt="bitcoin icon" />,
     balance: 0.212,
     ticker: "WBTC",
     value: 4096.96,
   },
   {
     name: "Wrapped Ethereum",
-    icon: <img src={EthIcon} alt="EthIcon" />,
+    icon: <img src={ethIcon} alt="EthIcon" />,
     balance: 2.1,
     ticker: "WETH",
     value: 3020.12,
   },
   {
     name: "Custom Asset",
-    icon: <img src={CustomTokenIcon} alt="CustomTokenIcon" />,
+    icon: <img src={customTokenIcon} alt="CustomTokenIcon" />,
     balance: 15.52,
     ticker: "TSDS",
     value: 3020.12,
@@ -49,7 +49,7 @@ const Assets = () => {
       {assetsMap.map((asset) => (
         <div className={s.asset}>
           <button className={s.assetRemoveBtn} onClick={remove}>
-            <img src={CrossIcon} alt="CrossIcon" />
+            <img src={crossIcon} alt="CrossIcon" />
           </button>
           <button className={s.assetBody}>
             <span className={s.assetTitle}>
@@ -72,7 +72,7 @@ const Assets = () => {
         </div>
       ))}
       <MyButton style={{ transform: "translateY(30%)" }}>
-        <img src={PlusIcon} alt="PlusIcon" /> Add Custom Token
+        <img src={plusIcon} alt="PlusIcon" /> Add Custom Token
       </MyButton>
     </div>
   );

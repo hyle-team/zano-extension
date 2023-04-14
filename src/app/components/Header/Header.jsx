@@ -1,78 +1,85 @@
-import BurgerIcon from "../../assets/svg/burger.svg";
-import CrossIcon from "../../assets/svg/cross.svg";
-import GearIcon from "../../assets/svg/gear.svg";
-import InfoIcon from "../../assets/svg/info.svg";
-import LockIcon from "../../assets/svg/lock.svg";
-import Logo from "../../assets/svg/logo.svg";
-import PlusIcon from "../../assets/svg/plus.svg";
-import UsersIcon from "../../assets/svg/users.svg";
-import MyButton from "../../components/UI/MyButton/MyButton";
 import React, { useState } from "react";
+import Formatters from "../../../utils/formatters";
+import arrowIcon from "../../assets/svg/arrow-shevron.svg";
 import s from "./Header.module.scss";
 
-const Header = () => {
-  const [menuVisible, setMenuVisible] = useState(false);
+const wallet = {
+  address: "ZxDCjt6KQaR7DCjt6KQaR7DCjt6KQaR7",
+  label: "@alias",
+};
 
-  const toggleBurgerMenu = () => {
-    if (menuVisible) {
-      setMenuVisible(false);
+const walletsMap = [
+  {
+    address: "ZxDCjt6KQaR7DCjt6KQaR7DCjt6KQaR7",
+    label: null,
+    balance: 120,
+  },
+  {
+    address: "ZxDCjt6KQaR213DCjt6KQaR7DCjt6KQaR7",
+    label: "@alias",
+    balance: 2415,
+  },
+  {
+    address: "ZxDCjt623R7DCjt6KQaR7DCjt6KQaR7",
+    label: null,
+    balance: 52.23,
+  },
+];
+
+const isConnected = true;
+
+const Header = () => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    if (dropdownOpen) {
+      setDropdownOpen(false);
+      document.querySelector(".App").style.overflow = "auto";
     } else {
-      setMenuVisible(true);
+      setDropdownOpen(true);
+      document.querySelector(".App").style.overflow = "hidden";
     }
   };
 
   return (
     <header className={s.header}>
-      <button onClick={toggleBurgerMenu} className={`${s.burger}`}>
-        <img src={BurgerIcon} alt="Burger" />
+      <button onClick={toggleDropdown} className={s.dropdownButton}>
+        <span>
+          {wallet.label
+            ? wallet.label
+            : Formatters.walletAddress(wallet.address)}
+        </span>
+        <img src={arrowIcon} alt="arrow icon" />
       </button>
 
-      <BurgerMenu
-        menuVisible={menuVisible}
-        toggleBurgerMenu={toggleBurgerMenu}
-      />
+      <div className={s.headerStatus}>
+        {isConnected ? "online" : "offline"}
+        <span
+          style={{ backgroundColor: isConnected ? "#16D1D6" : "#FF6767" }}
+        ></span>
+      </div>
 
-      <div className={s.headerSelect}>Wallet Name 1</div>
-
-      <button className={`${s.headerInfo}`}>
-        <img src={InfoIcon} alt="InfoIcon" />
-      </button>
+      {dropdownOpen && (
+        <div onClick={toggleDropdown} className={s.dropdown}>
+          <div onClick={(e) => e.stopPropagation()} className={s.dropdownList}>
+            {walletsMap.map((wallet) => (
+              <button key={wallet.address} className={s.dropdownTitle}>
+                <div>
+                  {wallet.label
+                    ? wallet.label
+                    : Formatters.walletAddress(wallet.address)}
+                  {wallet.label && (
+                    <span>{Formatters.walletAddress(wallet.address)}</span>
+                  )}
+                </div>
+                <div className={s.dropdownBalance}>{wallet.balance} ZANO</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 };
 
 export default Header;
-
-// Components
-const BurgerMenu = ({ menuVisible, toggleBurgerMenu }) => {
-  return (
-    <>
-      {menuVisible && (
-        <div className={s.menu} onClick={toggleBurgerMenu}>
-          <div className={s.menuBody} onClick={(e) => e.stopPropagation()}>
-            <div className={s.menuHeader}>
-              <img src={Logo} alt="Logo" />
-              <button className="round-button" onClick={toggleBurgerMenu}>
-                <img src={CrossIcon} alt="CrossIcon" />
-              </button>
-            </div>
-            <div className={s.menuLinks}>
-              <a href="" className={s.menuLink}>
-                <img src={PlusIcon} alt="PlusIcon" /> Add Wallet
-              </a>
-              <a href="" className={s.menuLink}>
-                <img src={UsersIcon} alt="UsersIcon" /> Contacts
-              </a>
-              <a href="" className={s.menuLink}>
-                <img src={GearIcon} alt="GearIcon" /> Settings
-              </a>
-            </div>
-            <MyButton>
-              <img src={LockIcon} alt="LockIcon" /> Lock Zano
-            </MyButton>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};

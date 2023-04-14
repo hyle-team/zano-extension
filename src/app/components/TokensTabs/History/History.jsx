@@ -1,6 +1,7 @@
-import ArrowIcon from "../../../assets/svg/arrow-square.svg";
-import LoadingIcon from "../../../assets/svg/loading.svg";
 import React from "react";
+import LoadingIcon from "../../../assets/svg/loading.svg";
+import receiveIcon from "../../../assets/svg/receive-colored.svg";
+import sendIcon from "../../../assets/svg/send-colored.svg";
 import s from "./History.module.scss";
 
 const historyMap = [
@@ -24,10 +25,7 @@ const History = () => {
   return (
     <div>
       {historyMap.map((historyItem, index) => {
-        const iconClasses =
-          historyItem.type === "send"
-            ? s.historyIcon
-            : [s.historyIcon, s.receiveVariant].join(" ");
+        const icon = historyItem.type === "send" ? sendIcon : receiveIcon;
 
         return (
           <button key={index} className={s.historyItem}>
@@ -38,8 +36,8 @@ const History = () => {
             )}
 
             <div className={s.historyTop}>
-              <div className={iconClasses}>
-                <img src={ArrowIcon} alt="ArrowIcon" />
+              <div className={s.historyIcon}>
+                <img src={icon} alt="ArrowIcon" />
               </div>
               <span>{[historyItem.value, historyItem.ticker].join(" ")}</span>
             </div>
