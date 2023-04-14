@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Formatters from "../../../utils/formatters";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
+import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
 
 const wallet = {
