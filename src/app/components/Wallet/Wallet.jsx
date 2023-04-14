@@ -1,10 +1,11 @@
 import copy from "copy-to-clipboard";
-import React, { useState } from "react";
+import { useState, useContext } from "react";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
 import receiveIcon from "../../assets/svg/receive.svg";
 import sendIcon from "../../assets/svg/send.svg";
 import s from "./Wallet.module.scss";
+import { Store } from "../../store/store-reducer";
 
 const walletConnected = true;
 const percentChange = false;
@@ -12,6 +13,7 @@ const walletAddress =
   "ZxDCjtvEPnwKFPa9Hy5frFbQoT6KQaR7EPnwKFPa9Hy5frFbQoT6KQaR7";
 
 const Wallet = () => {
+  const { state } = useContext(Store);
   const [modalVisible, setModalVisible] = useState(false);
 
   const copyToClipboard = (text) => {
@@ -22,33 +24,50 @@ const Wallet = () => {
     }, 2000);
   };
 
+  console.log(state.percentChange);
+  console.log(state.percentChange > 0);
+
+  const renderBalance = () => {
+    if (state.displayUsd) {
+      return (
+        <div className={s.infoBalance}>
+          <span>${state.wallet.balance * state.priceUsd}</span>
+          <span
+            style={{ color: state.percentChange > 0 ? "#16D1D6" : "#FFCBCB" }}
+            className={s.percentСhange}
+          >
+            {state.percentChange}%
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <div className={s.infoBalance}>
+          <span>{state.wallet.balance} ZANO</span>
+        </div>
+      );
+    }
+  };
+
   return (
     <div className={s.wallet}>
       <div className={s.infoWallet}>
         <div className={s.infoTop}>
-          <div>Wallet Name 1</div>
+          <div>
+            {state.wallet.alias ? "@" + state.wallet.alias : "Wallet 1"}
+          </div>
           <button className={`${s.dotsButton} round-button`}>
             <img src={dotsIcon} alt="dots icon" />
           </button>
         </div>
-
-        <div className={s.infoBalance}>
-          <span>$1224.15</span>
-          <span
-            style={{ color: percentChange ? "#16D1D6" : "#FFCBCB" }}
-            className={s.percentСhange}
-          >
-            -4.6%
-          </span>
-        </div>
-
+        {renderBalance()}
         <div className={s.infoAddress}>
           <span>{walletAddress}</span>
           <button
             onClick={() => copyToClipboard(walletAddress)}
             className={`${s.copyButton} round-button`}
           >
-            <img src={copyIcon} alt="SendIcon" />
+            <img src={copyIcon} alt="copy icon" />
           </button>
         </div>
       </div>
@@ -70,4 +89,3 @@ const Wallet = () => {
 };
 
 export default Wallet;
-

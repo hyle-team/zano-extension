@@ -1,34 +1,11 @@
-import React, { useState } from "react";
+import { useState, useContext } from "react";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
 import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
-
-const wallet = {
-  address: "ZxDCjt6KQaR7DCjt6KQaR7DCjt6KQaR7",
-  label: "@alias",
-};
-
-const walletsMap = [
-  {
-    address: "ZxDCjt6KQaR7DCjt6KQaR7DCjt6KQaR7",
-    label: null,
-    balance: 120,
-  },
-  {
-    address: "ZxDCjt6KQaR213DCjt6KQaR7DCjt6KQaR7",
-    label: "@alias",
-    balance: 2415,
-  },
-  {
-    address: "ZxDCjt623R7DCjt6KQaR7DCjt6KQaR7",
-    label: null,
-    balance: 52.23,
-  },
-];
-
-const isConnected = true;
+import { Store } from "../../store/store-reducer";
 
 const Header = () => {
+  const { state } = useContext(Store);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -45,30 +22,30 @@ const Header = () => {
     <header className={s.header}>
       <button onClick={toggleDropdown} className={s.dropdownButton}>
         <span>
-          {wallet.label
-            ? wallet.label
-            : Formatters.walletAddress(wallet.address)}
+          {state.wallet.alias
+            ? state.wallet.alias
+            : Formatters.walletAddress(state.wallet.address)}
         </span>
         <img src={arrowIcon} alt="arrow icon" />
       </button>
 
       <div className={s.headerStatus}>
-        {isConnected ? "online" : "offline"}
+        {state.isConnected ? "online" : "offline"}
         <span
-          style={{ backgroundColor: isConnected ? "#16D1D6" : "#FF6767" }}
+          style={{ backgroundColor: state.isConnected ? "#16D1D6" : "#FF6767" }}
         ></span>
       </div>
 
       {dropdownOpen && (
         <div onClick={toggleDropdown} className={s.dropdown}>
           <div onClick={(e) => e.stopPropagation()} className={s.dropdownList}>
-            {walletsMap.map((wallet) => (
+            {state.walletsList.map((wallet) => (
               <button key={wallet.address} className={s.dropdownTitle}>
                 <div>
-                  {wallet.label
-                    ? wallet.label
+                  {wallet.alias
+                    ? wallet.alias
                     : Formatters.walletAddress(wallet.address)}
-                  {wallet.label && (
+                  {wallet.alias && (
                     <span>{Formatters.walletAddress(wallet.address)}</span>
                   )}
                 </div>
