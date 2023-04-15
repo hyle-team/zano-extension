@@ -1,35 +1,20 @@
-import React from "react";
+import { useContext } from "react";
 import LoadingIcon from "../../../assets/svg/loading.svg";
 import receiveIcon from "../../../assets/svg/receive-colored.svg";
 import sendIcon from "../../../assets/svg/send-colored.svg";
 import s from "./History.module.scss";
-
-const historyMap = [
-  {
-    value: 112412,
-    type: "send", // or "receive"
-    ticker: "ZANO",
-    address: "ZxDCjtvEPnwKFPa9Hy5frFbQoT6KQaR7gbog7oT6KQaR7gbog7",
-    inProcess: false,
-  },
-  {
-    value: 10,
-    type: "receive", // or "send"
-    ticker: "ZANO",
-    address: "ZxDCjtvEPnwKFPa9Hy5frFbQoT6KQaR7gbog7oT6KQaR7gbog7",
-    inProcess: true,
-  },
-];
+import { Store } from "../../../store/store-reducer";
 
 const History = () => {
+  const { state } = useContext(Store);
   return (
     <div>
-      {historyMap.map((historyItem, index) => {
-        const icon = historyItem.type === "send" ? sendIcon : receiveIcon;
+      {state.wallet.transactions.map((tx, index) => {
+        const icon = tx.incoming ? receiveIcon : sendIcon;
 
         return (
           <button key={index} className={s.historyItem}>
-            {historyItem.inProcess && (
+            {tx.isConfirming && (
               <div className={s.historyLoading}>
                 <img src={LoadingIcon} alt="LoadingIcon" />
               </div>
@@ -39,10 +24,10 @@ const History = () => {
               <div className={s.historyIcon}>
                 <img src={icon} alt="ArrowIcon" />
               </div>
-              <span>{[historyItem.value, historyItem.ticker].join(" ")}</span>
+              <span>{[tx.value, tx.ticker].join(" ")}</span>
             </div>
 
-            <span className={s.historyAddress}>{historyItem.address}</span>
+            <span className={s.historyAddress}>{tx.address}</span>
           </button>
         );
       })}
