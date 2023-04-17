@@ -45,7 +45,7 @@ const initialState = {
     ],
     transactions: [
       {
-        isConfirming: true,
+        isConfirmed: true,
         incoming: true,
         value: 100,
         ticker: "ZANO",

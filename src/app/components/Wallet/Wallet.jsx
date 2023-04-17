@@ -23,7 +23,7 @@ const Wallet = () => {
     if (state.displayUsd) {
       return (
         <div className={s.infoBalance}>
-          <span>${(state.wallet.balance * state.priceUsd) / 10 ** 12}</span>
+          <span>${state.wallet.balance * state.priceUsd}</span>
           <span
             style={{ color: state.percentChange > 0 ? "#16D1D6" : "#FFCBCB" }}
             className={s.percentСhange}
@@ -35,7 +35,7 @@ const Wallet = () => {
     } else {
       return (
         <div className={s.infoBalance}>
-          <span>{state.wallet.balance / 10 ** 12} ZANO</span>
+          <span>{state.wallet.balance} ZANO</span>
         </div>
       );
     }

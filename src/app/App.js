@@ -38,13 +38,13 @@ function App() {
           { message: "GET_WALLET_DATA" },
           (response) => {
             if (response.data) {
-              const { address, balance } = response.data;
+              const { address, balance, transactions } = response.data;
               updateWalletData(dispatch, {
                 address,
                 alias: "alias",
                 balance,
                 assets: [],
-                transactions: [],
+                transactions,
               });
             }
           }
