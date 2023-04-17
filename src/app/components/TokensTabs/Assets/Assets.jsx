@@ -29,7 +29,7 @@ const Assets = () => {
   return (
     <div>
       {state.wallet.assets.map((asset) => (
-        <div className={s.asset}>
+        <div className={s.asset} key={asset.name}>
           <button className={s.assetRemoveBtn} onClick={remove}>
             <img src={crossIcon} alt="CrossIcon" />
           </button>
@@ -53,9 +53,9 @@ const Assets = () => {
           </button>
         </div>
       ))}
-      <MyButton style={{ transform: "translateY(30%)" }}>
+      {/* <MyButton style={{ transform: "translateY(30%)" }}>
         <img src={plusIcon} alt="PlusIcon" /> Add Custom Token
-      </MyButton>
+      </MyButton> */}
     </div>
   );
 };

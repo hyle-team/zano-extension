@@ -7,11 +7,6 @@ import sendIcon from "../../assets/svg/send.svg";
 import s from "./Wallet.module.scss";
 import { Store } from "../../store/store-reducer";
 
-const walletConnected = true;
-const percentChange = false;
-const walletAddress =
-  "ZxDCjtvEPnwKFPa9Hy5frFbQoT6KQaR7EPnwKFPa9Hy5frFbQoT6KQaR7";
-
 const Wallet = () => {
   const { state } = useContext(Store);
   const [modalVisible, setModalVisible] = useState(false);
@@ -28,7 +23,7 @@ const Wallet = () => {
     if (state.displayUsd) {
       return (
         <div className={s.infoBalance}>
-          <span>${state.wallet.balance * state.priceUsd}</span>
+          <span>${(state.wallet.balance * state.priceUsd) / 10 ** 12}</span>
           <span
             style={{ color: state.percentChange > 0 ? "#16D1D6" : "#FFCBCB" }}
             className={s.percentСhange}
@@ -40,7 +35,7 @@ const Wallet = () => {
     } else {
       return (
         <div className={s.infoBalance}>
-          <span>{state.wallet.balance} ZANO</span>
+          <span>{state.wallet.balance / 10 ** 12} ZANO</span>
         </div>
       );
     }
@@ -59,9 +54,9 @@ const Wallet = () => {
         </div>
         {renderBalance()}
         <div className={s.infoAddress}>
-          <span>{walletAddress}</span>
+          <span>{state.wallet.address}</span>
           <button
-            onClick={() => copyToClipboard(walletAddress)}
+            onClick={() => copyToClipboard(state.wallet.address)}
             className={`${s.copyButton} round-button`}
           >
             <img src={copyIcon} alt="copy icon" />

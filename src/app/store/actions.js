@@ -5,9 +5,16 @@ export const updateWalletsList = (dispatch, state) => {
   });
 };
 
-export const updateWallet = (dispatch, state) => {
+export const updateWalletData = (dispatch, state) => {
   return dispatch({
-    type: "WALLET_UPDATED",
+    type: "WALLET_DATA_UPDATED",
+    payload: state,
+  });
+};
+
+export const updateWalletConnected = (dispatch, state) => {
+  return dispatch({
+    type: "WALLET_CONNECTED_UPDATED",
     payload: state,
   });
 };
