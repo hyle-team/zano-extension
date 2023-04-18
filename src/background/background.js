@@ -55,6 +55,35 @@ const fetchTxData = async () => {
   }
 };
 
+const getWalletData = async () => {
+  const addressResponse = await fetchData("getaddress");
+  const addressParsed = await addressResponse.json();
+  const address = addressParsed.result.address;
+
+  const balanceResponse = await fetchData("getbalance");
+  const balanceParsed = await balanceResponse.json();
+  const balance = balanceParsed.result.balance / 10 ** 12;
+  const txDataResponse = await fetchTxData();
+  const txData = txDataResponse.result.transfers;
+  let transactions = [];
+  if (txData) {
+    transactions = txData
+      .filter((tx) => !tx.is_service)
+      .map((tx) => ({
+        isConfirmed: true,
+        incoming: tx.is_income ? true : false,
+        value: tx.amount / 10 ** 12,
+        ticker: "ZANO",
+        address: tx.remote_addresses ? tx.remote_addresses[0] : "Hidden",
+      }));
+  } else {
+    transactions = [];
+  }
+  const assets = [{ name: "ZANO", ticker: "ZANO", balance, value: balance }];
+
+  return { address, balance, transactions, assets };
+};
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "GET_WALLET_ADDRESS") {
@@ -89,39 +118,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+const transferRequestData = {
+  jsonrpc: "2.0",
+  id: 0,
+  method: "transfer",
+  params: {
+    destinations: [
+      {
+        address:
+          "ZxBvJDuQjMG9R2j4WnYUhBYNrwZPwuyXrC7FHdVmWqaESgowDvgfWtiXeNGu8Px9B24pkmjsA39fzSSiEQG1ekB225ZnrMTBp",
+        amount: 10000000000,
+      },
+      {
+        address:
+          "ZxBvJDuQjMG9R2j4WnYUhBYNrwZPwuyXrC7FHdVmWqaESgowDvgfWtiXeNGu8Px9B24pkmjsA39fzSSiEQG1ekB225ZnrMTBq",
+        amount: 20000000000,
+      },
+    ],
+    fee: 10000000000,
+    mixin: 0,
+  },
+};
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  const getData = async () => {
-    const addressResponse = await fetchData("getaddress");
-    const addressParsed = await addressResponse.json();
-    const address = addressParsed.result.address;
-
-    const balanceResponse = await fetchData("getbalance");
-    const balanceParsed = await balanceResponse.json();
-    const balance = balanceParsed.result.balance / 10 ** 12;
-
-    const txDataResponse = await fetchTxData();
-    const txData = txDataResponse.result.transfers;
-    let transactions = [];
-    if (txData) {
-      transactions = txData
-        .filter((tx) => !tx.is_service)
-        .map((tx) => ({
-          isConfirmed: true,
-          incoming: tx.is_income ? true : false,
-          value: tx.amount / 10 ** 12,
-          ticker: "ZANO",
-          address: tx.remote_addresses[0],
-        }));
-    } else {
-      transactions = [];
-    }
-    return { address, balance, transactions };
-  };
-
   if (request.message === "GET_WALLET_DATA") {
     console.log("Getting wallet data");
-    getData()
+    getWalletData()
       .then((data) => {
         sendResponse({ data });
       })
