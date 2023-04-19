@@ -23,24 +23,33 @@ const initialState = {
     alias: "ravaga",
     balance: 1000,
     assets: [
-      { name: "ZANO", ticker: "ZANO", balance: 1000, value: 1000 },
+      {
+        name: "ZANO",
+        ticker: "ZANO",
+        balance: 1000,
+        value: 1000,
+        active: true,
+      },
       {
         name: "Wrapped Bitcoin",
         ticker: "WBTC",
         balance: 0.212,
         value: 4096.96,
+        active: false,
       },
       {
         name: "Wrapped Ethereum",
         ticker: "WETH",
         balance: 2.1,
         value: 3020.12,
+        active: false,
       },
       {
         name: "Confidential Token",
         ticker: "CT",
         balance: 15.52,
         value: 672.84,
+        active: false,
       },
     ],
     transactions: [

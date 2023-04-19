@@ -1,0 +1,48 @@
+@use "sass:math";
+
+.detailsSelect {
+
+}
+
+.detailsSelectValue {
+  background: #11316B;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  justify-content: space-between;
+  height: 41px;
+  width: 100%;
+  &::after {
+    content: "";
+    background: url("../../../assets/svg/arrow-select.svg") 0 0 no-repeat;
+    width: 18px;
+    display: block;
+    height: 18px;
+    flex: 0 0 18px;
+  }
+  &.active {
+    border-radius: 8px 8px 0 0;
+    &::after {
+      transform: rotate(-180deg);
+    }
+  }
+}
+
+.detailsSelectContent {
+  background: #11316B;
+  border-radius: 0 0 8px 8px;
+  padding: 5px 12px 18px 12px;
+}
+
+.detailsSelectInputs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detailsSelectCheckboxes {
+  display: grid;
+  row-gap: 16px;
+}

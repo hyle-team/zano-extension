@@ -83,13 +83,13 @@ const Wallet = () => {
       </div>
 
       <div className={s.actionsWallet}>
-        {/*<Link
-          component={WalletSend}
-          props={{ message: "I came from Wallet component" }}
-          className={s.actionsButton}
-        >
-          <img src={sendIcon} alt="send icon" /> Send
-        </Link>*/}
+        {/*<Link*/}
+        {/*  component={WalletSend}*/}
+        {/*  props={{ message: "I came from Wallet component" }}*/}
+        {/*  className={s.actionsButton}*/}
+        {/*>*/}
+        {/*  <img src={sendIcon} alt="send icon" /> Send*/}
+        {/*</Link>*/}
         <button className={s.actionsButton} onClick={() => sendTransfer()}>
           <img src={sendIcon} alt="send icon" /> Send
         </button>

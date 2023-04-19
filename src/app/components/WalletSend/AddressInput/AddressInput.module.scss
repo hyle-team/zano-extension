@@ -46,6 +46,9 @@ textarea {
   transition: all 0.1s ease 0s;
   transition-property: padding, font-size, color;
   overflow: hidden;
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
   &::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }

@@ -1,0 +1,51 @@
+@use "sass:math";
+
+.myCheckbox {
+  position: relative;
+}
+
+.myCheckboxInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  &:focus + .myCheckboxLabel:before {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  &:checked + .myCheckboxLabel:after {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.myCheckboxLabel {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  gap: 8px;
+  color: #FFFFFF;
+  &:before {
+    content: "";
+    align-self: flex-start;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    background: #FFFFFF;
+    border-radius: 2px;
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    transform: scale(0);
+    opacity: 0;
+    transition: all 0.1s ease 0s;
+  }
+}

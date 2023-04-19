@@ -6,8 +6,13 @@
   align-items: center;
   line-height: math.div(21, 18);
   color: #1F8FEB;
-  height: 35px;
   &:not(:last-child) {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
   }
+}
+
+.sendForm {
+  display: grid;
+  row-gap: 16px;
+  padding-bottom: 20px;
 }

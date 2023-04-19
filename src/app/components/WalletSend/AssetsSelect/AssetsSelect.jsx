@@ -1,4 +1,8 @@
 import React, { useContext, useState } from "react";
+import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
+import customTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
+import ethIcon from "../../../assets/tokens-svg/eth.svg";
+import zanoIcon from "../../../assets/tokens-svg/zano.svg";
 import { Store } from "../../../store/store-reducer";
 import mainStyles from "../WalletSend.module.scss";
 import s from "./AssetsSelect.module.scss";
@@ -11,32 +15,56 @@ const AssetsSelect = ({ value, setValue }) => {
     isOpen ? setIsOpen(false) : setIsOpen(true);
   }
 
-  function setValueHandler(e) {
-    setValue(e.target.value);
+  function setValueHandler(asset) {
+    setValue(asset);
     setIsOpen(false);
   }
 
+  const getAssetImage = (name) => {
+    switch (name) {
+      case "ZANO":
+        return zanoIcon;
+      case "Wrapped Bitcoin":
+        return bitcoinIcon;
+      case "Wrapped Ethereum":
+        return ethIcon;
+      case "Confidential Token":
+        return customTokenIcon;
+      default:
+        return;
+    }
+  };
+
   return (
-    <div>
+    <div onClick={() => setIsOpen(false)}>
       <div className={mainStyles.label}>Asset:</div>
-      <div className={s.select}>
+      <div onClick={(e) => e.stopPropagation()} className={s.select}>
         <button
           onClick={openHandler}
           className={isOpen ? s.selectValue + " " + s.active : s.selectValue}
         >
-          <span>{value}</span>
-          <svg>вниз</svg>
+          <span>
+            <img src={getAssetImage(value.name)} alt={value.name + " icon"} />
+            {value.name}
+          </span>
         </button>
+
         {isOpen && (
           <div className={s.options}>
             {state.wallet.assets.map((asset) => (
               <button
+                disabled={!asset.active}
+                data-active={asset.name === value.name}
                 className={s.option}
                 key={asset.name}
-                value={asset.name + asset.balance}
-                onClick={setValueHandler}
+                onClick={() => setValueHandler(asset)}
               >
+                <img
+                  src={getAssetImage(asset.name)}
+                  alt={value.name + " icon"}
+                />
                 {asset.name}
+                <span className={s.selectPoint} />
               </button>
             ))}
           </div>
