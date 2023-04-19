@@ -12,7 +12,7 @@ function App() {
   const { state, dispatch } = useContext(Store);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const checkConnection = async () => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
         // eslint-disable-next-line no-undef
@@ -20,19 +20,16 @@ function App() {
           { message: "GET_WALLET_BALANCE" },
           (response) => {
             if (response.data) {
-              console.log("Wallet connected");
               updateWalletConnected(dispatch, true);
+            } else {
+              updateWalletConnected(dispatch, false);
             }
           }
         );
       }
     };
 
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
+    const getWalletData = async () => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
         // eslint-disable-next-line no-undef
@@ -48,14 +45,25 @@ function App() {
                 assets,
                 transactions,
               });
+              console.log("wallet data updated");
             }
           }
         );
       }
     };
 
-    fetchData();
-  }, [state.wallet.isConnected]);
+    const intervalId = setInterval(async () => {
+      await checkConnection();
+      console.log("connected", state.isConnected);
+      if (state.isConnected) {
+        await getWalletData();
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [dispatch, state.isConnected]);
+
+  // state.isConnected && setInterval(() => getWalletData(), 1000);
 
   return (
     <div className="App">

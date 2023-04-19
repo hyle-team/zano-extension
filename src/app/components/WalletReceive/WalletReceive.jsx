@@ -1,5 +1,5 @@
 import React from "react";
-import QRCodeImage from "../../assets/images/qr.png";
+// import QRCodeImage from "../../assets/images/qr.png";
 import copyIcon from "../../assets/svg/copy.svg";
 import { useCopy } from "../../hooks/useCopy";
 import MyButton from "../UI/MyButton/MyButton";
@@ -19,7 +19,7 @@ const WalletReceive = () => {
 
       <div className={s.content}>
         <div className={s.QRCode}>
-          <img src={QRCodeImage} alt="QR code for tokens receiving" />
+          {/* <img src={QRCodeImage} alt="QR code for tokens receiving" /> */}
         </div>
 
         <div className={s.receiveAddress}>{address}</div>

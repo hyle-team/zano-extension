@@ -90,7 +90,7 @@ const Wallet = () => {
         >
           <img src={sendIcon} alt="send icon" /> Send
         </Link>*/}
-        <button className={s.actionsButton}>
+        <button className={s.actionsButton} onClick={() => sendTransfer()}>
           <img src={sendIcon} alt="send icon" /> Send
         </button>
         <Link
