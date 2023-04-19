@@ -1,8 +1,8 @@
-import { useState, useContext } from "react";
+import { useContext, useState } from "react";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
+import { Store } from "../../store/store-reducer";
 import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
-import { Store } from "../../store/store-reducer";
 
 const Header = () => {
   const { state } = useContext(Store);
@@ -11,10 +11,10 @@ const Header = () => {
   const toggleDropdown = () => {
     if (dropdownOpen) {
       setDropdownOpen(false);
-      document.querySelector(".App").style.overflow = "auto";
+      document.body.style.overflow = "auto";
     } else {
       setDropdownOpen(true);
-      document.querySelector(".App").style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
     }
   };
 

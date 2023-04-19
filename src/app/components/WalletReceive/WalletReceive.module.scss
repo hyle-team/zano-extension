@@ -1,0 +1,38 @@
+@use "sass:math";
+
+.content {
+  button {
+    position: absolute;
+    bottom: 24px;
+    width: calc(100% - 32px);
+    left: 16px;
+  }
+}
+
+.QRCode {
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+  width: 240px;
+  height: 240px;
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+  img {
+    max-width: 100%;
+  }
+}
+
+.receiveAddress {
+  flex: 1 1 auto;
+  height: 100%;
+  word-break: break-word;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 300;
+  line-height: math.div(21, 18);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}

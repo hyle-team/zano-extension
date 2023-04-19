@@ -29,6 +29,19 @@
   font-size: 18px;
   line-height: math.div(21, 18);
   transform: translate(0, -30px);
+  strong {
+    margin-bottom: 8px;
+    text-align: center;
+    display: block;
+  }
+  .plugText {
+    font-size: 18px;
+    line-height: math.div(24, 18);
+    color: rgba(255, 255, 255, 0.8);
+    &:not(:last-child) {
+      margin-bottom: 25px;
+    }
+  }
 }
 
 .plugImage {
@@ -44,4 +57,18 @@
   text-align: center;
   color: #1F8FEB;
   padding: 15px;
+}
+
+.plugConnectButton {
+  background-color: #1F8FEB;
+  border-radius: 8px;
+  line-height: 47px;
+  padding: 0 24px;
+  min-width: 152px;
+  transition: background-color 0.2s ease 0s;
+  @media (any-hover: hover) {
+    &:hover {
+      background-color: #1a7cce;
+    }
+  }
 }
