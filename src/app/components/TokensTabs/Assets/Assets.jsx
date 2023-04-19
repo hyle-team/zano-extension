@@ -1,13 +1,11 @@
 import { useContext } from "react";
 import crossIcon from "../../../assets/svg/cross.svg";
-import plusIcon from "../../../assets/svg/plus.svg";
 import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
 import customTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
 import ethIcon from "../../../assets/tokens-svg/eth.svg";
 import zanoIcon from "../../../assets/tokens-svg/zano.svg";
-import MyButton from "../../../components/UI/MyButton/MyButton";
-import s from "./Assets.module.scss";
 import { Store } from "../../../store/store-reducer";
+import s from "./Assets.module.scss";
 
 const getIconImage = (asset) => {
   switch (asset.name) {
@@ -25,8 +23,6 @@ const getIconImage = (asset) => {
 const Assets = () => {
   const { state } = useContext(Store);
   const remove = () => console.log("remove icon click");
-
-  console.log(state.wallet.assets);
 
   return (
     <div>

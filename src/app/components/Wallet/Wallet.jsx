@@ -1,23 +1,18 @@
-import copy from "copy-to-clipboard";
-import { useState, useContext } from "react";
+import { useContext } from "react";
+import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
 import receiveIcon from "../../assets/svg/receive.svg";
 import sendIcon from "../../assets/svg/send.svg";
-import s from "./Wallet.module.scss";
+import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
+import WalletReceive from "../WalletReceive/WalletReceive";
+import WalletSend from "../WalletSend/WalletSend";
+import s from "./Wallet.module.scss";
 
 const Wallet = () => {
   const { state } = useContext(Store);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const copyToClipboard = (text) => {
-    copy(text);
-    setModalVisible(true);
-    setTimeout(() => {
-      setModalVisible(false);
-    }, 2000);
-  };
+  const { SuccessCopyModal, copyToClipboard } = useCopy();
 
   const renderBalance = () => {
     if (state.displayUsd) {
@@ -43,6 +38,8 @@ const Wallet = () => {
 
   return (
     <div className={s.wallet}>
+      {SuccessCopyModal}
+
       <div className={s.infoWallet}>
         <div className={s.infoTop}>
           <div>
@@ -52,7 +49,9 @@ const Wallet = () => {
             <img src={dotsIcon} alt="dots icon" />
           </button>
         </div>
+
         {renderBalance()}
+
         <div className={s.infoAddress}>
           <span>{state.wallet.address}</span>
           <button
@@ -65,17 +64,21 @@ const Wallet = () => {
       </div>
 
       <div className={s.actionsWallet}>
-        <button className={s.actionsButton}>
+        <Link
+          component={WalletSend}
+          props={{ message: "I came from Wallet component" }}
+          className={s.actionsButton}
+        >
           <img src={sendIcon} alt="send icon" /> Send
-        </button>
-        <button className={s.actionsButton}>
+        </Link>
+        <Link
+          component={WalletReceive}
+          props={{ message: "I came from Wallet component" }}
+          className={s.actionsButton}
+        >
           <img src={receiveIcon} alt="receive icon" /> Receive
-        </button>
+        </Link>
       </div>
-
-      {modalVisible && (
-        <div className={s.clipboardModal}>Copied to clipboard!</div>
-      )}
     </div>
   );
 };

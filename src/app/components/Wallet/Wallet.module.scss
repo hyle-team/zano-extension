@@ -12,39 +12,6 @@
 }
 
 // =========================================================
-.clipboardModal {
-  position: absolute;
-  z-index: 100;
-  top: 45px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  background-color: #16d1d6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  font-size: 14px;
-  line-height: 1.2;
-  border-radius: 16px;
-  height: 40px;
-  padding: 0 16px;
-  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-  animation: show-modal 0.2s ease;
-  @keyframes show-modal {
-    0% {
-      opacity: 0;
-      visibility: hidden;
-      transform: translate(-50%, -50%);
-    }
-    100% {
-      opacity: 1;
-      visibility: visible;
-      transform: translate(-50%, 0);
-    }
-  }
-}
-
-// =========================================================
 .infoWallet {
   background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
   border-radius: 16px;

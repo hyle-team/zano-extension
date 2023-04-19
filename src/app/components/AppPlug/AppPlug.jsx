@@ -16,7 +16,14 @@ const AppPlug = () => {
           <div className={s.plugImage}>
             <img src={displayImage} alt="display image" />
           </div>
-          <span>We can’t find a Zano wallet app on your device</span>
+
+          <strong>Wallet offline</strong>
+
+          <div className={s.plugText}>
+            Make sure you're running <br />a wallet with RPC enabled
+          </div>
+
+          <button className={s.plugConnectButton}>Connect</button>
         </div>
 
         <button className={s.plugButton}>

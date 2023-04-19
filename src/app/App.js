@@ -1,11 +1,13 @@
 import { useContext, useEffect } from "react";
+import { Router } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Wallet from "./components/Wallet/Wallet";
-import "./styles/App.scss";
-import { Store } from "./store/store-reducer";
 import { updateWalletConnected, updateWalletData } from "./store/actions";
+import { Store } from "./store/store-reducer";
+import "./styles/App.scss";
+
 function App() {
   const { state, dispatch } = useContext(Store);
 
@@ -61,8 +63,10 @@ function App() {
         <>
           <Header />
           <div className="container">
-            <Wallet />
-            <TokensTabs />
+            <Router>
+              <Wallet />
+              <TokensTabs />
+            </Router>
           </div>
         </>
       ) : (

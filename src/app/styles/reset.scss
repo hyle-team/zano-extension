@@ -29,20 +29,22 @@ a:active {
 
 html,
 body {
-   height: 100%;
-
+  height: $appHeight;
+  overflow: auto;
+  width: $appWidth;
 }
 
 body {
-   font-size: $fontSize;
-   color: $mainColor;
-   line-height: 1;
-   font-family: $fontFamily;
-   -ms-text-size-adjust: 100%;
-   -moz-text-size-adjust: 100%;
-   -webkit-text-size-adjust: 100%;
-   -webkit-font-smoothing: antialiased;
-   -moz-osx-font-smoothing: grayscale;
+  font-size: $fontSize;
+  color: $mainColor;
+  line-height: 1;
+  font-family: $fontFamily;
+  -ms-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
 }
 
 input,

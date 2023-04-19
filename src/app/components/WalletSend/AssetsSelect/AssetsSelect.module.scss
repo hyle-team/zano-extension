@@ -1,0 +1,66 @@
+@use "sass:math";
+
+.select {
+  position: relative;
+}
+
+.label {
+  font-weight: 700;
+  line-height: math.div(22, 18);
+  color: #CDCDCD;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+}
+
+.selectValue {
+  text-align: left;
+  width: 100%;
+  //padding: 0 rem(16);
+  //height: rem(42);
+  display: flex;
+  align-items: center;
+  //column-gap: rem(10);
+  justify-content: space-between;
+  text-transform: uppercase;
+  background-color: rgba(255, 255, 255, 0.1);
+  //border: rem(3) solid rgba(255, 255, 255, 0.1);
+  //border-radius: rem(8);
+  transition: background-color 0.2s ease 0s;
+
+  &.active {
+    svg {
+      transform: rotate(-180deg);
+    }
+  }
+
+  @media (any-hover: hover) {
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.options {
+  position: absolute;
+  z-index: 20;
+  //top: calc(100% + rem(8));
+  width: 100%;
+  left: 0;
+  //border: rem(3) solid rgba(255, 255, 255, 0.1);
+  //border-radius: rem(8);
+  overflow: hidden;
+  background-color: rgb(30, 32, 34);
+}
+
+.option {
+  text-align: left;
+  text-transform: uppercase;
+  display: block;
+  width: 100%;
+  //padding: rem(10) rem(15);
+  @media (any-hover: hover) {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
