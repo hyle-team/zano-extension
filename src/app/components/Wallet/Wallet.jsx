@@ -7,7 +7,6 @@ import sendIcon from "../../assets/svg/send.svg";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
 import WalletReceive from "../WalletReceive/WalletReceive";
-import WalletSend from "../WalletSend/WalletSend";
 import s from "./Wallet.module.scss";
 
 const Wallet = () => {
@@ -64,13 +63,16 @@ const Wallet = () => {
       </div>
 
       <div className={s.actionsWallet}>
-        <Link
+        {/*<Link
           component={WalletSend}
           props={{ message: "I came from Wallet component" }}
           className={s.actionsButton}
         >
           <img src={sendIcon} alt="send icon" /> Send
-        </Link>
+        </Link>*/}
+        <button className={s.actionsButton}>
+          <img src={sendIcon} alt="send icon" /> Send
+        </button>
         <Link
           component={WalletReceive}
           props={{ message: "I came from Wallet component" }}
