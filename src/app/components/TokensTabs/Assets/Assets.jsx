@@ -26,8 +26,6 @@ const Assets = () => {
   const { state } = useContext(Store);
   const remove = () => console.log("remove icon click");
 
-  console.log(state.wallet.assets);
-
   return (
     <div>
       {state.wallet.assets.map((asset) => (
