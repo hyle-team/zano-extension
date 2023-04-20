@@ -53,7 +53,6 @@ const AssetsSelect = ({ value, setValue }) => {
           <div className={s.options}>
             {state.wallet.assets.map((asset) => (
               <button
-                disabled={!asset.active}
                 data-active={asset.name === value.name}
                 className={s.option}
                 key={asset.name}

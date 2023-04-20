@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { goTo } from "react-chrome-extension-router";
+import { goTo, popToTop } from "react-chrome-extension-router";
 import App from "../../App";
 import failedImage from "../../assets/images/failed-round.png";
 import successImage from "../../assets/images/success-round.png";
@@ -126,7 +126,7 @@ const WalletSend = () => {
                   </div>
                 </div>
 
-                <MyButton onClick={() => goTo(App)}>Close</MyButton>
+                <MyButton onClick={() => popToTop()}>Close</MyButton>
               </div>
             );
           default:
