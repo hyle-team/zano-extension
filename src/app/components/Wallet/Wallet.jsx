@@ -2,11 +2,10 @@ import { useContext } from "react";
 import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
-import receiveIcon from "../../assets/svg/receive.svg";
 import sendIcon from "../../assets/svg/send.svg";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
-import WalletReceive from "../WalletReceive/WalletReceive";
+import WalletSend from "../WalletSend/WalletSend";
 import s from "./Wallet.module.scss";
 
 const Wallet = () => {
@@ -60,46 +59,40 @@ const Wallet = () => {
       {SuccessCopyModal}
 
       <div className={s.infoWallet}>
-        <div className={s.infoTop}>
-          <div>
-            {state.wallet.alias ? "@" + state.wallet.alias : "Wallet 1"}
-          </div>
-          <button className={`${s.dotsButton} round-button`}>
-            <img src={dotsIcon} alt="dots icon" />
-          </button>
+        <div className={s.alias}>
+          {state.wallet.alias ? (
+            `@${state.wallet.alias}`
+          ) : (
+            <button className={s.aliasCreateBtn}>Create alias</button>
+          )}
         </div>
 
         {renderBalance()}
 
         <div className={s.infoAddress}>
           <span>{state.wallet.address}</span>
-          <button
-            onClick={() => copyToClipboard(state.wallet.address)}
-            className={`${s.copyButton} round-button`}
-          >
-            <img src={copyIcon} alt="copy icon" />
-          </button>
         </div>
       </div>
 
       <div className={s.actionsWallet}>
-        {/*<Link*/}
-        {/*  component={WalletSend}*/}
-        {/*  props={{ message: "I came from Wallet component" }}*/}
-        {/*  className={s.actionsButton}*/}
-        {/*>*/}
-        {/*  <img src={sendIcon} alt="send icon" /> Send*/}
-        {/*</Link>*/}
-        <button className={s.actionsButton} onClick={() => sendTransfer()}>
-          <img src={sendIcon} alt="send icon" /> Send
+        <button className={`${s.dotsButton} round-button`}>
+          <img src={dotsIcon} alt="dots icon" />
         </button>
+
         <Link
-          component={WalletReceive}
+          component={WalletSend}
           props={{ message: "I came from Wallet component" }}
-          className={s.actionsButton}
+          className="round-button"
         >
-          <img src={receiveIcon} alt="receive icon" /> Receive
+          <img src={sendIcon} alt="send icon" />
         </Link>
+
+        <button
+          onClick={() => copyToClipboard(state.wallet.address)}
+          className="round-button"
+        >
+          <img src={copyIcon} alt="copy icon" />
+        </button>
       </div>
     </div>
   );
