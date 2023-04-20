@@ -13,9 +13,9 @@ const fetchTxData = async () => {
           offset: 0,
           update_provision_info: true,
           exclude_mining_txs: true,
-          count: 10,
+          count: 20,
           order: "FROM_END_TO_BEGIN",
-          exclude_unconfirmed: true,
+          exclude_unconfirmed: false,
         },
       }),
     });
@@ -60,7 +60,7 @@ export const getWalletData = async () => {
     transactions = txData
       .filter((tx) => !tx.is_service)
       .map((tx) => ({
-        isConfirmed: true,
+        isConfirmed: tx.height === 0 ? false : true,
         incoming: tx.is_income ? true : false,
         value: tx.amount / 10 ** 12,
         ticker: "ZANO",
@@ -69,6 +69,7 @@ export const getWalletData = async () => {
   } else {
     transactions = [];
   }
+
   const assets = [{ name: "ZANO", ticker: "ZANO", balance, value: balance }];
 
   return { address, balance, transactions, assets };

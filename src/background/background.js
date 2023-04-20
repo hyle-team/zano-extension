@@ -6,11 +6,6 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 // eslint-disable-next-line no-undef
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("Background script loaded on installation");
-});
-
-// eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "GET_WALLET_BALANCE") {
     fetchData("getbalance")

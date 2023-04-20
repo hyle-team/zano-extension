@@ -60,7 +60,7 @@ const initialState = {
           "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
       },
       {
-        isConfirming: false,
+        isConfirmed: false,
         incoming: false,
         value: 17,
         ticker: "ZANO",

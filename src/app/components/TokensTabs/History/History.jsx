@@ -36,7 +36,7 @@ const History = () => {
             component={TransactionDetails}
             props={data}
           >
-            {tx.isConfirming && (
+            {!tx.isConfirmed && (
               <div className={s.historyLoading}>
                 <img src={LoadingIcon} alt="LoadingIcon" />
               </div>
