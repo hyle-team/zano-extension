@@ -19,11 +19,9 @@ const fetchTxData = async () => {
         },
       }),
     });
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -49,16 +47,12 @@ export const getWalletData = async () => {
   const addressResponse = await fetchData("getaddress");
   const addressParsed = await addressResponse.json();
   const address = addressParsed.result.address;
-
   const balanceResponse = await fetchData("getbalance");
   const balanceParsed = await balanceResponse.json();
   const balance = balanceParsed.result.balance / 10 ** 12;
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
   let transactions = [];
-
-  console.log("txData", txData);
-
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
@@ -84,11 +78,7 @@ export const getWalletData = async () => {
   } else {
     transactions = [];
   }
-
-  console.log("transactions", transactions);
-
   const assets = [{ name: "ZANO", ticker: "ZANO", balance, value: balance }];
-
   return { address, balance, transactions, assets };
 };
 

@@ -4,8 +4,13 @@ import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Wallet from "./components/Wallet/Wallet";
-import { updateWalletConnected, updateWalletData } from "./store/actions";
+import {
+  updateWalletConnected,
+  updateWalletData,
+  updatePriceData,
+} from "./store/actions";
 import { Store } from "./store/store-reducer";
+import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 
 function App() {
@@ -62,6 +67,13 @@ function App() {
 
     return () => clearInterval(intervalId);
   }, [dispatch, state.isConnected]);
+
+  useEffect(() => {
+    getZanoPrice().then((priceData) => {
+      console.log("price data", priceData);
+      updatePriceData(dispatch, priceData);
+    });
+  }, [dispatch]);
 
   return (
     <div className="App">

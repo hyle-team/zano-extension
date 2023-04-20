@@ -19,9 +19,9 @@ export const updateWalletConnected = (dispatch, state) => {
   });
 };
 
-export const updatePrice = (dispatch, state) => {
+export const updatePriceData = (dispatch, state) => {
   return dispatch({
-    type: "PRICE_UPDATED",
+    type: "PRICE_DATA_UPDATED",
     payload: state,
   });
 };

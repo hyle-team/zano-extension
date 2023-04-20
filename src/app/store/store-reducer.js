@@ -72,8 +72,7 @@ const initialState = {
   displayUsd: true,
   isLoading: false,
   isConnected: true,
-  priceUsd: 1,
-  percentChange: -4.6,
+  priceData: { price: 1, change: -4.6 },
 };
 
 const reducer = (state, action) => {
@@ -88,8 +87,8 @@ const reducer = (state, action) => {
       return { ...state, walletsList: action.payload };
     case "WALLET_DATA_UPDATED":
       return { ...state, wallet: action.payload };
-    case "PRICE_UPDATED":
-      return { ...state, price: action.payload };
+    case "PRICE_DATA_UPDATED":
+      return { ...state, priceData: action.payload };
     default:
       return state;
   }
