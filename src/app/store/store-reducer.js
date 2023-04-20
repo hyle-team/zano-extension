@@ -15,8 +15,6 @@ const initialState = {
       balance: 27,
     },
   ],
-  walletAddress: "",
-  walletBalance: 0,
   wallet: {
     address:
       "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
@@ -72,6 +70,7 @@ const initialState = {
     ],
   },
   displayUsd: true,
+  isLoading: false,
   isConnected: true,
   priceUsd: 1,
   percentChange: -4.6,
