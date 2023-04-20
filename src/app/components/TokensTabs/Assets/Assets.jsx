@@ -45,7 +45,9 @@ const Assets = () => {
               </div>
               <div>
                 <div className={s.assetInfoLabel}>Value</div>
-                <div className={s.assetInfoValue}>${asset.value}</div>
+                <div className={s.assetInfoValue}>
+                  ${(asset.balance * state.priceData.price).toFixed(2)}
+                </div>
               </div>
             </span>
           </button>

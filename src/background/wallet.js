@@ -78,7 +78,7 @@ export const getWalletData = async () => {
   } else {
     transactions = [];
   }
-  const assets = [{ name: "ZANO", ticker: "ZANO", balance, value: balance }];
+  const assets = [{ name: "ZANO", ticker: "ZANO", balance }];
   return { address, balance, transactions, assets };
 };
 
