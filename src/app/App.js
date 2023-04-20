@@ -1,5 +1,6 @@
 import { useContext, useEffect } from "react";
 import { Router } from "react-chrome-extension-router";
+import { getWalletData } from "../background/wallet";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";

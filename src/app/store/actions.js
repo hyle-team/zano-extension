@@ -25,3 +25,10 @@ export const updatePriceData = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const updateLoading = (dispatch, state) => {
+  return dispatch({
+    type: "LOADING_UPDATED",
+    payload: state,
+  });
+};

@@ -16,3 +16,28 @@
   row-gap: 16px;
   padding-bottom: 20px;
 }
+
+// =========================================================
+.transactionContent {
+  min-height: 410px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translate(0, -30px);
+}
+
+.transactionIcon {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 8px auto;
+  img {
+    max-width: 100%;
+  }
+}
+
+.transactionText {
+  text-align: center;
+  font-size: 18px;
+  line-height: math.div(21, 18);
+  color: #1F8FEB;
+}

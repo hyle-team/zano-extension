@@ -52,10 +52,7 @@ const AddressInput = ({ address }) => {
       <label className={mainStyles.label} htmlFor="address-wallet-send">
         Address:
         {address.value && (
-          <button
-            className={`${buttonClasses} round-button`}
-            onClick={toggleAlias}
-          >
+          <button className={buttonClasses} onClick={toggleAlias}>
             <img src={aliasIcon} alt="add alias button icon" />
           </button>
         )}

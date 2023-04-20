@@ -2,54 +2,33 @@
 @import "src/app/styles/variables";
 
 .wallet {
+  display: grid;
+  grid-template-columns: 1fr 25px;
+  background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
+  border-radius: 16px;
+  padding: 16px 16px 10px 16px;
   &:not(:last-child) {
     margin-bottom: 20px;
   }
 }
 
-.dotsButton {
-  transform: translate(25%, 0);
+.actionsWallet {
+  display: grid;
+  row-gap: 2px;
+
 }
 
 // =========================================================
 .infoWallet {
-  background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
-  border-radius: 16px;
-  padding: 16px 16px 10px 16px;
-  &:not(:last-child) {
-    margin-bottom: 16px;
-  }
-}
-
-.infoTop {
   display: grid;
-  align-items: center;
-  grid-template-columns: 1fr auto;
-  column-gap: 20px;
-  margin-bottom: 8px;
-  line-height: math.div(21.5, 18);
-}
-
-.infoWalletStatus {
-  position: relative;
-  display: block;
-  border-radius: 50%;
-  background-color: #fff;
-  width: 10px;
-  height: 10px;
-  &:hover {
-    .status {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
+  row-gap: 5px;
 }
 
 .infoBalance {
+  align-self: center;
   font-weight: 600;
   font-size: 32px;
   line-height: math.div(38, 32);
-  margin-bottom: 0px;
   .percentСhange {
     color: #ffcbcb;
     font-size: 18px;
@@ -63,6 +42,7 @@
   display: flex;
   column-gap: 20px;
   align-items: center;
+  max-width: 256px;
   span {
     flex: 1 1 auto;
     overflow: hidden;
@@ -72,35 +52,22 @@
     line-height: math.div(17, 14);
     opacity: 0.5;
   }
-  .copyButton {
-    transform: translate(25%, 0);
-  }
 }
 
 // =========================================================
-.actionsWallet {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 16px;
+.alias {
+
 }
 
-.actionsButton {
-  background: #0c0c3a;
-  border: 2px solid #1f8feb;
-  border-radius: 16px;
-  height: 57px;
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  column-gap: 6px;
-  font-size: 21px;
-  line-height: math.div(25, 21);
-  transition: background-color 0.2s ease 0s;
-  img {
-    flex: 0 0 20px;
-  }
-  &:hover {
-    background-color: #24244e;
+.aliasCreateBtn {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 0 16px;
+  line-height: 32px;
+  transition: background-color 0.1s ease 0s;
+  @media (any-hover: hover) {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
   }
 }

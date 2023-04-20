@@ -4,13 +4,7 @@ import History from "./History/History";
 import s from "./TokensTabs.module.scss";
 
 const TokensTabs = () => {
-  const [activeTab, setActiveTab] = useState(
-    Number(localStorage.getItem("activeTab")) || 0
-  );
-
-  useEffect(() => {
-    localStorage.setItem("activeTab", activeTab);
-  }, [activeTab]);
+  const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
     { label: "assets", content: <Assets /> },

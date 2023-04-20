@@ -14,7 +14,7 @@
   line-height: math.div(21, 18);
   text-align: center;
   color: #ffffff;
-  transition: background-color 0.2s ease 0s;
+  transition: all 0.2s ease 0s;
   &.borderVariant {
     background-color: #1F8FEB;
     &:hover {
