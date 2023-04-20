@@ -37,18 +37,30 @@ const TransactionDetails = (props) => {
 
       <div className="table">
         <TableRow label="Amount" value={props.amount + " ZANO"} />
-        <TableRow
-          label="Transaction ID"
-          value={props.transactionID}
-          copyButton
-        />
+        <TableRow label="Transaction hash" value={props.txHash} copyButton />
         <TableRow label="Blob size" value={props.blobSize + " bytes"} />
-        <TableRow label="Date" value={props.date} />
+        <TableRow label="Timestamp" value={props.timestamp} />
         <TableRow label="Height" value={props.height} />
-        <TableRow label="Inputs" value={props.inputs} />
-        <TableRow label="Outputs" value={props.outputs} />
-        <TableRow label="Payment ID" value={props.paymentID} copyButton />
-        <TableRow label="Comment" value={props.comment} copyButton />
+        <TableRow
+          label="Inputs"
+          value={
+            Array.isArray(props.inputs) ? props.inputs.join(" ") : props.inputs
+          }
+        />
+        <TableRow
+          label="Outputs"
+          value={
+            Array.isArray(props.outputs)
+              ? props.outputs.join(" ")
+              : props.outputs
+          }
+        />
+        {props.paymentId ? (
+          <TableRow label="Payment Id" value={props.paymentId} copyButton />
+        ) : (
+          <TableRow label="Payment Id" value={props.paymentId} />
+        )}
+        <TableRow label="Comment" value={props.comment} />
       </div>
     </div>
   );

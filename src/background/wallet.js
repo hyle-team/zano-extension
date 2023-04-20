@@ -56,19 +56,36 @@ export const getWalletData = async () => {
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
   let transactions = [];
+
+  console.log("txData", txData);
+
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
       .map((tx) => ({
         isConfirmed: tx.height === 0 ? false : true,
         incoming: tx.is_income ? true : false,
-        value: tx.amount / 10 ** 12,
+        amount: tx.amount / 10 ** 12,
         ticker: "ZANO",
         address: tx.remote_addresses ? tx.remote_addresses[0] : "Hidden",
+        txHash: tx.tx_hash,
+        blobSize: tx.tx_blob_size,
+        timestamp: tx.timestamp,
+        height: tx.height,
+        inputs: Array.isArray(tx.td.rcv)
+          ? tx.td.rcv.map((input) => input / 10 ** 12)
+          : "",
+        outputs: Array.isArray(tx.td.spn)
+          ? tx.td.spn.map((output) => output / 10 ** 12)
+          : "",
+        paymentId: tx.payment_id,
+        comment: tx.comment,
       }));
   } else {
     transactions = [];
   }
+
+  console.log("transactions", transactions);
 
   const assets = [{ name: "ZANO", ticker: "ZANO", balance, value: balance }];
 

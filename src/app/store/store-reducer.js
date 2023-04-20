@@ -54,7 +54,7 @@ const initialState = {
       {
         isConfirmed: true,
         incoming: true,
-        value: 100,
+        amount: 100,
         ticker: "ZANO",
         address:
           "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
