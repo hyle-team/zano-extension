@@ -85,6 +85,8 @@ const reducer = (state, action) => {
       return { ...state, wallet: action.payload };
     case "PRICE_DATA_UPDATED":
       return { ...state, priceData: action.payload };
+    case "DISPLAY_CURRENCY_UPDATED":
+      return { ...state, displayUsd: action.payload };
     case "LOADING_UPDATED":
       return { ...state, isLoading: action.payload };
     default:

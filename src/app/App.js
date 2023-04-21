@@ -10,6 +10,7 @@ import {
   updateWalletConnected,
   updateWalletData,
   updatePriceData,
+  updateLoading,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -53,6 +54,7 @@ function App() {
                 transactions,
               });
               console.log("wallet data updated");
+              updateLoading(dispatch, false);
             }
           }
         );

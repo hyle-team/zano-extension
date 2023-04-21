@@ -5,6 +5,7 @@ import dotsIcon from "../../assets/svg/dots.svg";
 import sendIcon from "../../assets/svg/send.svg";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
+import { updateDisplay } from "../../store/actions";
 import WalletSend from "../WalletSend/WalletSend";
 import s from "./Wallet.module.scss";
 
@@ -15,7 +16,7 @@ const Wallet = () => {
   const renderBalance = () => {
     if (state.displayUsd) {
       return (
-        <div className={s.infoBalance}>
+        <div className={s.infoBalance} onClick={() => flipDisplay()}>
           <span>
             ${(state.wallet.balance * state.priceData.price).toFixed(2)}
           </span>
@@ -38,7 +39,9 @@ const Wallet = () => {
     }
   };
 
-  const flipDisplay = () => {};
+  const flipDisplay = () => {
+    updateDisplay(dispatch, !state.displayUsd);
+  };
 
   return (
     <div className={s.wallet}>

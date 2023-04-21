@@ -26,6 +26,13 @@ export const updatePriceData = (dispatch, state) => {
   });
 };
 
+export const updateDisplay = (dispatch, state) => {
+  return dispatch({
+    type: "DISPLAY_CURRENCY_UPDATED",
+    payload: state,
+  });
+};
+
 export const updateLoading = (dispatch, state) => {
   return dispatch({
     type: "LOADING_UPDATED",
