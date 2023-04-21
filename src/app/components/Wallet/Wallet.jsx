@@ -9,28 +9,8 @@ import WalletSend from "../WalletSend/WalletSend";
 import s from "./Wallet.module.scss";
 
 const Wallet = () => {
-  const { state } = useContext(Store);
+  const { state, dispatch } = useContext(Store);
   const { SuccessCopyModal, copyToClipboard } = useCopy();
-
-  const sendTransfer = async () => {
-    // eslint-disable-next-line no-undef
-    if (chrome.runtime.sendMessage) {
-      // eslint-disable-next-line no-undef
-      chrome.runtime.sendMessage(
-        {
-          message: "SEND_TRANSFER",
-          destination:
-            "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
-          amount: 1,
-        },
-        (response) => {
-          if (response.data) {
-            console.log("Sent", response.data);
-          }
-        }
-      );
-    }
-  };
 
   const renderBalance = () => {
     if (state.displayUsd) {
@@ -57,6 +37,8 @@ const Wallet = () => {
       );
     }
   };
+
+  const flipDisplay = () => {};
 
   return (
     <div className={s.wallet}>

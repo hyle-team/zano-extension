@@ -15,9 +15,10 @@ import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
 
 const WalletSend = () => {
-  const { state, dispatch } = useContext(Store);
+  const { state } = useContext(Store);
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
+  const [txId, setTxId] = useState("");
   // Form data
   const address = useInput("");
   const [asset, setAsset] = useState(state.wallet.assets[0]);
@@ -27,6 +28,34 @@ const WalletSend = () => {
   const fee = useInput(0.01);
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
+
+  const sendTransfer = (destination, amount, comment) => {
+    return new Promise((resolve, reject) => {
+      // eslint-disable-next-line no-undef
+      if (chrome.runtime.sendMessage) {
+        // eslint-disable-next-line no-undef
+        chrome.runtime.sendMessage(
+          {
+            message: "SEND_TRANSFER",
+            destination,
+            amount,
+            comment,
+          },
+          (response) => {
+            if (response.data) {
+              resolve(response.data);
+            } else if (response.error) {
+              reject(response.error);
+            } else {
+              reject("No data or error received in response.");
+            }
+          }
+        );
+      } else {
+        reject("chrome.runtime.sendMessage is not available.");
+      }
+    });
+  };
 
   const TableRow = ({ label, value }) => {
     return (
@@ -100,7 +129,22 @@ const WalletSend = () => {
                   <TableRow label="Fee" value={fee.value} />
                 </div>
 
-                <MyButton onClick={() => setActiveStep(2)}>Confirm</MyButton>
+                <MyButton
+                  onClick={async () => {
+                    const transferStatus = await sendTransfer(
+                      address.value,
+                      amount.value,
+                      comment.value
+                    );
+                    if (transferStatus.result) {
+                      setTxId(transferStatus.result.tx_hash);
+                      setTransactionSuccess(true);
+                    }
+                    setActiveStep(2);
+                  }}
+                >
+                  Confirm
+                </MyButton>
               </div>
             );
           // Transaction status
@@ -120,9 +164,7 @@ const WalletSend = () => {
                     />
                   </div>
                   <div className={s.transactionText}>
-                    {transactionSuccess
-                      ? "Successfully sent!"
-                      : "Sending failed"}
+                    {transactionSuccess ? "Sent in " + txId : "Sending failed"}
                   </div>
                 </div>
 
@@ -138,6 +180,3 @@ const WalletSend = () => {
 };
 
 export default WalletSend;
-
-
-

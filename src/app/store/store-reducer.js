@@ -66,7 +66,7 @@ const initialState = {
     ],
   },
   displayUsd: true,
-  isLoading: false,
+  isLoading: true,
   isConnected: true,
   priceData: { price: 1, change: -4.6 },
 };
