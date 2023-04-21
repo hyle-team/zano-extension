@@ -4,6 +4,7 @@ import { getWalletData } from "../background/wallet";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
+import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
 import {
   updateWalletConnected,
@@ -78,9 +79,11 @@ function App() {
 
   return (
     <div className="App">
-      {state.isConnected ? (
+      <AppPlug />
+      {state.isConnected && (
         <>
           <Header />
+          <Loader />
           <div className="container">
             <Router>
               <Wallet />
@@ -88,8 +91,6 @@ function App() {
             </Router>
           </div>
         </>
-      ) : (
-        <AppPlug />
       )}
     </div>
   );

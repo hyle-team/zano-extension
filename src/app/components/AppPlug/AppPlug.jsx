@@ -14,17 +14,15 @@ const AppPlug = () => {
     : s.plugButton;
 
   return (
-    <div className={s.plug}>
-      <div className={`${s.plugBody} container`}>
-        <div className={s.plugLogo}>
-          <img src={logo} alt="zano logo" />
-        </div>
+    <>
+      {!state.isConnected && (
+        <div className={s.plug}>
+          <div className={`${s.plugBody} container`}>
+            <div className={s.plugLogo}>
+              <img src={logo} alt="zano logo" />
+            </div>
 
-        <div className={s.plugContent}>
-          {state.isLoading ? (
-            <Loader />
-          ) : (
-            <>
+            <div className={s.plugContent}>
               <div className={s.plugImage}>
                 <img src={displayImage} alt="display image" />
               </div>
@@ -34,16 +32,16 @@ const AppPlug = () => {
               <div className={s.plugText}>
                 Make sure you're running <br />a wallet with RPC enabled
               </div>
-            </>
-          )}
-        </div>
+            </div>
 
-        <button className={btnClasses}>
-          <img src={questionIcon} alt="question icon" />
-          How to create wallet?
-        </button>
-      </div>
-    </div>
+            <button className={btnClasses}>
+              <img src={questionIcon} alt="question icon" />
+              How to create wallet?
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
