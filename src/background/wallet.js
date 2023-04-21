@@ -78,8 +78,12 @@ export const getWalletData = async () => {
   } else {
     transactions = [];
   }
+
+  // temp data
   const assets = [{ name: "ZANO", ticker: "ZANO", balance }];
-  return { address, balance, transactions, assets };
+  const alias = "";
+
+  return { address, alias, balance, transactions, assets };
 };
 
 export const transfer = async (destination, amount) => {

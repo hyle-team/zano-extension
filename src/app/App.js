@@ -45,10 +45,11 @@ function App() {
           { message: "GET_WALLET_DATA" },
           (response) => {
             if (response.data) {
-              const { address, balance, transactions, assets } = response.data;
+              const { address, alias, balance, transactions, assets } =
+                response.data;
               updateWalletData(dispatch, {
                 address,
-                alias: "alias",
+                alias,
                 balance,
                 assets,
                 transactions,

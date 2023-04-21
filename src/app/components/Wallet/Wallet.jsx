@@ -32,7 +32,7 @@ const Wallet = () => {
       );
     } else {
       return (
-        <div className={s.infoBalance}>
+        <div className={s.infoBalance} onClick={() => flipDisplay()}>
           <span>{state.wallet.balance} ZANO</span>
         </div>
       );
@@ -52,7 +52,17 @@ const Wallet = () => {
           {state.wallet.alias ? (
             `@${state.wallet.alias}`
           ) : (
-            <button className={s.aliasCreateBtn}>Create alias</button>
+            <button
+              className={s.aliasCreateBtn}
+              onClick={() =>
+                // eslint-disable-next-line no-undef
+                chrome.tabs.create({
+                  url: "https://docs.zano.org/docs/aliases",
+                })
+              }
+            >
+              Create alias
+            </button>
           )}
         </div>
 
