@@ -57,6 +57,13 @@ const WalletSend = () => {
     });
   };
 
+  const openExplorer = (txId) => {
+    // eslint-disable-next-line no-undef
+    chrome.tabs.create({
+      url: `https://explorer.zano.org/block/${txId}`,
+    });
+  };
+
   const TableRow = ({ label, value }) => {
     return (
       <div className="table__row">
@@ -164,8 +171,19 @@ const WalletSend = () => {
                     />
                   </div>
                   <div className={s.transactionText}>
-                    {transactionSuccess ? "Sent in " + txId : "Sending failed"}
+                    {transactionSuccess ? (
+                      <div>
+                        Sent in <span>{txId}</span>
+                      </div>
+                    ) : (
+                      "Sending failed"
+                    )}
                   </div>
+                  {transactionSuccess && (
+                    <button className={s.link} onClick={openExplorer}>
+                      See details
+                    </button>
+                  )}
                 </div>
 
                 <MyButton onClick={() => popToTop()}>Close</MyButton>

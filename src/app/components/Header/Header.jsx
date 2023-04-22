@@ -1,11 +1,13 @@
 import { useContext, useState } from "react";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
+import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { Store } from "../../store/store-reducer";
 import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
 
 const Header = () => {
   const { state } = useContext(Store);
+  const { censorValue } = useCensorDigits();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -49,7 +51,9 @@ const Header = () => {
                     <span>{Formatters.walletAddress(wallet.address)}</span>
                   )}
                 </div>
-                <div className={s.dropdownBalance}>{wallet.balance} ZANO</div>
+                <div className={s.dropdownBalance}>
+                  {censorValue(wallet.balance)} ZANO
+                </div>
               </button>
             ))}
           </div>

@@ -39,3 +39,10 @@ export const updateLoading = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const updateBalancesHidden = (dispatch, state) => {
+  return dispatch({
+    type: "BALANCES_HIDDEN_UPDATED",
+    payload: state,
+  });
+};

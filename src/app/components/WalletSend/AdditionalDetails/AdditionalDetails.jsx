@@ -31,18 +31,14 @@ const AdditionalDetails = ({ fee, mixin, isSenderInfo, isReceiverInfo }) => {
         <div className={s.detailsSelectContent}>
           <div className={s.detailsSelectInputs}>
             <MyInput
-              placeholder={10}
               label="Mixin:"
               value={10}
               readOnly
-              // onChange={mixin.onChange}
             />
             <MyInput
-              placeholder={0.01}
               label="Fee:"
               value={0.01}
               readOnly
-              // onChange={fee.onChange}
             />
           </div>
           <div className={s.detailsSelectCheckboxes}>

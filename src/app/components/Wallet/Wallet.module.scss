@@ -4,6 +4,7 @@
 .wallet {
   display: grid;
   grid-template-columns: 1fr 25px;
+  align-items: start;
   background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
   border-radius: 16px;
   padding: 16px 16px 10px 16px;
@@ -14,17 +15,66 @@
 
 .actionsWallet {
   display: grid;
-  row-gap: 2px;
+  row-gap: 5px;
+}
 
+.actionsSettings {
+  position: relative;
+}
+
+.settings {
+  position: absolute;
+  z-index: 2;
+  top: 105%;
+  right: 0;
+  background: #11316B;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  width: 213px;
+  padding: 10px 0;
+}
+
+.settingsBtn {
+  text-align: left;
+  display: block;
+  padding: 10px 20px;
+  position: relative;
+  width: 100%;
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    visibility: hidden;
+  }
+  @media (any-hover: hover) {
+    &:hover {
+      &::after {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  }
 }
 
 // =========================================================
 .infoWallet {
   display: grid;
-  row-gap: 5px;
+  row-gap: 11px;
 }
 
-.infoBalance {
+.balance {
+  text-align: left;
+  display: inline-block;
   align-self: center;
   font-weight: 600;
   font-size: 32px;
@@ -37,7 +87,6 @@
     padding-left: 6px;
   }
 }
-
 .infoAddress {
   display: flex;
   column-gap: 20px;
@@ -55,8 +104,23 @@
 }
 
 // =========================================================
-.alias {
-
+.aliasContent {
+  display: inline-block;
+  &.active {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 5px 16px 6px 16px;
+    &::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: -3px;
+      width: 14px;
+      height: 14px;
+      background: url("../../assets/svg/crown.svg") center no-repeat;
+    }
+  }
 }
 
 .aliasCreateBtn {
