@@ -22,6 +22,12 @@
     {
       "matches": ["<all_urls>"],
       "js": ["static/js/content.bundle.js"]
+    },
+    {
+      "world": "MAIN",
+      "js": ["static/js/inject.bundle.js"],
+      "matches": ["<all_urls>"],
+      "run_at": "document_start"
     }
   ],
   "icons": {

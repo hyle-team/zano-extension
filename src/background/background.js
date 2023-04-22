@@ -7,7 +7,7 @@ chrome.runtime.onStartup.addListener(() => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "GET_WALLET_BALANCE") {
+  if (request.method === "GET_WALLET_BALANCE") {
     fetchData("getbalance")
       .then((response) => response.json())
       .then((data) => {
@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "GET_WALLET_DATA") {
+  if (request.method === "GET_WALLET_DATA") {
     console.log("Getting wallet data");
     getWalletData()
       .then((data) => {
@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "SEND_TRANSFER") {
+  if (request.method === "SEND_TRANSFER") {
     console.log("Sending transfer");
     console.log("destination", request.destination, "amount", request.amount);
     transfer(request.destination, request.amount)
