@@ -35,6 +35,14 @@ const contentConfig = {
   },
 };
 
+const injectConfig = {
+  entry: "./src/content/inject.js",
+  output: {
+    path: path.resolve(__dirname, "build/static/js"),
+    filename: "inject.bundle.js",
+  },
+};
+
 const copyConfig = {
   plugins: [
     new CopyWebpackPlugin({
@@ -51,4 +59,5 @@ module.exports = [
   merge(common, appConfig, copyConfig),
   merge(common, backgroundConfig),
   merge(common, contentConfig),
+  merge(common, injectConfig),
 ];
