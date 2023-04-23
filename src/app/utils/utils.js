@@ -1,6 +1,7 @@
-async function fetchData(data) {
+export async function fetchBackground(data) {
     return new Promise((resolve, reject) => {
         try {
+             // eslint-disable-next-line no-undef
             chrome.runtime.sendMessage(data, function (response) {
                 resolve(response);
             });
@@ -10,15 +11,3 @@ async function fetchData(data) {
         }
     });
 };
-
-document.addEventListener('zano_request', async (e) => {
-    const data = e.detail;
-    const response = await fetchData(data);
-
-    document.dispatchEvent(new CustomEvent(`zano_response_${data.listenerID}`, {
-        detail: response
-    }));
-
-});
-
-console.log('Zano wallet loaded');

@@ -6,6 +6,7 @@ import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
+import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
   updateWalletData,
@@ -22,44 +23,32 @@ function App() {
   useEffect(() => {
     const checkConnection = async () => {
       // eslint-disable-next-line no-undef
-      if (chrome.runtime.sendMessage) {
-        // eslint-disable-next-line no-undef
-        chrome.runtime.sendMessage(
-          { message: "GET_WALLET_BALANCE" },
-          (response) => {
-            if (response.data) {
-              updateWalletConnected(dispatch, true);
-            } else {
-              updateWalletConnected(dispatch, false);
-            }
-          }
-        );
-      }
+      if (!chrome?.runtime?.sendMessage) return;
+
+      const balanceData = await fetchBackground({ method: 'GET_WALLET_BALANCE' });
+      updateWalletConnected(dispatch, !!balanceData.data);
     };
 
     const getWalletData = async () => {
       // eslint-disable-next-line no-undef
-      if (chrome.runtime.sendMessage) {
-        // eslint-disable-next-line no-undef
-        chrome.runtime.sendMessage(
-          { message: "GET_WALLET_DATA" },
-          (response) => {
-            if (response.data) {
-              const { address, alias, balance, transactions, assets } =
-                response.data;
-              updateWalletData(dispatch, {
-                address,
-                alias,
-                balance,
-                assets,
-                transactions,
-              });
-              console.log("wallet data updated");
-              updateLoading(dispatch, false);
-            }
-          }
-        );
-      }
+      if (!chrome?.runtime?.sendMessage) return;
+      const walletData = await fetchBackground({ method: 'GET_WALLET_DATA' });
+
+      if (!walletData.data) return;
+      
+      const { address, alias, balance, transactions, assets } = walletData.data;
+
+      updateWalletData(dispatch, {
+        address,
+        alias,
+        balance,
+        assets,
+        transactions,
+      });
+
+      console.log("wallet data updated");
+      updateLoading(dispatch, false);
+      
     };
 
     const intervalId = setInterval(async () => {
