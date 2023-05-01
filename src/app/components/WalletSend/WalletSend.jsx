@@ -13,6 +13,7 @@ import AdditionalDetails from "./AdditionalDetails/AdditionalDetails";
 import AddressInput from "./AddressInput/AddressInput";
 import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
+import { fetchBackground } from "../../utils/utils";
 
 const WalletSend = () => {
   const { state } = useContext(Store);
@@ -30,27 +31,25 @@ const WalletSend = () => {
   const isReceiverInfo = useCheckbox(false);
 
   const sendTransfer = (destination, amount, comment) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
         // eslint-disable-next-line no-undef
-        chrome.runtime.sendMessage(
-          {
-            message: "SEND_TRANSFER",
-            destination,
-            amount,
-            comment,
-          },
-          (response) => {
-            if (response.data) {
-              resolve(response.data);
-            } else if (response.error) {
-              reject(response.error);
-            } else {
-              reject("No data or error received in response.");
-            }
-          }
-        );
+        const response = await fetchBackground({ 
+          method: 'SEND_TRANSFER',
+          destination,
+          amount,
+          comment, 
+        });
+
+        if (response.data) {
+          resolve(response.data);
+        } else if (response.error) {
+          reject(response.error);
+        } else {
+          reject("No data or error received in response.");
+        }
+        
       } else {
         reject("chrome.runtime.sendMessage is not available.");
       }
