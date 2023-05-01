@@ -1,24 +1,26 @@
 async function fetchData(data) {
-    return new Promise((resolve, reject) => {
-        try {
-            chrome.runtime.sendMessage(data, function (response) {
-                resolve(response);
-            });
-        } catch (error) {
-            console.error(`Error while fetching data (${data.method}):`, error);
-            reject(error);
-        }
-    });
-};
+  return new Promise((resolve, reject) => {
+    try {
+      // eslint-disable-next-line no-undef
+      chrome.runtime.sendMessage(data, function (response) {
+        resolve(response);
+      });
+    } catch (error) {
+      console.error(`Error while fetching data (${data.method}):`, error);
+      reject(error);
+    }
+  });
+}
 
-document.addEventListener('zano_request', async (e) => {
-    const data = e.detail;
-    const response = await fetchData(data);
+document.addEventListener("zano_request", async (e) => {
+  const data = e.detail;
+  const response = await fetchData(data);
 
-    document.dispatchEvent(new CustomEvent(`zano_response_${data.listenerID}`, {
-        detail: response
-    }));
-
+  document.dispatchEvent(
+    new CustomEvent(`zano_response_${data.listenerID}`, {
+      detail: response,
+    })
+  );
 });
 
-console.log('Zano wallet loaded');
+console.log("Zano wallet loaded");

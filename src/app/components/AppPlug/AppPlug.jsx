@@ -36,7 +36,7 @@ const AppPlug = () => {
 
             <button className={btnClasses}>
               <img src={questionIcon} alt="question icon" />
-              How to create wallet?
+              How to run a local wallet?
             </button>
           </div>
         </div>
