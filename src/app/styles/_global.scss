@@ -1,6 +1,7 @@
 @use "sass:math";
 
 .round-button {
+  position: relative;
   flex: 0 0 35px;
   border-radius: 50%;
   width: 35px;
@@ -9,6 +10,38 @@
   justify-content: center;
   align-items: center;
   transition: background-color 0.2s ease 0s;
+  span {
+    position: absolute;
+    z-index: 10;
+    top: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    left: -5px;
+    transform: translate(-100%, 0);
+    padding: 0 8px;
+    border-radius: 5px;
+    height: 29px;
+    font-size: 16px;
+    white-space: nowrap;
+    line-height: math.div(19, 16);
+    font-weight: 300;
+    color: #ffffff;
+    background: rgba(20, 65, 130, 1);
+    opacity: 0;
+    visibility: hidden;
+    &::after {
+      content: "";
+      position: absolute;
+      top: 11.5px;
+      right: -3px;
+      width: 6px;
+      height: 6px;
+      background: rgba(20, 65, 130, 1);
+      transform: rotate(45deg);
+    }
+  }
   img {
     width: 18px;
     height: 18px;
@@ -16,6 +49,11 @@
   }
   &:hover {
     background-color: rgba(255, 255, 255, 0.07);
+    span {
+      opacity: 1;
+      visibility: visible;
+      transition: all 0.1s ease 1s;
+    }
   }
 }
 

@@ -3,12 +3,16 @@ import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
 import sendIcon from "../../assets/svg/send.svg";
+import settingsIcon from "../../assets/svg/settings.svg";
+import showIcon from "../../assets/svg/show.svg";
+import hideIcon from "../../assets/svg/hide.svg";
 import useAwayClick from "../../hooks/useAwayClick";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
 import { updateBalancesHidden, updateDisplay } from "../../store/actions";
 import WalletSend from "../WalletSend/WalletSend";
+import WalletSettings from "../WalletSettings/WalletSettings";
 import s from "./Wallet.module.scss";
 
 const Wallet = () => {
@@ -94,11 +98,7 @@ const Wallet = () => {
         </div>
 
         <div>
-          <button
-            onClick={flipDisplay}
-            title="Change currency"
-            className={s.balance}
-          >
+          <button onClick={flipDisplay} className={s.balance}>
             {renderBalance()}
           </button>
         </div>
@@ -112,17 +112,24 @@ const Wallet = () => {
         <div ref={menuRef} className={s.actionsSettings}>
           <button onClick={flipMenu} className="round-button">
             <img src={dotsIcon} alt="dots icon" />
+            {/* Tooltip */}
+            <span>options</span>
           </button>
 
           {menuVisible && (
             <div className={s.settings}>
-              <button disabled className={s.settingsBtn}>
+              <Link component={WalletSettings} className={s.settingsBtn}>
+                <img src={settingsIcon} alt="settings icon" />
                 Settings
-              </button>
+              </Link>
               <button
                 onClick={flipBalancesVisibility}
                 className={s.settingsBtn}
               >
+                <img
+                  src={state.isBalancesHidden ? showIcon : hideIcon}
+                  alt="show or hide icon"
+                />
                 {state.isBalancesHidden ? "Show values" : "Hide values"}
               </button>
             </div>
@@ -131,6 +138,8 @@ const Wallet = () => {
 
         <Link component={WalletSend} className="round-button">
           <img src={sendIcon} alt="send icon" />
+          {/* Tooltip */}
+          <span>send</span>
         </Link>
 
         <button
@@ -138,6 +147,8 @@ const Wallet = () => {
           className="round-button"
         >
           <img src={copyIcon} alt="copy icon" />
+          {/* Tooltip */}
+          <span>copy address</span>
         </button>
       </div>
     </div>
