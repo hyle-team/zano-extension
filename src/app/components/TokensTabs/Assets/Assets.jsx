@@ -10,7 +10,7 @@ import s from "./Assets.module.scss";
 
 const getIconImage = (asset) => {
   switch (asset.name) {
-    case "ZANO":
+    case "Zano":
       return <img src={zanoIcon} alt="ZanoIcon" />;
     case "Wrapped Bitcoin":
       return <img src={bitcoinIcon} alt="bitcoin icon" />;
@@ -25,7 +25,6 @@ const Assets = () => {
   const { state } = useContext(Store);
   const { censorValue } = useCensorDigits();
   const remove = () => console.log("remove icon click");
-
 
   return (
     <div>

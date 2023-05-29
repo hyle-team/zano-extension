@@ -77,9 +77,11 @@ export const getWalletData = async () => {
   const address = addressParsed.result.address;
   const balanceResponse = await fetchData("getbalance");
   const balanceParsed = await balanceResponse.json();
+  // TODO: get zano balance from assets, this will be deprecated
   const balance = balanceParsed.result.balance / 10 ** 12;
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
+  // console.log("txData", txData);
   let transactions = [];
   if (txData) {
     transactions = txData
@@ -88,6 +90,7 @@ export const getWalletData = async () => {
         isConfirmed: tx.height === 0 ? false : true,
         incoming: tx.is_income ? true : false,
         amount: tx.amount / 10 ** 12,
+        //TODO get ticker from asset id
         ticker: "ZANO",
         address: tx.remote_addresses ? tx.remote_addresses[0] : "Hidden",
         txHash: tx.tx_hash,
@@ -107,9 +110,16 @@ export const getWalletData = async () => {
     transactions = [];
   }
 
-  // temp data
-  const assets = [{ name: "ZANO", ticker: "ZANO", balance }];
-  const alias = "";
+  // TODO: validate zano asset id
+  const assets = balanceParsed.result.balances.map((asset) => ({
+    name: asset.asset_info.full_name,
+    ticker: asset.asset_info.ticker,
+    assetId: asset.asset_info.asset_id,
+    balance: asset.total / 10 ** 12,
+  }));
+
+  //TODO: fetch alias from wallet
+  const alias = "todo";
 
   return { address, alias, balance, transactions, assets };
 };

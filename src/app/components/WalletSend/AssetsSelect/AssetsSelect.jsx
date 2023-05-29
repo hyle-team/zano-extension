@@ -22,7 +22,7 @@ const AssetsSelect = ({ value, setValue }) => {
 
   const getAssetImage = (name) => {
     switch (name) {
-      case "ZANO":
+      case "Zano":
         return zanoIcon;
       case "Wrapped Bitcoin":
         return bitcoinIcon;

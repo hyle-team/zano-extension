@@ -22,7 +22,7 @@ const initialState = {
     balance: 1337,
     assets: [
       {
-        name: "ZANO",
+        name: "Zano",
         ticker: "ZANO",
         balance: 1337,
         value: 1000,
