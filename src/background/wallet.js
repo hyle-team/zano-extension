@@ -1,6 +1,6 @@
 const fetchTxData = async () => {
   try {
-    const response = await fetch("http://localhost:11112/json_rpc", {
+    const response = await fetch("http://localhost:12111/json_rpc", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,8 +30,8 @@ const fetchTxData = async () => {
   }
 };
 
-export const fetchData = async (method) =>
-  fetch("http://localhost:11112/json_rpc", {
+export const fetchData = async (method, params = {}) =>
+  fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,8 +40,36 @@ export const fetchData = async (method) =>
       jsonrpc: "2.0",
       id: "0",
       method,
+      params,
     }),
   });
+
+export const getWallets = async () => {
+  const response = await fetchData("mw_get_wallets");
+  const data = await response.json();
+  console.log(data.result.wallets);
+  await selectWallet(data.result.wallets[0].id);
+  const wallets = data.result.wallets.map((wallet) => ({
+    address: wallet.wi.address,
+    alias: "todo",
+    balance:
+      wallet.wi.balances.find(
+        (asset) =>
+          asset.asset_info.asset_id ===
+          "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+      ).total /
+      10 ** 12,
+  }));
+  return wallets;
+};
+
+export const selectWallet = async (walletId = 0) => {
+  const response = await fetchData("mw_select_wallet", { wallet_id: walletId });
+  const data = await response.json();
+  if (data.result.status !== "OK") {
+    console.log("Error selecting wallet:", data.result.status);
+  }
+};
 
 export const getWalletData = async () => {
   const addressResponse = await fetchData("getaddress");
@@ -93,7 +121,7 @@ export const transfer = async (destination, amount) => {
       amount: amount * 10 ** 12,
     },
   ];
-  const response = await fetch("http://localhost:11112/json_rpc", {
+  const response = await fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

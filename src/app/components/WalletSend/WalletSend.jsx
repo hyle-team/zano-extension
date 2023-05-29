@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
-import { goTo, popToTop } from "react-chrome-extension-router";
-import App from "../../App";
+import { popToTop } from "react-chrome-extension-router";
 import failedImage from "../../assets/images/failed-round.png";
 import successImage from "../../assets/images/success-round.png";
 import { useCheckbox } from "../../hooks/useCheckbox";
@@ -35,11 +34,11 @@ const WalletSend = () => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
         // eslint-disable-next-line no-undef
-        const response = await fetchBackground({ 
-          method: 'SEND_TRANSFER',
+        const response = await fetchBackground({
+          method: "SEND_TRANSFER",
           destination,
           amount,
-          comment, 
+          comment,
         });
 
         if (response.data) {
@@ -49,7 +48,6 @@ const WalletSend = () => {
         } else {
           reject("No data or error received in response.");
         }
-        
       } else {
         reject("chrome.runtime.sendMessage is not available.");
       }

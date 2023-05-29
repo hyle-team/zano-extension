@@ -1,6 +1,5 @@
 import { useContext, useEffect } from "react";
 import { Router } from "react-chrome-extension-router";
-import { getWalletData } from "../background/wallet";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
@@ -9,6 +8,7 @@ import Wallet from "./components/Wallet/Wallet";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
+  updateWalletsList,
   updateWalletData,
   updatePriceData,
   updateLoading,
@@ -25,19 +25,23 @@ function App() {
       // eslint-disable-next-line no-undef
       if (!chrome?.runtime?.sendMessage) return;
 
-      const balanceData = await fetchBackground({ method: 'GET_WALLET_BALANCE' });
+      const balanceData = await fetchBackground({
+        method: "GET_WALLET_BALANCE",
+      });
       updateWalletConnected(dispatch, !!balanceData.data);
     };
 
     const getWalletData = async () => {
       // eslint-disable-next-line no-undef
       if (!chrome?.runtime?.sendMessage) return;
-      const walletData = await fetchBackground({ method: 'GET_WALLET_DATA' });
 
+      const walletsList = await fetchBackground({ method: "GET_WALLETS" });
+      if (!walletsList.data) return;
+      updateWalletsList(dispatch, walletsList.data);
+
+      const walletData = await fetchBackground({ method: "GET_WALLET_DATA" });
       if (!walletData.data) return;
-      
       const { address, alias, balance, transactions, assets } = walletData.data;
-
       updateWalletData(dispatch, {
         address,
         alias,
@@ -48,7 +52,6 @@ function App() {
 
       console.log("wallet data updated");
       updateLoading(dispatch, false);
-      
     };
 
     const intervalId = setInterval(async () => {

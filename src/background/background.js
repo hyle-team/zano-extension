@@ -1,4 +1,4 @@
-import { fetchData, getWalletData, transfer } from "./wallet";
+import { fetchData, getWalletData, getWallets, transfer } from "./wallet";
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onStartup.addListener(() => {
@@ -10,6 +10,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.method === "GET_WALLET_BALANCE") {
     fetchData("getbalance")
       .then((response) => response.json())
+      .then((data) => {
+        sendResponse({ data: data });
+      })
+      .catch((error) => {
+        console.error("Error fetching wallets:", error);
+        sendResponse({ error: "An error occurred while fetching wallets" });
+      });
+
+    return true;
+  }
+});
+
+// eslint-disable-next-line no-undef
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.method === "GET_WALLETS") {
+    getWallets()
       .then((data) => {
         sendResponse({ data: data });
       })
