@@ -15,6 +15,7 @@ const initialState = {
       balance: 27,
     },
   ],
+  activeWalletId: 1,
   wallet: {
     address:
       "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
@@ -82,6 +83,8 @@ const reducer = (state, action) => {
       return { ...state, isConnected: action.payload };
     case "WALLETS_LIST_UPDATED":
       return { ...state, walletsList: action.payload };
+    case "ACTIVE_WALLET_ID_UPDATED":
+      return { ...state, activeWalletId: action.payload };
     case "WALLET_DATA_UPDATED":
       return { ...state, wallet: action.payload };
     case "PRICE_DATA_UPDATED":

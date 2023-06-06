@@ -19,6 +19,13 @@ export const updateWalletConnected = (dispatch, state) => {
   });
 };
 
+export const updateActiveWalletId = (dispatch, state) => {
+  return dispatch({
+    type: "ACTIVE_WALLET_ID_UPDATED",
+    payload: state,
+  });
+};
+
 export const updatePriceData = (dispatch, state) => {
   return dispatch({
     type: "PRICE_DATA_UPDATED",

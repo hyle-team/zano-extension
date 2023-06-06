@@ -39,7 +39,10 @@ function App() {
       if (!walletsList.data) return;
       updateWalletsList(dispatch, walletsList.data);
 
-      const walletData = await fetchBackground({ method: "GET_WALLET_DATA" });
+      const walletData = await fetchBackground({
+        method: "GET_WALLET_DATA",
+        id: state.activeWalletId,
+      });
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
       updateWalletData(dispatch, {
@@ -63,7 +66,7 @@ function App() {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [dispatch, state.isConnected]);
+  }, [dispatch, state.isConnected, state.activeWalletId]);
 
   useEffect(() => {
     getZanoPrice().then((priceData) => {

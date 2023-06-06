@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.method === "GET_WALLET_DATA") {
     console.log("Getting wallet data");
-    getWalletData()
+    getWalletData(request.id)
       .then((data) => {
         sendResponse({ data });
       })

@@ -2,11 +2,12 @@ import { useContext, useState } from "react";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { Store } from "../../store/store-reducer";
+import { updateActiveWalletId } from "../../store/actions";
 import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
 
 const Header = () => {
-  const { state } = useContext(Store);
+  const { dispatch, state } = useContext(Store);
   const { censorValue } = useCensorDigits();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -18,6 +19,11 @@ const Header = () => {
       setDropdownOpen(true);
       document.body.style.overflow = "hidden";
     }
+  };
+
+  const switchWallet = (id) => {
+    updateActiveWalletId(dispatch, id);
+    toggleDropdown();
   };
 
   return (
@@ -41,8 +47,12 @@ const Header = () => {
       {dropdownOpen && (
         <div onClick={toggleDropdown} className={s.dropdown}>
           <div onClick={(e) => e.stopPropagation()} className={s.dropdownList}>
-            {state.walletsList.map((wallet) => (
-              <button key={wallet.address} className={s.dropdownTitle}>
+            {state.walletsList.map((wallet, i) => (
+              <button
+                key={wallet.address}
+                className={s.dropdownTitle}
+                onClick={() => switchWallet(i)}
+              >
                 <div>
                   {wallet.alias
                     ? wallet.alias

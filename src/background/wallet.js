@@ -48,7 +48,7 @@ export const getWallets = async () => {
   try {
     const response = await fetchData("mw_get_wallets");
     const data = await response.json();
-    await selectWallet(data.result.wallets[0].id);
+    // await selectWallet(id);
     const wallets = data.result.wallets.map((wallet) => ({
       address: wallet.wi.address,
       alias: "todo",
@@ -67,15 +67,17 @@ export const getWallets = async () => {
   }
 };
 
-export const selectWallet = async (walletId = 0) => {
-  const response = await fetchData("mw_select_wallet", { wallet_id: walletId });
+export const selectWallet = async (id) => {
+  const response = await fetchData("mw_select_wallet", { wallet_id: id });
   const data = await response.json();
   if (data.result.status !== "OK") {
     console.log("Error selecting wallet:", data.result.status);
   }
 };
 
-export const getWalletData = async () => {
+export const getWalletData = async (id) => {
+  console.log("Wallet id", id);
+  await selectWallet(id);
   const addressResponse = await fetchData("getaddress");
   const addressParsed = await addressResponse.json();
   const address = addressParsed.result.address;
