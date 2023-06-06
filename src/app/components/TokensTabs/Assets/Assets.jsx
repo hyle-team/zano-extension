@@ -50,7 +50,7 @@ const Assets = () => {
                 <div>
                   <div className={s.assetInfoLabel}>Value</div>
                   <div className={s.assetInfoValue}>
-                    ${censorValue(fiatBalance)}
+                    ${censorValue(asset.name === "Zano" ? fiatBalance : 0)}
                   </div>
                 </div>
               </span>

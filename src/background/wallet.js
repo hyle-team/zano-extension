@@ -45,22 +45,26 @@ export const fetchData = async (method, params = {}) =>
   });
 
 export const getWallets = async () => {
-  const response = await fetchData("mw_get_wallets");
-  const data = await response.json();
-  console.log(data.result.wallets);
-  await selectWallet(data.result.wallets[0].id);
-  const wallets = data.result.wallets.map((wallet) => ({
-    address: wallet.wi.address,
-    alias: "todo",
-    balance:
-      wallet.wi.balances.find(
-        (asset) =>
-          asset.asset_info.asset_id ===
-          "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-      ).total /
-      10 ** 12,
-  }));
-  return wallets;
+  try {
+    const response = await fetchData("mw_get_wallets");
+    const data = await response.json();
+    await selectWallet(data.result.wallets[0].id);
+    const wallets = data.result.wallets.map((wallet) => ({
+      address: wallet.wi.address,
+      alias: "todo",
+      balance:
+        wallet.wi.balances.find(
+          (asset) =>
+            asset.asset_info.asset_id ===
+            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ).total /
+        10 ** 12,
+    }));
+    return wallets;
+  } catch (error) {
+    console.error("Error fetching wallet data:", error);
+    throw error;
+  }
 };
 
 export const selectWallet = async (walletId = 0) => {
