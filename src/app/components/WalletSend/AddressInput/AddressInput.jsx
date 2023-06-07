@@ -20,7 +20,9 @@ const AddressInput = ({ address }) => {
     return [aliasVisibleClass, inputFilledClass].join(" ");
   };
 
-  useEffect(() => handleInput(), []);
+  useEffect(() => {
+    handleInput();
+  }, []);
 
   const handleInput = () => {
     textareaRef.current.style.height = "41px";
@@ -31,12 +33,12 @@ const AddressInput = ({ address }) => {
     if (!aliasVisible && address.value) {
       const aliasValue = await getAlias(address.value);
       if (aliasValue) {
-        setAlias((prevState) => ({ ...prevState, value: aliasValue }));
+        setAlias({ value: aliasValue, address: address.value });
         setAliasVisible(true);
       } else {
         const addr = await getAliasDetails(address.value);
         if (addr) {
-          setAlias((prevState) => ({ ...prevState, address: addr }));
+          setAlias({ value: address.value, address: addr });
           setAliasVisible(true);
         }
       }
