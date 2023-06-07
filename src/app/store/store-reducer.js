@@ -15,7 +15,7 @@ const initialState = {
       balance: 27,
     },
   ],
-  activeWalletId: 1,
+  activeWalletId: 0,
   wallet: {
     address:
       "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",

@@ -75,8 +75,6 @@ function App() {
     });
   }, [dispatch]);
 
-  console.log("state", state);
-
   return (
     <div className="App">
       <AppPlug />

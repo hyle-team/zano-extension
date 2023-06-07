@@ -83,11 +83,16 @@ export const getWalletData = async (id) => {
   const address = addressParsed.result.address;
   const balanceResponse = await fetchData("getbalance");
   const balanceParsed = await balanceResponse.json();
-  // TODO: get zano balance from assets, this will be deprecated
-  const balance = balanceParsed.result.balance / 10 ** 12;
+  const balance =
+    balanceParsed.result.balances.find(
+      (asset) =>
+        asset.asset_info.asset_id ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+    ).total /
+    10 ** 12;
+  //TODO: get balance for all assets - blocked by api
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
-  // console.log("txData", txData);
   let transactions = [];
   if (txData) {
     transactions = txData
@@ -96,7 +101,7 @@ export const getWalletData = async (id) => {
         isConfirmed: tx.height === 0 ? false : true,
         incoming: tx.is_income ? true : false,
         amount: tx.amount / 10 ** 12,
-        //TODO get ticker from asset id
+        //TODO: get ticker from asset id
         ticker: "ZANO",
         address: tx.remote_addresses ? tx.remote_addresses[0] : "Hidden",
         txHash: tx.tx_hash,
@@ -116,13 +121,27 @@ export const getWalletData = async (id) => {
     transactions = [];
   }
 
-  // TODO: validate zano asset id
-  const assets = balanceParsed.result.balances.map((asset) => ({
-    name: asset.asset_info.full_name,
-    ticker: asset.asset_info.ticker,
-    assetId: asset.asset_info.asset_id,
-    balance: asset.total / 10 ** 12,
-  }));
+  const assets = balanceParsed.result.balances
+    .map((asset) => ({
+      name: asset.asset_info.full_name,
+      ticker: asset.asset_info.ticker,
+      assetId: asset.asset_info.asset_id,
+      balance: asset.total / 10 ** 12,
+    }))
+    .sort((a, b) => {
+      if (
+        a.assetId ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+      ) {
+        return -1;
+      } else if (
+        b.assetId ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+      ) {
+        return 1;
+      }
+      return 0;
+    });
 
   //TODO: fetch alias from wallet
   const alias = "todo";
@@ -130,6 +149,7 @@ export const getWalletData = async (id) => {
   return { address, alias, balance, transactions, assets };
 };
 
+// TODO: add assets support to trasnfer
 export const transfer = async (destination, amount) => {
   const destinations = [
     {
