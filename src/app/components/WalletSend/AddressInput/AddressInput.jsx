@@ -1,16 +1,14 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import checkIcon from "../../../assets/svg/check.svg";
 import aliasIcon from "../../../assets/svg/contacts.svg";
-import { useInput } from "../../../hooks/useInput";
-import { Store } from "../../../store/store-reducer";
 import mainStyles from "../WalletSend.module.scss";
 import s from "./AddressInput.module.scss";
+import { getAliasDetails, getAlias } from "../../../../background/wallet";
 
 const AddressInput = ({ address }) => {
-  const { state } = useContext(Store);
   const textareaRef = useRef(null);
-  const alias = useInput(state.wallet.alias);
   const [aliasVisible, setAliasVisible] = useState(false);
+  const [alias, setAlias] = useState({ value: "", address: "" });
 
   const buttonClasses = aliasVisible
     ? [s.addAliasBtn, s.active].join(" ")
@@ -24,25 +22,35 @@ const AddressInput = ({ address }) => {
 
   useEffect(() => handleInput(), []);
 
-  /* useEffect(() => {
-     // Reset alias visibility if input empty
-     if (!address.value.length && aliasVisible) {
-       console.log("useEffect")
-       setAliasVisible(false);
-       textareaRef.current.style.height = "41px";
-     }
-   }, [address.value]);*/
-
   const handleInput = () => {
     textareaRef.current.style.height = "41px";
     textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
   };
 
-  const toggleAlias = () => {
-    if (aliasVisible) {
-      setAliasVisible(false);
+  const toggleAlias = async () => {
+    if (!aliasVisible && address.value) {
+      const aliasValue = await getAlias(address.value);
+      if (aliasValue) {
+        setAlias((prevState) => ({ ...prevState, value: aliasValue }));
+        setAliasVisible(true);
+      } else {
+        const addr = await getAliasDetails(address.value);
+        if (addr) {
+          setAlias((prevState) => ({ ...prevState, address: addr }));
+          setAliasVisible(true);
+        }
+      }
     } else {
-      handleInput();
+      setAliasVisible(!aliasVisible);
+    }
+  };
+
+  const handleAliasChange = async (e) => {
+    const aliasValue = e.target.value;
+    const addr = await getAliasDetails(aliasValue);
+    if (addr) {
+      setAlias({ value: aliasValue, address: addr });
+      address.onChange({ target: { value: addr } }); // set address to resolved address from alias
       setAliasVisible(true);
     }
   };
@@ -59,9 +67,9 @@ const AddressInput = ({ address }) => {
       </label>
 
       <div className={s.textArea}>
-        {aliasVisible && address.value && (
+        {aliasVisible && (
           <div className={s.textAreaAlias}>
-            @ <input value={alias.value} onChange={alias.onChange} />
+            @ <input value={alias.value} onChange={handleAliasChange} />
             <span>
               <img src={checkIcon} alt="check icon" />
             </span>
@@ -71,10 +79,14 @@ const AddressInput = ({ address }) => {
         <textarea
           disabled={aliasVisible}
           ref={textareaRef}
-          value={address.value}
+          value={alias.address || address.value}
           onChange={address.onChange}
           onInput={handleInput}
-          placeholder="Enter the recipient’s address"
+          placeholder={
+            aliasVisible
+              ? alias.address
+              : "Enter the Recipient's Address or Alias"
+          }
           className={getTextAreaClasses()}
           id="address-wallet-send"
         />

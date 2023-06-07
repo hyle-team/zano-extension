@@ -28,10 +28,8 @@ const AssetsSelect = ({ value, setValue }) => {
         return bitcoinIcon;
       case "Wrapped Ethereum":
         return ethIcon;
-      case "Confidential Token":
-        return customTokenIcon;
       default:
-        return;
+        return customTokenIcon;
     }
   };
 

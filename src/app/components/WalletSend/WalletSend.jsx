@@ -87,7 +87,7 @@ const WalletSend = () => {
 
                   <MyInput
                     type="number"
-                    placeholder="Enter how much you want to transfer"
+                    placeholder="Amount to transfer"
                     label="Amount:"
                     value={amount.value}
                     onChange={amount.onChange}

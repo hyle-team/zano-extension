@@ -45,10 +45,31 @@ export const fetchData = async (method, params = {}) =>
   });
 
 export const getAlias = async (address) => {
+  //test data
+  if (
+    address ===
+    "ZxCQeYtezjhMG2yV39jZBkapvXR2BVDJMMypBy1rFpvJLCnsShGHTYEG6juohsDMQCHgjiz5TAGMt5zQhE7uv24K1yM6bHP9u"
+  ) {
+    return "ravaga";
+  }
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
   if (data.result.status === "OK") {
     return data.result.alias;
+  } else {
+    return "";
+  }
+};
+
+export const getAliasDetails = async (alias) => {
+  //test data
+  if (alias === "ravaga") {
+    return "ZxCQeYtezjhMG2yV39jZBkapvXR2BVDJMMypBy1rFpvJLCnsShGHTYEG6juohsDMQCHgjiz5TAGMt5zQhE7uv24K1yM6bHP9u";
+  }
+  const response = await fetchData("get_alias_details", { alias });
+  const data = await response.json();
+  if (data.result.status === "OK") {
+    return data.result.address;
   } else {
     return "";
   }
@@ -91,7 +112,6 @@ export const selectWallet = async (id) => {
 };
 
 export const getWalletData = async (id) => {
-  console.log("Wallet id", id);
   await selectWallet(id);
   const addressResponse = await fetchData("getaddress");
   const addressParsed = await addressResponse.json();
