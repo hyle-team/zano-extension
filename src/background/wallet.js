@@ -44,22 +44,37 @@ export const fetchData = async (method, params = {}) =>
     }),
   });
 
+export const getAlias = async (address) => {
+  const response = await fetchData("get_alias_by_address", address);
+  const data = await response.json();
+  if (data.result.status === "OK") {
+    return data.result.alias;
+  } else {
+    return "";
+  }
+};
+
 export const getWallets = async () => {
   try {
     const response = await fetchData("mw_get_wallets");
     const data = await response.json();
-    // await selectWallet(id);
-    const wallets = data.result.wallets.map((wallet) => ({
-      address: wallet.wi.address,
-      alias: "todo",
-      balance:
-        wallet.wi.balances.find(
-          (asset) =>
-            asset.asset_info.asset_id ===
-            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-        ).total /
-        10 ** 12,
-    }));
+    const wallets = await Promise.all(
+      data.result.wallets.map(async (wallet) => {
+        const alias = await getAlias(wallet.wi.address);
+        const balance =
+          wallet.wi.balances.find(
+            (asset) =>
+              asset.asset_info.asset_id ===
+              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+          ).total /
+          10 ** 12;
+        return {
+          address: wallet.wi.address,
+          alias: alias,
+          balance: balance,
+        };
+      })
+    );
     return wallets;
   } catch (error) {
     console.error("Error fetching wallet data:", error);
@@ -143,9 +158,7 @@ export const getWalletData = async (id) => {
       return 0;
     });
 
-  //TODO: fetch alias from wallet
-  const alias = "todo";
-
+  const alias = await getAlias(address);
   return { address, alias, balance, transactions, assets };
 };
 
