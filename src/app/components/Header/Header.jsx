@@ -23,6 +23,10 @@ const Header = () => {
 
   const switchWallet = (id) => {
     updateActiveWalletId(dispatch, id);
+    // eslint-disable-next-line no-undef
+    chrome.storage.local.set({ key: id }, function () {
+      console.log("Active wallet set to", id);
+    });
     toggleDropdown();
   };
 

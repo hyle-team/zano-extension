@@ -8,6 +8,7 @@ import Wallet from "./components/Wallet/Wallet";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
+  updateActiveWalletId,
   updateWalletsList,
   updateWalletData,
   updatePriceData,
@@ -72,6 +73,14 @@ function App() {
     getZanoPrice().then((priceData) => {
       console.log("price data", priceData);
       updatePriceData(dispatch, priceData);
+    });
+  }, [dispatch]);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    chrome.storage.local.get(["key"], function (result) {
+      if (!result.key) return;
+      updateActiveWalletId(dispatch, result.key);
     });
   }, [dispatch]);
 
