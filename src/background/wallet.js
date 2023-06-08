@@ -51,6 +51,16 @@ export const getAlias = async (address) => {
     "ZxCQeYtezjhMG2yV39jZBkapvXR2BVDJMMypBy1rFpvJLCnsShGHTYEG6juohsDMQCHgjiz5TAGMt5zQhE7uv24K1yM6bHP9u"
   ) {
     return "ravaga";
+  } else if (
+    address ===
+    "ZxCSxg539Wohg9gGmqB4VNJaRi6oSH2stHinSi3mxmTEQwwiJ1eprLFg7BEZZcGX7e8BAnbJRC3VxFvzATec1ykw2zLMZfeus "
+  ) {
+    return "jejolare";
+  } else if (
+    address ===
+    "ZxBuu7kJ2h2YWLcB8oRTu1euEvjpzFnLENoozd7LMoMv62pe5qE59mqDq8oX71N5XHf4jERyDEuudaQ7crEPKw2f2XB5nirvv"
+  ) {
+    return "andrew";
   }
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
@@ -65,6 +75,10 @@ export const getAliasDetails = async (alias) => {
   //test data
   if (alias === "ravaga") {
     return "ZxCQeYtezjhMG2yV39jZBkapvXR2BVDJMMypBy1rFpvJLCnsShGHTYEG6juohsDMQCHgjiz5TAGMt5zQhE7uv24K1yM6bHP9u";
+  } else if (alias === "jejolare") {
+    return "ZxCSxg539Wohg9gGmqB4VNJaRi6oSH2stHinSi3mxmTEQwwiJ1eprLFg7BEZZcGX7e8BAnbJRC3VxFvzATec1ykw2zLMZfeus";
+  } else if (alias === "andrew") {
+    return "ZxBuu7kJ2h2YWLcB8oRTu1euEvjpzFnLENoozd7LMoMv62pe5qE59mqDq8oX71N5XHf4jERyDEuudaQ7crEPKw2f2XB5nirvv";
   }
   const response = await fetchData("get_alias_details", { alias });
   const data = await response.json();
