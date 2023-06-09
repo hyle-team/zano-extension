@@ -79,7 +79,12 @@ function App() {
   useEffect(() => {
     // eslint-disable-next-line no-undef
     chrome.storage.local.get(["key"], function (result) {
-      if (!result.key) return;
+      if (!result.key) {
+        // eslint-disable-next-line no-undef
+        chrome.storage.local.set({ key: 0 }, function () {
+          console.log("Active wallet set to", 0);
+        });
+      }
       updateActiveWalletId(dispatch, result.key);
     });
   }, [dispatch]);
