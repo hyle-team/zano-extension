@@ -117,16 +117,7 @@ export const getWallets = async () => {
   }
 };
 
-export const selectWallet = async (id) => {
-  const response = await fetchData("mw_select_wallet", { wallet_id: id });
-  const data = await response.json();
-  if (data.result.status !== "OK") {
-    console.log("Error selecting wallet:", data.result.status);
-  }
-};
-
-export const getWalletData = async (id) => {
-  await selectWallet(id);
+export const getWalletData = async () => {
   const addressResponse = await fetchData("getaddress");
   const addressParsed = await addressResponse.json();
   const address = addressParsed.result.address;

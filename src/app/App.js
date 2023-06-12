@@ -42,7 +42,6 @@ function App() {
 
       const walletData = await fetchBackground({
         method: "GET_WALLET_DATA",
-        id: state.activeWalletId,
       });
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
@@ -79,15 +78,24 @@ function App() {
   useEffect(() => {
     // eslint-disable-next-line no-undef
     chrome.storage.local.get(["key"], function (result) {
+      let walletId = 0;
       if (!result.key) {
         // eslint-disable-next-line no-undef
-        chrome.storage.local.set({ key: 0 }, function () {
-          console.log("Active wallet set to", 0);
+        chrome.storage.local.set({ key: walletId }, function () {
+          console.log("Active wallet set to", walletId);
         });
+      } else {
+        walletId = result.key;
       }
-      updateActiveWalletId(dispatch, result.key);
+      fetchBackground({
+        method: "SET_ACTIVE_WALLET",
+        id: walletId,
+      });
+      updateActiveWalletId(dispatch, walletId);
     });
   }, [dispatch]);
+
+  // console.log("state", state);
 
   return (
     <div className="App">

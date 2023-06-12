@@ -7,6 +7,23 @@ chrome.runtime.onStartup.addListener(() => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.method === "SET_ACTIVE_WALLET") {
+    fetchData("mw_select_wallet", { wallet_id: request.id })
+      .then((response) => response.json())
+      .then((data) => {
+        sendResponse({ data: data });
+      })
+      .catch((error) => {
+        console.error("Error fetching wallets:", error);
+        sendResponse({ error: "An error occurred while fetching wallets" });
+      });
+
+    return true;
+  }
+});
+
+// eslint-disable-next-line no-undef
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.method === "GET_WALLET_BALANCE") {
     fetchData("getbalance")
       .then((response) => response.json())
