@@ -145,6 +145,8 @@ export const getWalletData = async () => {
         height: tx.height,
         paymentId: tx.payment_id,
         comment: tx.comment,
+        fee: tx.fee / 10 ** 12,
+        addresses: tx.remote_addresses,
         transfers: tx.subtransfers.map((transfer) => ({
           amount: transfer.amount / 10 ** 12,
           assetId: transfer.asset_id,

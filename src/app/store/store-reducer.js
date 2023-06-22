@@ -21,6 +21,7 @@ const initialState = {
       "ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9",
     alias: "ravaga",
     balance: 1337,
+    lockedBalance: 0,
     assets: [
       {
         name: "Zano",

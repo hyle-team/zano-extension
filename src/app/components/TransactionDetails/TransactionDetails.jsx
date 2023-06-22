@@ -40,13 +40,15 @@ const TransactionDetails = (props) => {
       <RoutersNav title="Transaction details" />
 
       <div className="table">
-        {/* <TableRow label="Amount" value={props.amount + " ZANO"} /> */}
         <TableRow label="Transfers">
           {props.transfers.map((transfer) => {
             return (
               <>
                 <div className="table__value">
-                  {transfer.amount}{" "}
+                  {transfer.assetId ===
+                  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+                    ? transfer.amount - props.fee
+                    : transfer.amount}{" "}
                   {
                     whitelistedAssets.find(
                       (asset) => asset.asset_id === transfer.assetId
@@ -63,24 +65,18 @@ const TransactionDetails = (props) => {
             );
           })}
         </TableRow>
+        <TableRow label="Fee" value={props.fee + " ZANO"} />
+        {props.addresses && (
+          <TableRow
+            label="Remote address"
+            value={props.addresses[0]}
+            copyButton
+          />
+        )}
         <TableRow label="Transaction hash" value={props.txHash} copyButton />
         <TableRow label="Blob size" value={props.blobSize + " bytes"} />
         <TableRow label="Timestamp" value={props.timestamp} />
         <TableRow label="Height" value={props.height} />
-        {/* <TableRow
-          label="Inputs"
-          value={
-            Array.isArray(props.inputs) ? props.inputs.join(" ") : props.inputs
-          }
-        />
-        <TableRow
-          label="Outputs"
-          value={
-            Array.isArray(props.outputs)
-              ? props.outputs.join(" ")
-              : props.outputs
-          }
-        /> */}
         {props.paymentId ? (
           <TableRow label="Payment Id" value={props.paymentId} copyButton />
         ) : (
