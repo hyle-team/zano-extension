@@ -24,6 +24,7 @@ const getIconImage = (asset) => {
 const Assets = () => {
   const { state } = useContext(Store);
   const { censorValue } = useCensorDigits();
+  //TODO: only remove non whitelisted assets
   const remove = () => console.log("remove icon click");
 
   return (
@@ -32,9 +33,9 @@ const Assets = () => {
         const fiatBalance = (asset.balance * state.priceData.price).toFixed(2);
         return (
           <div className={s.asset} key={asset.name}>
-            <button className={s.assetRemoveBtn} onClick={remove}>
+            {/* <button className={s.assetRemoveBtn} onClick={remove}>
               <img src={crossIcon} alt="CrossIcon" />
-            </button>
+            </button> */}
             <button className={s.assetBody}>
               <span className={s.assetTitle}>
                 {getIconImage(asset)}

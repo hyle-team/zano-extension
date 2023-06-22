@@ -6,18 +6,17 @@ import sendIcon from "../../../assets/svg/send-colored.svg";
 import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
+import { whitelistedAssets } from "../../../config/config";
 
 const History = () => {
   const { state } = useContext(Store);
 
   return (
     <div>
-      {state.wallet.transactions.map((tx, index) => {
-        const icon = tx.incoming ? receiveIcon : sendIcon;
-
+      {state.wallet.transactions.map((tx) => {
         return (
           <Link
-            key={index}
+            key={tx.txHash}
             className={s.historyItem}
             component={TransactionDetails}
             props={tx}
@@ -28,14 +27,27 @@ const History = () => {
               </div>
             )}
 
-            <div className={s.historyTop}>
-              <div className={s.historyIcon}>
-                <img src={icon} alt="ArrowIcon" />
-              </div>
-              <span>{[tx.amount, tx.ticker].join(" ")}</span>
-            </div>
-
-            <span className={s.historyAddress}>{tx.address}</span>
+            {tx.transfers.map((transfer) => {
+              return (
+                <div className={s.historyTop}>
+                  <div className={s.historyIcon}>
+                    <img
+                      src={transfer.incoming ? receiveIcon : sendIcon}
+                      alt="ArrowIcon"
+                    />
+                  </div>
+                  <span>
+                    {transfer.amount}{" "}
+                    {
+                      whitelistedAssets.find(
+                        (asset) => asset.asset_id === transfer.assetId
+                      ).ticker
+                    }
+                  </span>
+                </div>
+              );
+            })}
+            <span className={s.historyAddress}>{tx.txHash}</span>
           </Link>
         );
       })}

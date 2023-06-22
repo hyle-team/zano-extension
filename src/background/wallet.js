@@ -130,32 +130,26 @@ export const getWalletData = async () => {
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
     ).total /
     10 ** 12;
-  //TODO: get balance for all assets - blocked by api
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
   let transactions = [];
+
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
       .map((tx) => ({
         isConfirmed: tx.height === 0 ? false : true,
-        incoming: tx.is_income ? true : false,
-        amount: tx.amount / 10 ** 12,
-        //TODO: get ticker from asset id
-        ticker: "ZANO",
-        address: tx.remote_addresses ? tx.remote_addresses[0] : "Hidden",
         txHash: tx.tx_hash,
         blobSize: tx.tx_blob_size,
         timestamp: tx.timestamp,
         height: tx.height,
-        inputs: Array.isArray(tx.td.rcv)
-          ? tx.td.rcv.map((input) => input / 10 ** 12)
-          : "",
-        outputs: Array.isArray(tx.td.spn)
-          ? tx.td.spn.map((output) => output / 10 ** 12)
-          : "",
         paymentId: tx.payment_id,
         comment: tx.comment,
+        transfers: tx.subtransfers.map((transfer) => ({
+          amount: transfer.amount / 10 ** 12,
+          assetId: transfer.asset_id,
+          incoming: transfer.is_income,
+        })),
       }));
   } else {
     transactions = [];
