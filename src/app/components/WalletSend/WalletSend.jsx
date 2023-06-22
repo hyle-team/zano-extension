@@ -29,13 +29,14 @@ const WalletSend = () => {
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
-  const sendTransfer = (destination, amount, comment) => {
+  const sendTransfer = (destination, amount, comment, assetId) => {
     return new Promise(async (resolve, reject) => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
         // eslint-disable-next-line no-undef
         const response = await fetchBackground({
           method: "SEND_TRANSFER",
+          assetId,
           destination,
           amount,
           comment,
@@ -138,8 +139,10 @@ const WalletSend = () => {
                     const transferStatus = await sendTransfer(
                       address.value,
                       amount.value,
-                      comment.value
+                      comment.value,
+                      asset.assetId
                     );
+                    console.log("transfer status", transferStatus);
                     if (transferStatus.result) {
                       setTxId(transferStatus.result.tx_hash);
                       setTransactionSuccess(true);
@@ -177,7 +180,10 @@ const WalletSend = () => {
                     )}
                   </div>
                   {transactionSuccess && (
-                    <button className={s.link} onClick={openExplorer}>
+                    <button
+                      className={s.link}
+                      onClick={() => openExplorer(txId)}
+                    >
                       See details
                     </button>
                   )}

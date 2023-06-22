@@ -73,10 +73,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.method === "SEND_TRANSFER") {
+  const { method, assetId, destination, amount } = request;
+  if (method === "SEND_TRANSFER") {
     console.log("Sending transfer");
-    console.log("destination", request.destination, "amount", request.amount);
-    transfer(request.destination, request.amount)
+    console.log("asset", assetId, "destination", destination, "amount", amount);
+    transfer(assetId, destination, amount)
       .then((data) => {
         sendResponse({ data });
       })

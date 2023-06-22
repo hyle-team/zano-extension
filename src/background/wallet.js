@@ -181,12 +181,16 @@ export const getWalletData = async () => {
   return { address, alias, balance, transactions, assets };
 };
 
-// TODO: add assets support to trasnfer
-export const transfer = async (destination, amount) => {
+export const transfer = async (
+  assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+  destination,
+  amount
+) => {
   const destinations = [
     {
       address: destination,
       amount: amount * 10 ** 12,
+      asset_id: assetId,
     },
   ];
   const response = await fetch("http://localhost:12111/json_rpc", {
