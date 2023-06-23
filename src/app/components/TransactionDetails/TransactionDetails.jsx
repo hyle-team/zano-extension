@@ -42,6 +42,7 @@ const TransactionDetails = (props) => {
       <div className="table">
         <TableRow label="Transfers">
           {props.transfers.map((transfer) => {
+            if (transfer.amount === props.fee) return null;
             return (
               <>
                 <div className="table__value">
