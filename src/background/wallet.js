@@ -134,8 +134,6 @@ export const getWalletData = async () => {
   const txData = txDataResponse.result.transfers;
   let transactions = [];
 
-  console.log("txData", txData);
-
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
@@ -165,6 +163,7 @@ export const getWalletData = async () => {
       ticker: asset.asset_info.ticker,
       assetId: asset.asset_info.asset_id,
       balance: asset.total / 10 ** 12,
+      unlockedBalance: asset.unlocked / 10 ** 12,
     }))
     .sort((a, b) => {
       if (

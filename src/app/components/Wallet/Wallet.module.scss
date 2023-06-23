@@ -27,7 +27,7 @@
   z-index: 2;
   top: 105%;
   right: -5px;
-  background: #11316B;
+  background: #11316b;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 8px;
   width: 213px;
@@ -80,8 +80,11 @@
 
 .balance {
   text-align: left;
-  display: inline-block;
+  display: flex;
   align-self: center;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   font-weight: 600;
   font-size: 32px;
   line-height: math.div(38, 32);

@@ -27,6 +27,7 @@ const initialState = {
         name: "Zano",
         ticker: "ZANO",
         balance: 1337,
+        lockedBalance: 0,
         value: 1000,
       },
       {
@@ -67,7 +68,7 @@ const initialState = {
       },
     ],
   },
-  displayUsd: true,
+  displayUsd: false,
   isLoading: true,
   isConnected: true,
   isBalancesHidden: false,

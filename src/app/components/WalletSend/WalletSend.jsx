@@ -94,6 +94,18 @@ const WalletSend = () => {
 
   const fetchAddress = async (alias) => await getAliasDetails(alias);
 
+  const checkLockedBalance = (amount, asset) => {
+    const lockedBalance = asset.lockedBalance;
+    if (lockedBalance) {
+      if (asset.assetId === lockedBalance.assetId) {
+        if (amount > lockedBalance.amount) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   return (
     <>
       {(() => {
@@ -140,7 +152,11 @@ const WalletSend = () => {
                   />
 
                   <MyButton
-                    disabled={!submitAddress || !amount.value}
+                    disabled={
+                      !submitAddress ||
+                      !amount.value ||
+                      !checkLockedBalance(amount.value, asset)
+                    }
                     onClick={() => setActiveStep(1)}
                   >
                     Send

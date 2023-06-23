@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
@@ -6,6 +6,7 @@ import sendIcon from "../../assets/svg/send.svg";
 import settingsIcon from "../../assets/svg/settings.svg";
 import showIcon from "../../assets/svg/show.svg";
 import hideIcon from "../../assets/svg/hide.svg";
+import lockedIcon from "../../assets/svg/lockedIcon.svg";
 import useAwayClick from "../../hooks/useAwayClick";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
@@ -48,6 +49,13 @@ const Wallet = () => {
       return <span>{censorValue(state.wallet.balance)} ZANO</span>;
     }
   };
+
+  const getLockedBalance = () =>
+    state.wallet.assets.find(
+      (asset) =>
+        asset.assetId ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+    )?.lockedBalance;
 
   const flipDisplay = () => {
     updateDisplay(dispatch, !state.displayUsd);
@@ -99,6 +107,9 @@ const Wallet = () => {
 
         <div>
           <button onClick={flipDisplay} className={s.balance}>
+            {!state.displayUsd && getLockedBalance() && (
+              <img src={lockedIcon} alt="locked icon" />
+            )}
             {renderBalance()}
           </button>
         </div>
