@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { popToTop } from "react-chrome-extension-router";
 import failedImage from "../../assets/images/failed-round.png";
 import successImage from "../../assets/images/success-round.png";
@@ -9,10 +9,10 @@ import MyButton from "../UI/MyButton/MyButton";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import AdditionalDetails from "./AdditionalDetails/AdditionalDetails";
-import AddressInput from "./AddressInput/AddressInput";
 import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
 import { fetchBackground } from "../../utils/utils";
+import { getAliasDetails } from "../../../background/wallet";
 
 const WalletSend = () => {
   const { state } = useContext(Store);
@@ -20,8 +20,9 @@ const WalletSend = () => {
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
   // Form data
-  const address = useInput("");
+  const [address, setAddress] = useState("");
   const [asset, setAsset] = useState(state.wallet.assets[0]);
+  const [submitAddress, setSubmitAddress] = useState("");
   const amount = useInput("");
   const comment = useInput("");
   const mixin = useInput(10);
@@ -71,6 +72,28 @@ const WalletSend = () => {
     );
   };
 
+  useEffect(() => {
+    (async () => {
+      if (address.startsWith("@")) {
+        const alias = address.slice(1);
+        const resolvedAddress = await fetchAddress(alias);
+        if (resolvedAddress) {
+          setSubmitAddress(resolvedAddress);
+        } else {
+          setSubmitAddress("");
+        }
+      } else {
+        if (address.length === 97) {
+          setSubmitAddress(address);
+        } else {
+          setSubmitAddress("");
+        }
+      }
+    })();
+  }, [address]);
+
+  const fetchAddress = async (alias) => await getAliasDetails(alias);
+
   return (
     <>
       {(() => {
@@ -80,18 +103,26 @@ const WalletSend = () => {
             return (
               <div>
                 <RoutersNav title="Send" />
-
                 <div className={s.sendForm}>
-                  <AddressInput address={address} />
-
+                  <MyInput
+                    placeholder="Address or alias"
+                    label="Address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    isValid={submitAddress ? true : false}
+                  />
                   <AssetsSelect value={asset} setValue={setAsset} />
-
                   <MyInput
                     type="number"
                     placeholder="Amount to transfer"
                     label="Amount:"
                     value={amount.value}
                     onChange={amount.onChange}
+                    isValid={
+                      !isNaN(amount.value) &&
+                      amount.value >= 0.000000000001 &&
+                      amount.value <= 1000000000
+                    }
                   />
 
                   <MyInput
@@ -109,7 +140,7 @@ const WalletSend = () => {
                   />
 
                   <MyButton
-                    disabled={!address.value || !amount.value}
+                    disabled={!submitAddress || !amount.value}
                     onClick={() => setActiveStep(1)}
                   >
                     Send
@@ -129,7 +160,7 @@ const WalletSend = () => {
                     value={amount.value + " " + asset.ticker}
                   />
                   <TableRow label="From" value={state.wallet.address} />
-                  <TableRow label="To" value={address.value} />
+                  <TableRow label="To" value={address} />
                   <TableRow label="Comment" value={comment.value} />
                   <TableRow label="Fee" value={fee.value} />
                 </div>
@@ -137,7 +168,7 @@ const WalletSend = () => {
                 <MyButton
                   onClick={async () => {
                     const transferStatus = await sendTransfer(
-                      address.value,
+                      submitAddress,
                       amount.value,
                       comment.value,
                       asset.assetId
