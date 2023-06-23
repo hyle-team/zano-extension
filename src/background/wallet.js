@@ -134,6 +134,8 @@ export const getWalletData = async () => {
   const txData = txDataResponse.result.transfers;
   let transactions = [];
 
+  console.log("txData", txData);
+
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)

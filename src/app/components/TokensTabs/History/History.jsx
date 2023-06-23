@@ -28,6 +28,7 @@ const History = () => {
             )}
 
             {tx.transfers.map((transfer) => {
+              if (transfer.amount === tx.fee) return null;
               return (
                 <div className={s.historyTop}>
                   <div className={s.historyIcon}>
