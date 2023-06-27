@@ -61,6 +61,11 @@ export const getAlias = async (address) => {
     "ZxBuu7kJ2h2YWLcB8oRTu1euEvjpzFnLENoozd7LMoMv62pe5qE59mqDq8oX71N5XHf4jERyDEuudaQ7crEPKw2f2XB5nirvv"
   ) {
     return "andrew";
+  } else if (
+    address ===
+    "ZxC9QP7typsY26RpkkPjDNjGocUyxcvSB7SDvFyuWW2EXF4cDiYjtFoVzZFZQjGmmUU7hUtSYQ3QyfZ3nBjmwdqC2Pp5F4AVV"
+  ) {
+    return "sega";
   }
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
@@ -79,6 +84,8 @@ export const getAliasDetails = async (alias) => {
     return "ZxCSxg539Wohg9gGmqB4VNJaRi6oSH2stHinSi3mxmTEQwwiJ1eprLFg7BEZZcGX7e8BAnbJRC3VxFvzATec1ykw2zLMZfeus";
   } else if (alias === "andrew") {
     return "ZxBuu7kJ2h2YWLcB8oRTu1euEvjpzFnLENoozd7LMoMv62pe5qE59mqDq8oX71N5XHf4jERyDEuudaQ7crEPKw2f2XB5nirvv";
+  } else if (alias === "sega") {
+    return "ZxC9QP7typsY26RpkkPjDNjGocUyxcvSB7SDvFyuWW2EXF4cDiYjtFoVzZFZQjGmmUU7hUtSYQ3QyfZ3nBjmwdqC2Pp5F4AVV";
   }
   const response = await fetchData("get_alias_details", { alias });
   const data = await response.json();
