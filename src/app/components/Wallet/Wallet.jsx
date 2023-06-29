@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
@@ -104,18 +104,21 @@ const Wallet = () => {
             )}
           </div>
         </div>
-
-        <div>
+        <div className={s.balanceWrapper}>
           <button onClick={flipDisplay} className={s.balance}>
             {state.displayUsd ||
               getUnlockedBalance() === state.wallet.balance || (
                 <>
                   <img src={lockedIcon} alt="locked icon" />
-                  {/* <span>Locked balance</span> */}
                 </>
               )}
             {renderBalance()}
           </button>
+          {getUnlockedBalance() !== state.wallet.balance && (
+            <span className={s.tooltipText}>
+              Locked balance: {state.wallet.balance - getUnlockedBalance()} ZANO
+            </span>
+          )}
         </div>
 
         <div className={s.infoAddress}>
