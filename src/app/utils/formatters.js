@@ -17,5 +17,15 @@ export default class Formatters {
     }
     return str;
   }
-}
 
+  static historyAmount(amount) {
+    let str = amount.toString();
+    if (str.length > 10) {
+      return (
+        str.substring(0, 3) + "..." + str.substring(str.length - 3, str.length)
+      );
+    } else {
+      return str;
+    }
+  }
+}

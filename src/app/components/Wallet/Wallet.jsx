@@ -46,16 +46,16 @@ const Wallet = () => {
         </>
       );
     } else {
-      return <span>{censorValue(state.wallet.balance)} ZANO</span>;
+      return <span>{censorValue(state.wallet.balance.toFixed(2))} ZANO</span>;
     }
   };
 
-  const getLockedBalance = () =>
+  const getUnlockedBalance = () =>
     state.wallet.assets.find(
       (asset) =>
         asset.assetId ===
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-    )?.lockedBalance;
+    )?.unlockedBalance;
 
   const flipDisplay = () => {
     updateDisplay(dispatch, !state.displayUsd);
@@ -107,9 +107,13 @@ const Wallet = () => {
 
         <div>
           <button onClick={flipDisplay} className={s.balance}>
-            {!state.displayUsd && getLockedBalance() && (
-              <img src={lockedIcon} alt="locked icon" />
-            )}
+            {state.displayUsd ||
+              getUnlockedBalance() === state.wallet.balance || (
+                <>
+                  <img src={lockedIcon} alt="locked icon" />
+                  {/* <span>Locked balance</span> */}
+                </>
+              )}
             {renderBalance()}
           </button>
         </div>

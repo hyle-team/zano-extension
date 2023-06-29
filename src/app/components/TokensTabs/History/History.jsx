@@ -7,9 +7,39 @@ import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
 import { whitelistedAssets } from "../../../config/config";
+import Formatters from "../../../utils/formatters";
 
 const History = () => {
   const { state } = useContext(Store);
+
+  const HistoryItem = ({ transfer, fee }) => {
+    if (transfer.amount === fee) return null;
+    return (
+      <div className={s.historyTop}>
+        <div className={s.historyIcon}>
+          <img
+            src={transfer.incoming ? receiveIcon : sendIcon}
+            alt="ArrowIcon"
+          />
+        </div>
+        <span>
+          {Formatters.historyAmount(
+            transfer.assetId ===
+              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+              ? transfer.incoming
+                ? transfer.amount
+                : (transfer.amount * 1e12 - fee * 1e12) / 1e12
+              : transfer.amount
+          )}{" "}
+          {
+            whitelistedAssets.find(
+              (asset) => asset.asset_id === transfer.assetId
+            ).ticker
+          }
+        </span>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -27,32 +57,9 @@ const History = () => {
               </div>
             )}
 
-            {tx.transfers.map((transfer) => {
-              if (transfer.amount === tx.fee) return null;
-              return (
-                <div className={s.historyTop}>
-                  <div className={s.historyIcon}>
-                    <img
-                      src={transfer.incoming ? receiveIcon : sendIcon}
-                      alt="ArrowIcon"
-                    />
-                  </div>
-                  <span>
-                    {transfer.assetId ===
-                    "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-                      ? transfer.incoming
-                        ? transfer.amount
-                        : transfer.amount - tx.fee
-                      : transfer.amount}{" "}
-                    {
-                      whitelistedAssets.find(
-                        (asset) => asset.asset_id === transfer.assetId
-                      ).ticker
-                    }
-                  </span>
-                </div>
-              );
-            })}
+            {tx.transfers.map((transfer) => (
+              <HistoryItem transfer={transfer} fee={tx.fee} />
+            ))}
             <span className={s.historyAddress}>{tx.txHash}</span>
           </Link>
         );

@@ -4,6 +4,7 @@ import incomingIcon from "../../assets/svg/incoming_ico.svg";
 import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
 import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
+import Formatters from "../../utils/formatters";
 import { whitelistedAssets } from "../../config/config";
 
 const TransactionDetails = (props) => {
@@ -46,10 +47,14 @@ const TransactionDetails = (props) => {
             return (
               <>
                 <div className="table__value">
-                  {transfer.assetId ===
-                  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-                    ? transfer.amount - props.fee
-                    : transfer.amount}{" "}
+                  {Formatters.historyAmount(
+                    transfer.assetId ===
+                      "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+                      ? transfer.incoming
+                        ? transfer.amount
+                        : (transfer.amount * 1e12 - props.fee * 1e12) / 1e12
+                      : transfer.amount
+                  )}{" "}
                   {
                     whitelistedAssets.find(
                       (asset) => asset.asset_id === transfer.assetId

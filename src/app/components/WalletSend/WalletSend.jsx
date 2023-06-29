@@ -94,17 +94,10 @@ const WalletSend = () => {
 
   const fetchAddress = async (alias) => await getAliasDetails(alias);
 
-  const checkLockedBalance = (amount, asset) => {
-    const lockedBalance = asset.lockedBalance;
-    if (lockedBalance) {
-      if (asset.assetId === lockedBalance.assetId) {
-        if (amount > lockedBalance.amount) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
+  const checkAvailableBalance = (amount, asset) =>
+    asset.unlockedBalance !== asset.balance
+      ? +amount <= asset.unlockedBalance - fee.value
+      : true;
 
   return (
     <>
@@ -155,7 +148,7 @@ const WalletSend = () => {
                     disabled={
                       !submitAddress ||
                       !amount.value ||
-                      !checkLockedBalance(amount.value, asset)
+                      !checkAvailableBalance(amount.value, asset)
                     }
                     onClick={() => setActiveStep(1)}
                   >

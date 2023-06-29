@@ -141,6 +141,8 @@ export const getWalletData = async () => {
   const txData = txDataResponse.result.transfers;
   let transactions = [];
 
+  // console.log(txData);
+
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
@@ -160,8 +162,6 @@ export const getWalletData = async () => {
           incoming: transfer.is_income,
         })),
       }));
-  } else {
-    transactions = [];
   }
 
   const assets = balanceParsed.result.balances
@@ -186,6 +186,8 @@ export const getWalletData = async () => {
       }
       return 0;
     });
+
+  // console.log(assets);
 
   const alias = await getAlias(address);
   return { address, alias, balance, transactions, assets };

@@ -76,7 +76,7 @@ const Header = () => {
                   )}
                 </div>
                 <div className={s.dropdownBalance}>
-                  {censorValue(wallet.balance)} ZANO
+                  {censorValue(wallet.balance.toFixed(2))} ZANO
                 </div>
               </button>
             ))}
