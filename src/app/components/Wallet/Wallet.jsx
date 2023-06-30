@@ -116,7 +116,8 @@ const Wallet = () => {
           </button>
           {getUnlockedBalance() !== state.wallet.balance && (
             <span className={s.tooltipText}>
-              Locked balance: {state.wallet.balance - getUnlockedBalance()} ZANO
+              Locked balance:{" "}
+              {(state.wallet.balance - getUnlockedBalance()).toFixed(2)} ZANO
             </span>
           )}
         </div>

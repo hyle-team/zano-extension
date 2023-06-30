@@ -9,38 +9,33 @@ import s from "./History.module.scss";
 import { whitelistedAssets } from "../../../config/config";
 import Formatters from "../../../utils/formatters";
 
+const HistoryItem = ({ transfer, fee }) => {
+  if (transfer.amount === fee) return null;
+  return (
+    <div className={s.historyTop}>
+      <div className={s.historyIcon}>
+        <img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
+      </div>
+      <span>
+        {Formatters.historyAmount(
+          transfer.assetId ===
+            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+            ? transfer.incoming
+              ? transfer.amount
+              : (transfer.amount * 1e12 - fee * 1e12) / 1e12
+            : transfer.amount
+        )}{" "}
+        {
+          whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
+            .ticker
+        }
+      </span>
+    </div>
+  );
+};
+
 const History = () => {
   const { state } = useContext(Store);
-
-  const HistoryItem = ({ transfer, fee }) => {
-    if (transfer.amount === fee) return null;
-    return (
-      <div className={s.historyTop}>
-        <div className={s.historyIcon}>
-          <img
-            src={transfer.incoming ? receiveIcon : sendIcon}
-            alt="ArrowIcon"
-          />
-        </div>
-        <span>
-          {Formatters.historyAmount(
-            transfer.assetId ===
-              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-              ? transfer.incoming
-                ? transfer.amount
-                : (transfer.amount * 1e12 - fee * 1e12) / 1e12
-              : transfer.amount
-          )}{" "}
-          {
-            whitelistedAssets.find(
-              (asset) => asset.asset_id === transfer.assetId
-            ).ticker
-          }
-        </span>
-      </div>
-    );
-  };
-
   return (
     <div>
       {state.wallet.transactions.map((tx) => {
