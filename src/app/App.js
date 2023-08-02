@@ -1,10 +1,11 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { Router } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
+import ConfirmationModal from "./components/UI/ConfirmationModal/ConfirmationModal";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
@@ -20,6 +21,7 @@ import "./styles/App.scss";
 
 function App() {
   const { state, dispatch } = useContext(Store);
+  const [confirmationModalOpen, setConfirmationModalOpen] = useState(true);
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -95,6 +97,10 @@ function App() {
     });
   }, [dispatch]);
 
+  const closeConfirmationModal = useCallback(() => {
+    setConfirmationModalOpen(false);
+  }, [setConfirmationModalOpen]);
+
   // console.log("state", state);
 
   return (
@@ -102,6 +108,10 @@ function App() {
       <AppPlug />
       {state.isConnected && (
         <>
+          <ConfirmationModal
+            isOpen={confirmationModalOpen}
+            onClose={closeConfirmationModal}
+          />
           <Header />
           <Loader />
           <div className="container">

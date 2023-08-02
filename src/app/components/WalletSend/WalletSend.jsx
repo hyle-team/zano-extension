@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { popToTop } from "react-chrome-extension-router";
 import failedImage from "../../assets/images/failed-round.png";
 import successImage from "../../assets/images/success-round.png";
@@ -13,14 +13,14 @@ import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
 import { fetchBackground } from "../../utils/utils";
 import { getAliasDetails } from "../../../background/wallet";
-import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
+// import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 
 const WalletSend = () => {
   const { state } = useContext(Store);
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
-  const [confirmationModalOpen, setConfirmationModalOpen] = useState(true);
+  // const [confirmationModalOpen, setConfirmationModalOpen] = useState(true);
 
   // Form data
   const [address, setAddress] = useState("");
@@ -34,9 +34,9 @@ const WalletSend = () => {
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
-  const closeConfirmationModal = useCallback(() => {
-    setConfirmationModalOpen(false);
-  },[setConfirmationModalOpen]);
+  // const closeConfirmationModal = useCallback(() => {
+  //   setConfirmationModalOpen(false);
+  // }, [setConfirmationModalOpen]);
 
   const sendTransfer = (destination, amount, comment, assetId) => {
     return new Promise(async (resolve, reject) => {
@@ -169,10 +169,10 @@ const WalletSend = () => {
           case 1:
             return (
               <div>
-                <ConfirmationModal
+                {/* <ConfirmationModal
                   isOpen={confirmationModalOpen}
                   onClose={closeConfirmationModal}
-                />
+                /> */}
 
                 <RoutersNav onClick={() => setActiveStep(0)} title="Confirm" />
 
