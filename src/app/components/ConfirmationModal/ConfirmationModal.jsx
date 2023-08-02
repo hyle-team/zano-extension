@@ -32,7 +32,7 @@ const ConfirmationModal = ({ isOpen, onClose }) => {
           </div>
         </div>
         <div className={cls.actions}>
-          <Button theme={ButtonThemes.Outline}>Cancel</Button>
+          <Button onClick={onClose} theme={ButtonThemes.Outline}>Cancel</Button>
           <Button>Sign</Button>
         </div>
       </div>
