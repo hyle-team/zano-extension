@@ -5,7 +5,7 @@ import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
-import ConfirmationModal from "./components/UI/ConfirmationModal/ConfirmationModal";
+import ConfirmationModal from './components/ConfirmationModal/ConfirmationModal';
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
@@ -18,6 +18,7 @@ import {
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
+
 
 function App() {
   const { state, dispatch } = useContext(Store);
