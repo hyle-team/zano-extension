@@ -73,6 +73,10 @@ const initialState = {
   isConnected: true,
   isBalancesHidden: false,
   priceData: { price: 1, change: -4.6 },
+  confirmationModal: {
+    method: "SEND_TRANSFER",
+    params: ["param1", "param2"]
+  }
 };
 
 const reducer = (state, action) => {

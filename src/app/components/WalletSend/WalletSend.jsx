@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { popToTop } from "react-chrome-extension-router";
 import failedImage from "../../assets/images/failed-round.png";
 import successImage from "../../assets/images/success-round.png";
 import { useCheckbox } from "../../hooks/useCheckbox";
 import { useInput } from "../../hooks/useInput";
 import { Store } from "../../store/store-reducer";
-import MyButton from "../UI/MyButton/MyButton";
+import Button from "../UI/Button/Button";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import AdditionalDetails from "./AdditionalDetails/AdditionalDetails";
@@ -13,22 +13,30 @@ import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
 import { fetchBackground } from "../../utils/utils";
 import { getAliasDetails } from "../../../background/wallet";
+import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 
 const WalletSend = () => {
   const { state } = useContext(Store);
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
+  const [confirmationModalOpen, setConfirmationModalOpen] = useState(true);
+
   // Form data
   const [address, setAddress] = useState("");
   const [asset, setAsset] = useState(state.wallet.assets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
+
   const amount = useInput("");
   const comment = useInput("");
   const mixin = useInput(10);
   const fee = useInput(0.01);
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
+
+  const closeConfirmationModal = useCallback(() => {
+    setConfirmationModalOpen(false);
+  },[setConfirmationModalOpen]);
 
   const sendTransfer = (destination, amount, comment, assetId) => {
     return new Promise(async (resolve, reject) => {
@@ -144,7 +152,7 @@ const WalletSend = () => {
                     isReceiverInfo={isReceiverInfo}
                   />
 
-                  <MyButton
+                  <Button
                     disabled={
                       !submitAddress ||
                       !amount.value ||
@@ -153,7 +161,7 @@ const WalletSend = () => {
                     onClick={() => setActiveStep(1)}
                   >
                     Send
-                  </MyButton>
+                  </Button>
                 </div>
               </div>
             );
@@ -161,6 +169,11 @@ const WalletSend = () => {
           case 1:
             return (
               <div>
+                <ConfirmationModal
+                  isOpen={confirmationModalOpen}
+                  onClose={closeConfirmationModal}
+                />
+
                 <RoutersNav onClick={() => setActiveStep(0)} title="Confirm" />
 
                 <div style={{ minHeight: "410px" }} className="table">
@@ -174,7 +187,7 @@ const WalletSend = () => {
                   <TableRow label="Fee" value={fee.value} />
                 </div>
 
-                <MyButton
+                <Button
                   onClick={async () => {
                     const transferStatus = await sendTransfer(
                       submitAddress,
@@ -191,7 +204,7 @@ const WalletSend = () => {
                   }}
                 >
                   Confirm
-                </MyButton>
+                </Button>
               </div>
             );
           // Transaction status
@@ -229,7 +242,7 @@ const WalletSend = () => {
                   )}
                 </div>
 
-                <MyButton onClick={() => popToTop()}>Close</MyButton>
+                <Button onClick={() => popToTop()}>Close</Button>
               </div>
             );
           default:
