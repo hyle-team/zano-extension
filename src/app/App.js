@@ -5,7 +5,7 @@ import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
-import ConfirmationModal from './components/ConfirmationModal/ConfirmationModal';
+import ConfirmationModal from "./components/ConfirmationModal/ConfirmationModal";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
@@ -14,15 +14,47 @@ import {
   updateWalletData,
   updatePriceData,
   updateLoading,
+  updateConfirmationModal,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 
-
 function App() {
   const { state, dispatch } = useContext(Store);
-  const [confirmationModalOpen, setConfirmationModalOpen] = useState(true);
+  const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
+
+  const executeTransfer = useCallback(async () => {
+    const { method, params } = state.confirmationModal || {};
+    try {
+      const response = await fetchBackground({ method, params });
+      if (response.error) {
+        console.log("Transfer failed:", response.error);
+      } else {
+        console.log("Transfer succeeded");
+      }
+    } catch (error) {
+      console.log("Error during transfer execution:", error);
+    }
+  }, [state.confirmationModal]);
+
+  const handleConfirm = async () => {
+    try {
+      const response = await executeTransfer();
+
+      console.log("Confirmation response", response);
+    } catch (error) {
+      console.log("Error during transfer confirmation:", error);
+    }
+
+    setConfirmationModalOpen(false);
+    updateConfirmationModal(dispatch, null);
+  };
+
+  const handleCancel = () => {
+    setConfirmationModalOpen(false);
+    updateConfirmationModal(dispatch, null);
+  };
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -79,6 +111,44 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
+    const listener = (request, sender, sendResponse) => {
+      if (
+        !(
+          "assetId" in request &&
+          "amount" in request &&
+          "destinationAddress" in request &&
+          "destinationChainId" in request
+        )
+      ) {
+        console.error("Invalid BRIDGING_TRANSFER request", request);
+        return;
+      }
+
+      if (request.method === "BRIDGING_TRANSFER") {
+        updateConfirmationModal(dispatch, {
+          method: "SEND_TRANSFER",
+          params: [
+            request.assetId,
+            request.amount,
+            request.destinationAddress,
+            request.destinationChainId,
+          ],
+        });
+
+        setConfirmationModalOpen(true);
+        sendResponse({ status: "confirmation_pending" });
+      }
+      return true;
+    };
+
+    // eslint-disable-next-line no-undef
+    chrome.runtime.onMessage.addListener(listener);
+
+    // eslint-disable-next-line no-undef
+    return () => chrome.runtime.onMessage.removeListener(listener);
+  }, [dispatch]);
+
+  useEffect(() => {
     // eslint-disable-next-line no-undef
     chrome.storage.local.get(["key"], function (result) {
       let walletId = 0;
@@ -98,9 +168,9 @@ function App() {
     });
   }, [dispatch]);
 
-  const closeConfirmationModal = useCallback(() => {
-    setConfirmationModalOpen(false);
-  }, [setConfirmationModalOpen]);
+  // const closeConfirmationModal = useCallback(() => {
+  //   setConfirmationModalOpen(false);
+  // }, [setConfirmationModalOpen]);
 
   // console.log("state", state);
 
@@ -111,7 +181,8 @@ function App() {
         <>
           <ConfirmationModal
             isOpen={confirmationModalOpen}
-            onClose={closeConfirmationModal}
+            onClose={handleCancel}
+            onConfirm={handleConfirm}
           />
           <Header />
           <Loader />

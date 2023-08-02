@@ -4,13 +4,17 @@ import Modal from "../../components/UI/Modal/Modal";
 import Button, { ButtonThemes } from "../UI/Button/Button";
 import { Store } from "../../store/store-reducer";
 
-const ConfirmationModal = ({ isOpen, onClose }) => {
+const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   const { state } = useContext(Store);
-  const { method, params } = state.confirmationModal;
+  const { method, params } = state.confirmationModal || {};
 
   const closeHandler = useCallback(() => {
     onClose();
   }, [onClose]);
+
+  const confirmHandler = useCallback(() => {
+    onConfirm();
+  }, [onConfirm]);
 
   return (
     <Modal isOpen={isOpen} onClose={closeHandler}>
@@ -25,15 +29,16 @@ const ConfirmationModal = ({ isOpen, onClose }) => {
           <div className={cls.tableRow}>
             <div className={cls.label}>params:</div>
             <div className={cls.value}>
-              {params.map((param) => (
-                <span key={param}>{param}</span>
-              ))}
+              {params &&
+                params.map((param) => <span key={param}>{param}</span>)}
             </div>
           </div>
         </div>
         <div className={cls.actions}>
-          <Button onClick={onClose} theme={ButtonThemes.Outline}>Cancel</Button>
-          <Button>Sign</Button>
+          <Button onClick={closeHandler} theme={ButtonThemes.Outline}>
+            Cancel
+          </Button>
+          <Button onClick={confirmHandler}>Sign</Button>
         </div>
       </div>
     </Modal>

@@ -73,10 +73,7 @@ const initialState = {
   isConnected: true,
   isBalancesHidden: false,
   priceData: { price: 1, change: -4.6 },
-  confirmationModal: {
-    method: "SEND_TRANSFER",
-    params: ["param1", "param2"]
-  }
+  confirmationModal: null,
 };
 
 const reducer = (state, action) => {
@@ -101,6 +98,8 @@ const reducer = (state, action) => {
       return { ...state, isLoading: action.payload };
     case "BALANCES_HIDDEN_UPDATED":
       return { ...state, isBalancesHidden: action.payload };
+    case "CONFIRMATION_MODAL_UPDATED":
+      return { ...state, confirmationModal: action.payload };
     default:
       return state;
   }
