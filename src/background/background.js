@@ -11,6 +11,15 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
+let pendingTx = null;
+
+// eslint-disable-next-line no-undef
+chrome.storage.local.get("pendingTx", (result) => {
+  if (result.pendingTx) {
+    pendingTx = result.pendingTx;
+  }
+});
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.method) {
@@ -74,19 +83,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case "BRIDGING_TRANSFER":
-      transferBridge(
-        request.assetId,
-        request.amount,
-        request.destinationAddress,
-        request.destinationChainId
-      )
-        .then((data) => {
-          sendResponse({ data });
-        })
-        .catch((error) => {
-          console.error("Error bridging transfer:", error);
-          sendResponse({ error: "An error occurred while bridging transfer" });
-        });
+      pendingTx = {
+        assetId: request.assetId,
+        amount: request.amount,
+        destinationAddress: request.destinationAddress,
+        destinationChainId: request.destinationChainId,
+      };
+      // eslint-disable-next-line no-undef
+      chrome.storage.local.set({ pendingTx: pendingTx });
+      sendResponse({ status: "confirmation_pending" });
+      // eslint-disable-next-line no-undef
+      chrome.action.setBadgeText({ text: "1" });
+      break;
+
+    case "EXECUTE_BRIDGING_TRANSFER":
+      if (pendingTx) {
+        console.log("Executing bridging transfer", pendingTx);
+        transferBridge(
+          pendingTx.assetId,
+          pendingTx.amount,
+          pendingTx.destinationAddress,
+          pendingTx.destinationChainId
+        )
+          .then((data) => {
+            sendResponse({ data });
+            pendingTx = null;
+            // eslint-disable-next-line no-undef
+            chrome.storage.local.remove("pendingTx");
+            // eslint-disable-next-line no-undef
+            chrome.action.setBadgeText({ text: "" });
+          })
+          .catch((error) => {
+            console.error("Error bridging transfer:", error);
+            sendResponse({
+              error: "An error occurred while bridging transfer",
+            });
+          });
+      } else {
+        sendResponse({ error: "No pending transaction" });
+      }
       break;
 
     default:

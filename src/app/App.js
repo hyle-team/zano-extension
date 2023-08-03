@@ -25,9 +25,10 @@ function App() {
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
 
   const executeTransfer = useCallback(async () => {
-    const { method, params } = state.confirmationModal || {};
     try {
-      const response = await fetchBackground({ method, params });
+      const response = await fetchBackground({
+        method: "EXECUTE_BRIDGING_TRANSFER",
+      });
       if (response.error) {
         console.log("Transfer failed:", response.error);
         return false;
@@ -39,11 +40,13 @@ function App() {
       console.log("Error during transfer execution:", error);
       return false;
     }
-  }, [state.confirmationModal]);
+  }, []);
 
   const closeModal = () => {
     setConfirmationModalOpen(false);
     updateConfirmationModal(dispatch, null);
+    // eslint-disable-next-line no-undef
+    chrome.storage.local.remove(["pendingTx"]);
   };
 
   const handleConfirm = async () => {
@@ -139,7 +142,8 @@ function App() {
             request.destinationChainId,
           ],
         });
-
+        // eslint-disable-next-line no-undef
+        chrome.storage.local.set({ pendingTx: request });
         setConfirmationModalOpen(true);
         sendResponse({ status: "confirmation_pending" });
       }
@@ -147,10 +151,36 @@ function App() {
     };
 
     // eslint-disable-next-line no-undef
-    chrome.runtime.onMessage.addListener(listener);
+    if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+      // eslint-disable-next-line no-undef
+      chrome.runtime.onMessage.addListener(listener);
+    }
 
+    return () => {
+      // eslint-disable-next-line no-undef
+      if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+        // eslint-disable-next-line no-undef
+        chrome.runtime.onMessage.removeListener(listener);
+      }
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
     // eslint-disable-next-line no-undef
-    return () => chrome.runtime.onMessage.removeListener(listener);
+    chrome.storage.local.get(["pendingTx"], function (result) {
+      if (result.pendingTx) {
+        updateConfirmationModal(dispatch, {
+          method: "SEND_TRANSFER",
+          params: [
+            result.pendingTx.assetId,
+            result.pendingTx.amount,
+            result.pendingTx.destinationAddress,
+            result.pendingTx.destinationChainId,
+          ],
+        });
+        setConfirmationModalOpen(true);
+      }
+    });
   }, [dispatch]);
 
   useEffect(() => {
