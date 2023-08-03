@@ -30,30 +30,35 @@ function App() {
       const response = await fetchBackground({ method, params });
       if (response.error) {
         console.log("Transfer failed:", response.error);
+        return false;
       } else {
         console.log("Transfer succeeded");
+        return true;
       }
     } catch (error) {
       console.log("Error during transfer execution:", error);
+      return false;
     }
   }, [state.confirmationModal]);
 
-  const handleConfirm = async () => {
-    try {
-      const response = await executeTransfer();
-
-      console.log("Confirmation response", response);
-    } catch (error) {
-      console.log("Error during transfer confirmation:", error);
-    }
-
+  const closeModal = () => {
     setConfirmationModalOpen(false);
     updateConfirmationModal(dispatch, null);
   };
 
+  const handleConfirm = async () => {
+    try {
+      const successful = await executeTransfer();
+      if (successful) {
+        closeModal();
+      }
+    } catch (error) {
+      console.log("Error during transfer confirmation:", error);
+    }
+  };
+
   const handleCancel = () => {
-    setConfirmationModalOpen(false);
-    updateConfirmationModal(dispatch, null);
+    closeModal();
   };
 
   useEffect(() => {
