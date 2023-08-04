@@ -193,6 +193,43 @@ export const getWalletData = async () => {
   return { address, alias, balance, transactions, assets };
 };
 
+export const IonicSwap = async (swapParams) => {
+  const response = await fetch("http://localhost:12111/json_rpc", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      "jsonrpc": "2.0",
+      "id": "0",
+      "method": "ionic_swap_generate_proposal",
+      "params": {
+        "proposal": {
+          "to_bob": [{
+            "asset_id": swapParams.destinationAssetID,
+            "amount": swapParams.destinationAssetAmount*1e12
+          }],
+          "to_alice": [{
+            "asset_id": swapParams.currentAssetID,
+            "amount": swapParams.currentAssetAmount*1e12 
+          }],
+          "mixins": 10,
+          "fee_paid_by_a": swapParams.maxFee*1e9,
+          "expiration_time": swapParams.expirationTimestamp,
+        },
+        "destination_address": swapParams.destinationAddress
+      }
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
 export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
   destination,

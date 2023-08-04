@@ -1,4 +1,4 @@
-import { fetchData, getWalletData, getWallets, transfer } from "./wallet";
+import { fetchData, getWalletData, getWallets, transfer, IonicSwap } from "./wallet";
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onStartup.addListener(() => {
@@ -78,6 +78,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Sending transfer");
     console.log("asset", assetId, "destination", destination, "amount", amount);
     transfer(assetId, destination, amount)
+      .then((data) => {
+        sendResponse({ data });
+      })
+      .catch((error) => {
+        console.error("Error sending transfer:", error);
+        sendResponse({ error: "An error occurred while sending transfer" });
+      });
+    return true;
+  }
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  const { method } = request;
+  if (method === "IONIC_SWAP") {
+    console.log("Sending Ionic Swap");
+    console.log("swap data:", request);
+    
+    IonicSwap(request)
       .then((data) => {
         sendResponse({ data });
       })
