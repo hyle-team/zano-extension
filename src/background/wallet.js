@@ -214,7 +214,7 @@ export const IonicSwap = async (swapParams) => {
             "amount": swapParams.currentAssetAmount*1e12 
           }],
           "mixins": 10,
-          "fee_paid_by_a": swapParams.maxFee*1e9,
+          "fee_paid_by_a": 10000000000,
           "expiration_time": swapParams.expirationTimestamp,
         },
         "destination_address": swapParams.destinationAddress
