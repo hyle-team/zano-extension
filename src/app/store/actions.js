@@ -53,3 +53,10 @@ export const updateBalancesHidden = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const updateConfirmationModal = (dispatch, state) => {
+  return dispatch({
+    type: "CONFIRMATION_MODAL_UPDATED",
+    payload: state,
+  });
+};

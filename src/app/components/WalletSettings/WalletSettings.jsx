@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useInput } from "../../hooks/useInput";
-import MyButton from "../UI/MyButton/MyButton";
+import Button from "../UI/Button/Button";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import s from "./WalletSettings.module.scss";
@@ -21,7 +21,7 @@ const WalletSettings = () => {
           onChange={localNodePort.onChange}
         />
       </div>
-      <MyButton disabled={isBtnDisabled}>Confirm</MyButton>
+      <Button disabled={isBtnDisabled}>Confirm</Button>
     </div>
   );
 };

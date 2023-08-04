@@ -40,7 +40,7 @@
   left: 0;
   top: calc(100% + 1px);
   height: calc($appHeight - 56px);
-  background-color: rgba(0, 0, 0, 0.46);
+  background-color: var(--overlay-color);
 }
 
 .dropdownButton {

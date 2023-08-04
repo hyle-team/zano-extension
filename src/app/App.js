@@ -1,10 +1,11 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { Router } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
 import Loader from "./components/UI/Loader/Loader";
 import Wallet from "./components/Wallet/Wallet";
+import ConfirmationModal from "./components/ConfirmationModal/ConfirmationModal";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
@@ -13,6 +14,7 @@ import {
   updateWalletData,
   updatePriceData,
   updateLoading,
+  updateConfirmationModal,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -20,6 +22,47 @@ import "./styles/App.scss";
 
 function App() {
   const { state, dispatch } = useContext(Store);
+  const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
+
+  const executeTransfer = useCallback(async () => {
+    try {
+      const response = await fetchBackground({
+        method: "EXECUTE_BRIDGING_TRANSFER",
+      });
+      if (response.error) {
+        console.log("Transfer failed:", response.error);
+        return false;
+      } else {
+        console.log("Transfer succeeded");
+        return true;
+      }
+    } catch (error) {
+      console.log("Error during transfer execution:", error);
+      return false;
+    }
+  }, []);
+
+  const closeModal = () => {
+    setConfirmationModalOpen(false);
+    updateConfirmationModal(dispatch, null);
+    // eslint-disable-next-line no-undef
+    chrome.storage.local.remove(["pendingTx"]);
+  };
+
+  const handleConfirm = async () => {
+    try {
+      const successful = await executeTransfer();
+      if (successful) {
+        closeModal();
+      }
+    } catch (error) {
+      console.log("Error during transfer confirmation:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    closeModal();
+  };
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -76,6 +119,71 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
+    const listener = (request, sender, sendResponse) => {
+      if (
+        !(
+          "assetId" in request &&
+          "amount" in request &&
+          "destinationAddress" in request &&
+          "destinationChainId" in request
+        )
+      ) {
+        console.error("Invalid BRIDGING_TRANSFER request", request);
+        return;
+      }
+
+      if (request.method === "BRIDGING_TRANSFER") {
+        updateConfirmationModal(dispatch, {
+          method: "SEND_TRANSFER",
+          params: [
+            request.assetId,
+            request.amount,
+            request.destinationAddress,
+            request.destinationChainId,
+          ],
+        });
+        // eslint-disable-next-line no-undef
+        chrome.storage.local.set({ pendingTx: request });
+        setConfirmationModalOpen(true);
+        sendResponse({ status: "confirmation_pending" });
+      }
+      return true;
+    };
+
+    // eslint-disable-next-line no-undef
+    if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+      // eslint-disable-next-line no-undef
+      chrome.runtime.onMessage.addListener(listener);
+    }
+
+    return () => {
+      // eslint-disable-next-line no-undef
+      if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+        // eslint-disable-next-line no-undef
+        chrome.runtime.onMessage.removeListener(listener);
+      }
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    chrome.storage.local.get(["pendingTx"], function (result) {
+      if (result.pendingTx) {
+        updateConfirmationModal(dispatch, {
+          method: "SEND_TRANSFER",
+          params: [
+            result.pendingTx.assetId,
+            result.pendingTx.amount,
+            result.pendingTx.destinationAddress,
+            result.pendingTx.destinationChainId,
+          ],
+        });
+        setConfirmationModalOpen(true);
+      }
+    });
+  }, [dispatch]);
+
+  useEffect(() => {
     // eslint-disable-next-line no-undef
     chrome.storage.local.get(["key"], function (result) {
       let walletId = 0;
@@ -95,6 +203,10 @@ function App() {
     });
   }, [dispatch]);
 
+  // const closeConfirmationModal = useCallback(() => {
+  //   setConfirmationModalOpen(false);
+  // }, [setConfirmationModalOpen]);
+
   // console.log("state", state);
 
   return (
@@ -102,6 +214,11 @@ function App() {
       <AppPlug />
       {state.isConnected && (
         <>
+          <ConfirmationModal
+            isOpen={confirmationModalOpen}
+            onClose={handleCancel}
+            onConfirm={handleConfirm}
+          />
           <Header />
           <Loader />
           <div className="container">

@@ -5,7 +5,7 @@ import successImage from "../../assets/images/success-round.png";
 import { useCheckbox } from "../../hooks/useCheckbox";
 import { useInput } from "../../hooks/useInput";
 import { Store } from "../../store/store-reducer";
-import MyButton from "../UI/MyButton/MyButton";
+import Button from "../UI/Button/Button";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import AdditionalDetails from "./AdditionalDetails/AdditionalDetails";
@@ -19,10 +19,12 @@ const WalletSend = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
+
   // Form data
   const [address, setAddress] = useState("");
   const [asset, setAsset] = useState(state.wallet.assets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
+
   const amount = useInput("");
   const comment = useInput("");
   const mixin = useInput(10);
@@ -144,7 +146,7 @@ const WalletSend = () => {
                     isReceiverInfo={isReceiverInfo}
                   />
 
-                  <MyButton
+                  <Button
                     disabled={
                       !submitAddress ||
                       !amount.value ||
@@ -153,7 +155,7 @@ const WalletSend = () => {
                     onClick={() => setActiveStep(1)}
                   >
                     Send
-                  </MyButton>
+                  </Button>
                 </div>
               </div>
             );
@@ -174,7 +176,7 @@ const WalletSend = () => {
                   <TableRow label="Fee" value={fee.value} />
                 </div>
 
-                <MyButton
+                <Button
                   onClick={async () => {
                     const transferStatus = await sendTransfer(
                       submitAddress,
@@ -191,7 +193,7 @@ const WalletSend = () => {
                   }}
                 >
                   Confirm
-                </MyButton>
+                </Button>
               </div>
             );
           // Transaction status
@@ -229,7 +231,7 @@ const WalletSend = () => {
                   )}
                 </div>
 
-                <MyButton onClick={() => popToTop()}>Close</MyButton>
+                <Button onClick={() => popToTop()}>Close</Button>
               </div>
             );
           default:
