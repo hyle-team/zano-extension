@@ -83,6 +83,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       break;
 
+    case "IONIC_SWAP":
+      IonicSwap(request)
+        .then((data) => {
+          sendResponse({ data });
+        })
+        .catch((error) => {
+          console.error("Error sending transfer:", error);
+          sendResponse({ error: "An error occurred while sending transfer" });
+        });
+      break;
+
+
     case "BRIDGING_TRANSFER":
       pendingTx = {
         assetId: request.assetId,
@@ -131,22 +143,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   return true;
-});
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  const { method } = request;
-  if (method === "IONIC_SWAP") {
-    console.log("Sending Ionic Swap");
-    console.log("swap data:", request);
-    
-    IonicSwap(request)
-      .then((data) => {
-        sendResponse({ data });
-      })
-      .catch((error) => {
-        console.error("Error sending transfer:", error);
-        sendResponse({ error: "An error occurred while sending transfer" });
-      });
-    return true;
-  }
 });
