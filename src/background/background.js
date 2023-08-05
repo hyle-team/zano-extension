@@ -4,7 +4,8 @@ import {
   getWallets,
   transfer,
   transferBridge,
-  IonicSwap
+  ionicSwap,
+  ionicSwapAccept
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -84,7 +85,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case "IONIC_SWAP":
-      IonicSwap(request)
+      ionicSwap(request)
+        .then((data) => {
+          sendResponse({ data });
+        })
+        .catch((error) => {
+          console.error("Error sending transfer:", error);
+          sendResponse({ error: "An error occurred while sending transfer" });
+        });
+      break;
+
+    case "IONIC_SWAP_ACCEPT":
+      ionicSwapAccept(request)
         .then((data) => {
           sendResponse({ data });
         })

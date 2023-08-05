@@ -193,7 +193,7 @@ export const getWalletData = async () => {
   return { address, alias, balance, transactions, assets };
 };
 
-export const IonicSwap = async (swapParams) => {
+export const ionicSwap = async (swapParams) => {
   const response = await fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
@@ -207,11 +207,11 @@ export const IonicSwap = async (swapParams) => {
         "proposal": {
           "to_bob": [{
             "asset_id": swapParams.destinationAssetID,
-            "amount": swapParams.destinationAssetAmount*1e12
+            "amount": swapParams.destinationAssetAmount * 1e12
           }],
           "to_alice": [{
             "asset_id": swapParams.currentAssetID,
-            "amount": swapParams.currentAssetAmount*1e12 
+            "amount": swapParams.currentAssetAmount * 1e12
           }],
           "mixins": 10,
           "fee_paid_by_a": 10000000000,
@@ -221,111 +221,129 @@ export const IonicSwap = async (swapParams) => {
       }
     }),
   });
+}
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  export const ionicSwapAccept = async (swapParams) => {
 
-  const data = await response.json();
-  return data;
-};
-
-export const transfer = async (
-  assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
-  destination,
-  amount
-) => {
-  const destinations = [
-    {
-      address: destination,
-      amount: amount * 10 ** 12,
-      asset_id: assetId,
-    },
-  ];
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "transfer",
-      params: {
-        destinations,
-        fee: 10000000000,
-        mixin: 10,
+    const response = await fetch("http://localhost:12111/json_rpc", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }),
-  });
+      body: JSON.stringify({
+        "jsonrpc": "2.0",
+        "id": "0",
+        "method": "ionic_swap_accept_proposal",
+        "params": {
+          "hex_raw_proposal": swapParams.hex_raw_proposal,
+        }
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-  const data = await response.json();
-  return data;
-};
-
-export const transferBridge = async (
-  assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
-  amount,
-  destinationAddress,
-  destinationChainId
-) => {
-  const destinations = [
-    {
-      address:
-        "ZxCzikmFWMZEX8z3nojPyzcFUeEYcihX2jFvhLLYvJqtdgne2RLFd6UDaPgmzMNgDZP71E7citLPei4pLCWDjUWS1qGzMuagu",
-      amount: amount * 10 ** 12,
-      asset_id: assetId,
-    },
-  ];
-
-  const bodyData = {
-    service_id: "B",
-    instruction: "BI",
-    dst_add: destinationAddress,
-    dst_net_id: destinationChainId,
-    uniform_padding: "    ",
+    const data = await response.json();
+    return data;
   };
 
-  const jsonString = JSON.stringify(bodyData);
-  const bytes = new TextEncoder().encode(jsonString);
-  const bodyHex = Array.from(bytes, (byte) =>
-    byte.toString(16).padStart(2, "0")
-  ).join("");
-
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "transfer",
-      params: {
-        destinations,
-        fee: 10000000000,
-        mixin: 10,
-        service_entries_permanent: true,
-        service_entries: [
-          {
-            service_id: "X",
-            instruction: "",
-            body: bodyHex,
-            flags: 5,
-          },
-        ],
+  export const transfer = async (
+    assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+    destination,
+    amount
+  ) => {
+    const destinations = [
+      {
+        address: destination,
+        amount: amount * 10 ** 12,
+        asset_id: assetId,
       },
-    }),
-  });
+    ];
+    const response = await fetch("http://localhost:12111/json_rpc", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "0",
+        method: "transfer",
+        params: {
+          destinations,
+          fee: 10000000000,
+          mixin: 10,
+        },
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-  const data = await response.json();
-  return data;
-};
+    const data = await response.json();
+    return data;
+  };
+
+  export const transferBridge = async (
+    assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+    amount,
+    destinationAddress,
+    destinationChainId
+  ) => {
+    const destinations = [
+      {
+        address:
+          "ZxCzikmFWMZEX8z3nojPyzcFUeEYcihX2jFvhLLYvJqtdgne2RLFd6UDaPgmzMNgDZP71E7citLPei4pLCWDjUWS1qGzMuagu",
+        amount: amount * 10 ** 12,
+        asset_id: assetId,
+      },
+    ];
+
+    const bodyData = {
+      service_id: "B",
+      instruction: "BI",
+      dst_add: destinationAddress,
+      dst_net_id: destinationChainId,
+      uniform_padding: "    ",
+    };
+
+    const jsonString = JSON.stringify(bodyData);
+    const bytes = new TextEncoder().encode(jsonString);
+    const bodyHex = Array.from(bytes, (byte) =>
+      byte.toString(16).padStart(2, "0")
+    ).join("");
+
+    const response = await fetch("http://localhost:12111/json_rpc", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "0",
+        method: "transfer",
+        params: {
+          destinations,
+          fee: 10000000000,
+          mixin: 10,
+          service_entries_permanent: true,
+          service_entries: [
+            {
+              service_id: "X",
+              instruction: "",
+              body: bodyHex,
+              flags: 5,
+            },
+          ],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  };
