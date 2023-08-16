@@ -47,6 +47,8 @@ function App() {
     updateConfirmationModal(dispatch, null);
     // eslint-disable-next-line no-undef
     chrome.storage.local.remove(["pendingTx"]);
+    // eslint-disable-next-line no-undef
+    chrome.action.setBadgeText({ text: "" });
   };
 
   const handleConfirm = async () => {
