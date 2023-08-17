@@ -1,3 +1,5 @@
+import { addZeros, removeZeros } from "../app/utils/utils";
+
 const fetchTxData = async () => {
   try {
     const response = await fetch("http://localhost:12111/json_rpc", {
@@ -47,7 +49,6 @@ export const fetchData = async (method, params = {}) =>
 export const getAlias = async (address) => {
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
-  console.log("get alias by address", data);
   if (data.result.status === "OK") {
     return data.result.alias_info_list[0].alias;
   } else {
@@ -58,7 +59,6 @@ export const getAlias = async (address) => {
 export const getAliasDetails = async (alias) => {
   const response = await fetchData("get_alias_details", { alias });
   const data = await response.json();
-  console.log("get alias details", data);
   if (data.result.status === "OK") {
     return data.result.alias_info_list[0].alias;
   } else {
@@ -73,17 +73,16 @@ export const getWallets = async () => {
     const wallets = await Promise.all(
       data.result.wallets.map(async (wallet) => {
         const alias = await getAlias(wallet.wi.address);
-        const balance =
-          wallet.wi.balances.find(
-            (asset) =>
-              asset.asset_info.asset_id ===
-              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-          ).total /
-          10 ** 12;
+        const balance = wallet.wi.balances.find(
+          (asset) =>
+            asset.asset_info.asset_id ===
+            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ).total;
+
         return {
           address: wallet.wi.address,
           alias: alias,
-          balance: balance,
+          balance: removeZeros(balance),
         };
       })
     );
@@ -100,13 +99,13 @@ export const getWalletData = async () => {
   const address = addressParsed.result.address;
   const balanceResponse = await fetchData("getbalance");
   const balanceParsed = await balanceResponse.json();
-  const balance =
+  const balance = removeZeros(
     balanceParsed.result.balances.find(
       (asset) =>
         asset.asset_info.asset_id ===
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-    ).total /
-    10 ** 12;
+    ).total
+  );
   const txDataResponse = await fetchTxData();
   const txData = txDataResponse.result.transfers;
   let transactions = [];
@@ -124,10 +123,10 @@ export const getWalletData = async () => {
         height: tx.height,
         paymentId: tx.payment_id,
         comment: tx.comment,
-        fee: tx.fee / 10 ** 12,
+        fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
         transfers: tx.subtransfers.map((transfer) => ({
-          amount: transfer.amount / 10 ** 12,
+          amount: removeZeros(transfer.amount),
           assetId: transfer.asset_id,
           incoming: transfer.is_income,
         })),
@@ -139,8 +138,8 @@ export const getWalletData = async () => {
       name: asset.asset_info.full_name,
       ticker: asset.asset_info.ticker,
       assetId: asset.asset_info.asset_id,
-      balance: asset.total / 10 ** 12,
-      unlockedBalance: asset.unlocked / 10 ** 12,
+      balance: removeZeros(asset.total),
+      unlockedBalance: removeZeros(asset.unlocked),
     }))
     .sort((a, b) => {
       if (
@@ -229,10 +228,11 @@ export const transfer = async (
   const destinations = [
     {
       address: destination,
-      amount: amount * 10 ** 12,
+      amount: addZeros(amount),
       asset_id: assetId,
     },
   ];
+
   const response = await fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
@@ -268,7 +268,7 @@ export const transferBridge = async (
     {
       address:
         "ZxCzikmFWMZEX8z3nojPyzcFUeEYcihX2jFvhLLYvJqtdgne2RLFd6UDaPgmzMNgDZP71E7citLPei4pLCWDjUWS1qGzMuagu",
-      amount: amount * 10 ** 12,
+      amount: addZeros(amount),
       asset_id: assetId,
     },
   ];
@@ -312,6 +312,8 @@ export const transferBridge = async (
       },
     }),
   });
+
+  console.log(response);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

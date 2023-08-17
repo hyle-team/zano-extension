@@ -27,9 +27,9 @@ const Wallet = () => {
     : s.aliasContent;
 
   const renderBalance = () => {
-    const fiatBalance = (state.wallet.balance * state.priceData.price).toFixed(
-      2
-    );
+    const fiatBalance = (
+      Number(state.wallet.balance) * state.priceData.price
+    ).toFixed(2);
 
     if (state.displayUsd) {
       return (
@@ -46,7 +46,9 @@ const Wallet = () => {
         </>
       );
     } else {
-      return <span>{censorValue(state.wallet.balance.toFixed(2))} ZANO</span>;
+      return (
+        <span>{censorValue(Number(state.wallet.balance).toFixed(2))} ZANO</span>
+      );
     }
   };
 
@@ -117,7 +119,8 @@ const Wallet = () => {
           {getUnlockedBalance() !== state.wallet.balance && (
             <span className={s.tooltipText}>
               Locked balance:{" "}
-              {(state.wallet.balance - getUnlockedBalance()).toFixed(2)} ZANO
+              {(Number(state.wallet.balance) - getUnlockedBalance()).toFixed(2)}{" "}
+              ZANO
             </span>
           )}
         </div>

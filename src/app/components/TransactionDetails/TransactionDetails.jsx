@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import Big from "big.js";
 import copyIcon from "../../assets/svg/copy-blue.svg";
 import incomingIcon from "../../assets/svg/incoming_ico.svg";
 import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
@@ -44,6 +45,8 @@ const TransactionDetails = (props) => {
         <TableRow label="Transfers">
           {props.transfers.map((transfer) => {
             if (transfer.amount === props.fee) return null;
+            const amount = new Big(transfer.amount);
+            const fixedFee = new Big(props.fee);
             return (
               <>
                 <div className="table__value">
@@ -52,7 +55,7 @@ const TransactionDetails = (props) => {
                       "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
                       ? transfer.incoming
                         ? transfer.amount
-                        : (transfer.amount * 1e12 - props.fee * 1e12) / 1e12
+                        : amount.minus(fixedFee).toString()
                       : transfer.amount
                   )}{" "}
                   {

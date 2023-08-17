@@ -30,7 +30,9 @@ const Assets = () => {
   return (
     <div>
       {state.wallet.assets.map((asset) => {
-        const fiatBalance = (asset.balance * state.priceData.price).toFixed(2);
+        const fiatBalance = (
+          Number(asset.balance) * state.priceData.price
+        ).toFixed(2);
         return (
           <div className={s.asset} key={asset.name}>
             {/* <button className={s.assetRemoveBtn} onClick={remove}>
@@ -45,9 +47,10 @@ const Assets = () => {
                 <div>
                   <div className={s.assetInfoLabel}>Balance</div>
                   <div className={s.assetInfoValue}>
-                    {[censorValue(asset.balance.toFixed(2)), asset.ticker].join(
-                      " "
-                    )}
+                    {[
+                      censorValue(Number(asset.balance).toFixed(2)),
+                      asset.ticker,
+                    ].join(" ")}
                   </div>
                 </div>
                 <div>

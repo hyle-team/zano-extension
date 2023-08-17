@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { Link } from "react-chrome-extension-router";
+import Big from "big.js";
 import LoadingIcon from "../../../assets/svg/loading.svg";
 import receiveIcon from "../../../assets/svg/receive-colored.svg";
 import sendIcon from "../../../assets/svg/send-colored.svg";
@@ -11,6 +12,8 @@ import Formatters from "../../../utils/formatters";
 
 const HistoryItem = ({ transfer, fee }) => {
   if (transfer.amount === fee) return null;
+  const amount = new Big(transfer.amount);
+  const fixedFee = new Big(fee);
   return (
     <div className={s.historyTop}>
       <div className={s.historyIcon}>
@@ -22,7 +25,7 @@ const HistoryItem = ({ transfer, fee }) => {
             "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
             ? transfer.incoming
               ? transfer.amount
-              : (transfer.amount * 1e12 - fee * 1e12) / 1e12
+              : amount.minus(fixedFee).toString()
             : transfer.amount
         )}{" "}
         {
