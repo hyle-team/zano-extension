@@ -10,7 +10,7 @@ import Button, { ButtonThemes } from "../UI/Button/Button";
 
 const ModalTransactionStatus = () => {
   const { state, dispatch } = useContext(Store);
-  const { visible, type, message } = state?.transactionStatus;
+  const { visible, type, code, message } = state?.transactionStatus;
 
   const closeHandler = useCallback(() => {
     updateTransactionStatus(dispatch, (prevState) => ({
@@ -42,16 +42,16 @@ const ModalTransactionStatus = () => {
           <div className={cls.statusMessage}>{message && message}</div>
           <div className={cls.table}>
             <div className={cls.tableRow}>
-              <div className={cls.label}>method:</div>
-              <div className={cls.value}>POST</div>
+              <div className={cls.label}>code:</div>
+              <div className={cls.value}>{code}</div>
             </div>
-            <div className={cls.tableRow}>
+            {/* <div className={cls.tableRow}>
               <div className={cls.label}>params:</div>
               <div className={cls.value}>
                 <span>Value</span>
                 <span>Value2</span>
               </div>
-            </div>
+            </div> */}
           </div>
           <Button
             className={cls.button}

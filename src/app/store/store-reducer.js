@@ -77,6 +77,7 @@ const initialState = {
   transactionStatus: {
     visible: false,
     type: "",
+    code: 0,
     message: "",
   },
 };

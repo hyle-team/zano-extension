@@ -60,6 +60,7 @@ function App() {
         updateTransactionStatus(dispatch, {
           visible: true,
           type: "error",
+          code: response.status.code || 0,
           message: response.status.message || "Insufficient balance",
         });
       }
