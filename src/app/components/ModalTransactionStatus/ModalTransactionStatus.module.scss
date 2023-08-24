@@ -1,6 +1,10 @@
 .ModalTransactionStatus {
-  //height: 440px;
+  min-height: 400px;
+  height: 100%;
   padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .loading {
@@ -11,8 +15,8 @@
   align-items: center;
 }
 
-.error {
-
+.statusMessage {
+  text-align: center;
 }
 
 .title {
@@ -28,7 +32,7 @@
   }
 }
 
-// =========================================================
+// Error|Success
 .icon {
   width: 130px;
   height: 130px;
@@ -55,61 +59,46 @@
   margin-top: 20px;
 }
 
-// =========================================================
-// Details
-
-.details {
+.table {
+  margin: 16px 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
   padding: 16px;
-  border-radius: 10px;
-  background-color: #1D3C73;
-}
-
-.detailsTitle {
-  &:not(:last-child) {
-    margin-bottom: 15px;
-  }
-}
-
-.detailsTable {
-
+  font-size: 16px;
+  column-gap: 20px;
+  max-height: 150px;
+  overflow-x: visible;
+  overflow-y: auto;
 }
 
 .tableRow {
   display: flex;
   flex-wrap: wrap;
-  row-gap: 3px;
-  column-gap: 8px;
-  color: #1f8feb;
-  font-size: 16px;
+  justify-content: space-between;
+  column-gap: 20px;
+  row-gap: 5px;
+
+  .label {
+    color: #1F8FEB;
+    margin-bottom: 5px;
+  }
+
+  .value {
+    font-weight: 300;
+    line-height: 1.2;
+
+    span {
+      display: block;
+      word-break: break-all;
+
+      &:not(:last-child) {
+        margin-bottom: 8px;
+      }
+    }
+  }
 
   &:not(:last-child) {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
-
 }
 
-.successIcon, .errorIcon {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #eee;
-
-  img {
-    width: 8px;
-    height: 8px;
-    max-width: 100%;
-  }
-
-}
-
-.errorIcon {
-  background-color: #FF6767;
-  transform: rotate(45deg);
-}
-
-.successIcon {
-  background-color: #1F8FEB;
-}

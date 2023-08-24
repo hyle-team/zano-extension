@@ -3,7 +3,6 @@ import cls from "./ModalTransactionStatus.module.scss";
 import Modal from "../../components/UI/Modal/Modal";
 import { Store } from "../../store/store-reducer";
 import errorImage from "../../assets/svg/plus.svg";
-import successImage from "../../assets/svg/check-icon.svg";
 import { updateTransactionStatus } from "../../store/actions";
 import Loader from "../UI/Loader/Loader";
 import { classNames } from "../../utils/classNames";
@@ -31,23 +30,6 @@ const ModalTransactionStatus = () => {
     }
   };
 
-  const TableIcon = ({ error, success }) => {
-    if (error) {
-      return (
-        <div className={cls.errorIcon}>
-          <img src={errorImage} alt="error" />
-        </div>
-      );
-    }
-    if (success) {
-      return (
-        <div className={cls.successIcon}>
-          <img src={successImage} alt="success" />
-        </div>
-      );
-    }
-  };
-
   const Error = () => {
     if (type === "error") {
       return (
@@ -56,29 +38,25 @@ const ModalTransactionStatus = () => {
             <img src={errorImage} alt="error" />
           </div>
           <div className={cls.title}>Failure!</div>
-          <div className={cls.detailsTitle} style={{textAlign: 'center'}}>{state.transactionStatus.message}</div>
-          {/*<div className={cls.details}>*/}
-          {/*  <div className={cls.detailsTitle}>Transaction details</div>*/}
-          {/*  <div className={cls.detailsTable}>*/}
-          {/*    <div className={cls.tableRow}>*/}
-          {/*      Initializing...*/}
-          {/*      <TableIcon success />*/}
-          {/*    </div>*/}
-          {/*    <div className={cls.tableRow}>*/}
-          {/*      Downloading consensus...*/}
-          {/*      <TableIcon success />*/}
-          {/*    </div>*/}
-          {/*    <div className={cls.tableRow}>*/}
-          {/*      Building tunnel to A...*/}
-          {/*      <TableIcon success />*/}
-          {/*    </div>*/}
-          {/*    <div className={cls.tableRow}>*/}
-          {/*      Building tunnel to B...*/}
-          {/*      <TableIcon error />*/}
-          {/*    </div>*/}
-          {/*  </div>*/}
-          {/*</div>*/}
-          <Button className={cls.button} theme={ButtonThemes.Outline} onClick={closeHandler}>
+          <div className={cls.statusMessage}>{message && message}</div>
+          <div className={cls.table}>
+            <div className={cls.tableRow}>
+              <div className={cls.label}>method:</div>
+              <div className={cls.value}>POST</div>
+            </div>
+            <div className={cls.tableRow}>
+              <div className={cls.label}>params:</div>
+              <div className={cls.value}>
+                <span>Value</span>
+                <span>Value2</span>
+              </div>
+            </div>
+          </div>
+          <Button
+            className={cls.button}
+            theme={ButtonThemes.Outline}
+            onClick={closeHandler}
+          >
             Got it
           </Button>
         </div>
@@ -87,7 +65,11 @@ const ModalTransactionStatus = () => {
   };
 
   return (
-    <Modal width={296} isOpen={visible} onClose={closeHandler}>
+    <Modal
+      width={296}
+      isOpen={visible}
+      onClose={type !== "loading" && closeHandler}
+    >
       <div className={cls.ModalTransactionStatus}>
         <Loading />
         <Error />
