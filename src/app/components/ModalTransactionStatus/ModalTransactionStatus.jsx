@@ -55,8 +55,10 @@ const ModalTransactionStatus = () => {
           <div className={classNames(cls.icon, {}, [[cls.redColor]])}>
             <img src={errorImage} alt="error" />
           </div>
-          <div className={cls.title}>Failure!</div>
-          <div className={cls.detailsTitle} style={{textAlign: 'center'}}>{state.transactionStatus.message}</div>
+          <div className={cls.title}>Error!</div>
+          <div className={cls.detailsTitle} style={{ textAlign: "center" }}>
+            {state.transactionStatus.message}
+          </div>
           {/*<div className={cls.details}>*/}
           {/*  <div className={cls.detailsTitle}>Transaction details</div>*/}
           {/*  <div className={cls.detailsTable}>*/}
@@ -78,8 +80,12 @@ const ModalTransactionStatus = () => {
           {/*    </div>*/}
           {/*  </div>*/}
           {/*</div>*/}
-          <Button className={cls.button} theme={ButtonThemes.Outline} onClick={closeHandler}>
-            Got it
+          <Button
+            className={cls.button}
+            theme={ButtonThemes.Outline}
+            onClick={closeHandler}
+          >
+            Close
           </Button>
         </div>
       );

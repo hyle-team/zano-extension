@@ -60,7 +60,7 @@ export const getAliasDetails = async (alias) => {
   const response = await fetchData("get_alias_details", { alias });
   const data = await response.json();
   if (data.result.status === "OK") {
-    return data.result.alias_info_list[0].alias;
+    return data.result.alias_details.address;
   } else {
     return "";
   }
@@ -313,7 +313,7 @@ export const transferBridge = async (
     }),
   });
 
-  console.log(response);
+  // console.log(response);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

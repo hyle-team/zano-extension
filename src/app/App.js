@@ -15,6 +15,7 @@ import {
   updatePriceData,
   updateLoading,
   updateConfirmationModal,
+  updateTransactionStatus,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -29,16 +30,13 @@ function App() {
       const response = await fetchBackground({
         method: "EXECUTE_BRIDGING_TRANSFER",
       });
-      if (response.error) {
-        console.log("Transfer failed:", response.error);
-        return false;
+      if (response.data.error) {
+        return { sent: false, status: response.data.error };
       } else {
-        console.log("Transfer succeeded");
-        return true;
+        return { sent: true, status: response.data.result };
       }
     } catch (error) {
-      console.log("Error during transfer execution:", error);
-      return false;
+      return { sent: false, status: error };
     }
   }, []);
 
@@ -53,9 +51,17 @@ function App() {
 
   const handleConfirm = async () => {
     try {
-      const successful = await executeTransfer();
-      if (successful) {
+      const response = await executeTransfer();
+      if (response.sent) {
         closeModal();
+      } else {
+        closeModal();
+        console.log(response.status);
+        updateTransactionStatus(dispatch, {
+          visible: true,
+          type: "error",
+          message: response.status.message || "Insufficient balance",
+        });
       }
     } catch (error) {
       console.log("Error during transfer confirmation:", error);

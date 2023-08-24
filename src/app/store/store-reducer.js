@@ -76,8 +76,8 @@ const initialState = {
   confirmationModal: null,
   transactionStatus: {
     visible: false,
-    type: "error",
-    message: "Something went wrong",
+    type: "",
+    message: "",
   },
 };
 
