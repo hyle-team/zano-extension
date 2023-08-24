@@ -74,6 +74,11 @@ const initialState = {
   isBalancesHidden: false,
   priceData: { price: 1, change: -4.6 },
   confirmationModal: null,
+  transactionStatus: {
+    visible: false,
+    type: "error",
+    message: "Something went wrong",
+  },
 };
 
 const reducer = (state, action) => {
@@ -100,6 +105,8 @@ const reducer = (state, action) => {
       return { ...state, isBalancesHidden: action.payload };
     case "CONFIRMATION_MODAL_UPDATED":
       return { ...state, confirmationModal: action.payload };
+    case "TRANSACTION_STATUS_UPDATED":
+      return { ...state, transactionStatus: action.payload };
     default:
       return state;
   }

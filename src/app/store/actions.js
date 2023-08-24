@@ -60,3 +60,10 @@ export const updateConfirmationModal = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const updateTransactionStatus = (dispatch, state) => {
+  return dispatch({
+    type: "TRANSACTION_STATUS_UPDATED",
+    payload: state,
+  });
+};

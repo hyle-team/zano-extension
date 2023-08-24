@@ -3,9 +3,9 @@ import { Router } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
-import Loader from "./components/UI/Loader/Loader";
+import AppLoader from "./components/UI/AppLoader/AppLoader";
 import Wallet from "./components/Wallet/Wallet";
-import ConfirmationModal from "./components/ConfirmationModal/ConfirmationModal";
+import ModalConfirmation from "./components/ModalConfirmation/ModalConfirmation";
 import { fetchBackground } from "./utils/utils";
 import {
   updateWalletConnected,
@@ -205,24 +205,18 @@ function App() {
     });
   }, [dispatch]);
 
-  // const closeConfirmationModal = useCallback(() => {
-  //   setConfirmationModalOpen(false);
-  // }, [setConfirmationModalOpen]);
-
-  // console.log("state", state);
-
   return (
     <div className="App">
       <AppPlug />
       {state.isConnected && (
         <>
-          <ConfirmationModal
+          <ModalConfirmation
             isOpen={confirmationModalOpen}
             onClose={handleCancel}
             onConfirm={handleConfirm}
           />
           <Header />
-          <Loader />
+          <AppLoader />
           <div className="container">
             <Router>
               <Wallet />

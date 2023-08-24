@@ -3,7 +3,7 @@ import displayImage from "../../assets/images/display.svg";
 import logo from "../../assets/svg/logo.svg";
 import questionIcon from "../../assets/svg/question.svg";
 import { Store } from "../../store/store-reducer";
-import Loader from "../UI/Loader/Loader";
+import AppLoader from "../UI/AppLoader/AppLoader";
 import s from "./AppPlug.module.scss";
 
 const AppPlug = () => {

@@ -1,10 +1,10 @@
 import React, { useCallback, useContext } from "react";
-import cls from "./ConfirmationModal.module.scss";
+import cls from "../../components/ModalConfirmation/ModalConfirmation.module.scss";
 import Modal from "../../components/UI/Modal/Modal";
 import Button, { ButtonThemes } from "../UI/Button/Button";
 import { Store } from "../../store/store-reducer";
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
+const ModalConfirmation = ({ isOpen, onClose, onConfirm }) => {
   const { state } = useContext(Store);
   const { method, params } = state.confirmationModal || {};
 
@@ -45,4 +45,4 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   );
 };
 
-export default ConfirmationModal;
+export default ModalConfirmation;

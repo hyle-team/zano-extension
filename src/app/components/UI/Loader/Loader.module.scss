@@ -1,35 +1,9 @@
-@use "sass:math";
-@import "src/app/styles/variables";
-
-.loaderWrapper {
-  position: fixed;
-  z-index: 100;
-  top: 0;
-  left: 0;
-  width: $appWidth;
-  height: $appHeight;
-  display: flex;
-  justify-content: center;
-  background-color: #0C0C3A;
-}
-
-.loaderContent {
-  margin-top: 72px;
-}
-
-.logo {
-  width: 175px;
-  height: 60px;
-  margin: 0 auto 120px auto;
-  img {
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-.loader {
+.Loader {
   animation: rotate 1s infinite linear;
   width: 124px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 0 auto;
   height: 124px;
   img {

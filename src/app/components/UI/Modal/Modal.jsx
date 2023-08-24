@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { classNames } from '../../../utils/classNames';
 
 const Modal = (props) => {
-  const { className, children, isOpen, onClose } = props;
+  const { className, children, isOpen, onClose, width } = props;
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -54,7 +54,7 @@ const Modal = (props) => {
   return createPortal(
     <div className={classNames(cls.Modal, mods, [className])}>
       <div onClick={closeHandler} className={cls.wrapper}>
-        <div onClick={onContentClick} className={cls.content}>
+        <div onClick={onContentClick} style={{width}} className={cls.content}>
           {children}
         </div>
       </div>

@@ -12,6 +12,7 @@ import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
 import { updateBalancesHidden, updateDisplay } from "../../store/actions";
+import ModalTransactionStatus from "../../components/ModalTransactionStatus/ModalTransactionStatus";
 import WalletSend from "../WalletSend/WalletSend";
 import WalletSettings from "../WalletSettings/WalletSettings";
 import s from "./Wallet.module.scss";
@@ -93,6 +94,7 @@ const Wallet = () => {
   return (
     <div className={s.wallet}>
       {SuccessCopyModal}
+      <ModalTransactionStatus />
 
       <div className={s.infoWallet}>
         <div>
