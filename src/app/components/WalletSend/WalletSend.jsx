@@ -8,11 +8,11 @@ import { Store } from "../../store/store-reducer";
 import Button from "../UI/Button/Button";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
-import AdditionalDetails from "./AdditionalDetails/AdditionalDetails";
-import AssetsSelect from "./AssetsSelect/AssetsSelect";
 import s from "./WalletSend.module.scss";
 import { fetchBackground } from "../../utils/utils";
 import { getAliasDetails } from "../../../background/wallet";
+import AssetsSelect from "./ui/AssetsSelect/AssetsSelect";
+import AdditionalDetails from "./ui/AdditionalDetails/AdditionalDetails";
 
 const WalletSend = () => {
   const { state } = useContext(Store);
@@ -21,14 +21,17 @@ const WalletSend = () => {
   const [txId, setTxId] = useState("");
 
   // Form data
-  const [address, setAddress] = useState("");
   const [asset, setAsset] = useState(state.wallet.assets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
 
-  const amount = useInput("");
-  const comment = useInput("");
-  const mixin = useInput(10);
-  const fee = useInput(0.01);
+  const address = useInput("", { customValidation: true });
+  const amount = useInput("", {
+    isEmpty: true,
+    isAmountCorrect: true,
+  });
+  const comment = useInput("", { isEmpty: true });
+  const mixin = useInput(10, { isEmpty: true });
+  const fee = useInput(0.01, { isEmpty: true });
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
@@ -65,6 +68,35 @@ const WalletSend = () => {
     });
   };
 
+  useEffect(() => {
+    (async () => {
+      if (address.value.startsWith("@")) {
+        const alias = address.value.slice(1);
+        const resolvedAddress = await fetchAddress(alias);
+        if (resolvedAddress) {
+          setSubmitAddress(resolvedAddress);
+        } else {
+          setSubmitAddress("");
+        }
+      } else {
+        if (address.value.length === 97) {
+          setSubmitAddress(address.value);
+        } else {
+          setSubmitAddress("");
+        }
+      }
+    })();
+  }, [address.value]);
+
+  const fetchAddress = async (alias) => await getAliasDetails(alias);
+
+  const checkAvailableBalance = (amount, asset) =>
+    asset.unlockedBalance !== asset.balance
+      ? +amount <= asset.unlockedBalance - fee.value
+      : true;
+
+  //-------------------------------------------------------------------------------------------------------------------
+  // Subcomponents
   const TableRow = ({ label, value }) => {
     return (
       <div className="table__row">
@@ -73,33 +105,6 @@ const WalletSend = () => {
       </div>
     );
   };
-
-  useEffect(() => {
-    (async () => {
-      if (address.startsWith("@")) {
-        const alias = address.slice(1);
-        const resolvedAddress = await fetchAddress(alias);
-        if (resolvedAddress) {
-          setSubmitAddress(resolvedAddress);
-        } else {
-          setSubmitAddress("");
-        }
-      } else {
-        if (address.length === 97) {
-          setSubmitAddress(address);
-        } else {
-          setSubmitAddress("");
-        }
-      }
-    })();
-  }, [address]);
-
-  const fetchAddress = async (alias) => await getAliasDetails(alias);
-
-  const checkAvailableBalance = (amount, asset) =>
-    asset.unlockedBalance !== asset.balance
-      ? +amount <= asset.unlockedBalance - fee.value
-      : true;
 
   return (
     <>
@@ -114,45 +119,34 @@ const WalletSend = () => {
                   <MyInput
                     placeholder="Address or alias"
                     label="Address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    isValid={submitAddress ? true : false}
+                    inputData={address}
+                    isValid={!!submitAddress}
                   />
                   <AssetsSelect value={asset} setValue={setAsset} />
                   <MyInput
                     type="number"
                     placeholder="Amount to transfer"
                     label="Amount:"
-                    value={amount.value}
-                    onChange={amount.onChange}
-                    isValid={
-                      !isNaN(amount.value) &&
-                      amount.value >= 0.000000000001 &&
-                      amount.value <= 1000000000
-                    }
+                    inputData={amount}
                   />
-
                   <MyInput
                     placeholder="Enter the comment"
                     label="Comment:"
-                    value={comment.value}
-                    onChange={comment.onChange}
+                    inputData={comment}
                   />
-
                   <AdditionalDetails
                     mixin={mixin}
                     fee={fee}
                     isSenderInfo={isSenderInfo}
                     isReceiverInfo={isReceiverInfo}
                   />
-
                   <Button
+                    onClick={() => setActiveStep(1)}
                     disabled={
                       !submitAddress ||
                       !amount.value ||
                       !checkAvailableBalance(amount.value, asset)
                     }
-                    onClick={() => setActiveStep(1)}
                   >
                     Send
                   </Button>

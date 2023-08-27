@@ -3,7 +3,6 @@ import displayImage from "../../assets/images/display.svg";
 import logo from "../../assets/svg/logo.svg";
 import questionIcon from "../../assets/svg/question.svg";
 import { Store } from "../../store/store-reducer";
-import AppLoader from "../UI/AppLoader/AppLoader";
 import s from "./AppPlug.module.scss";
 
 const AppPlug = () => {
@@ -24,7 +23,7 @@ const AppPlug = () => {
 
             <div className={s.plugContent}>
               <div className={s.plugImage}>
-                <img src={displayImage} alt="display image" />
+                <img src={displayImage} alt="display" />
               </div>
 
               <strong>Wallet offline</strong>

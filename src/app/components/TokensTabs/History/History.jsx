@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import { Link } from "react-chrome-extension-router";
 import Big from "big.js";
 import LoadingIcon from "../../../assets/svg/loading.svg";
 import receiveIcon from "../../../assets/svg/receive-colored.svg";
@@ -9,6 +8,7 @@ import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
 import { whitelistedAssets } from "../../../config/config";
 import Formatters from "../../../utils/formatters";
+import NavLink from '../../UI/NavLink/NavLink';
 
 const HistoryItem = ({ transfer, fee }) => {
   if (transfer.amount === fee) return null;
@@ -43,7 +43,7 @@ const History = () => {
     <div>
       {state.wallet.transactions.map((tx) => {
         return (
-          <Link
+          <NavLink
             key={tx.txHash}
             className={s.historyItem}
             component={TransactionDetails}
@@ -59,7 +59,7 @@ const History = () => {
               <HistoryItem transfer={transfer} fee={tx.fee} />
             ))}
             <span className={s.historyAddress}>{tx.txHash}</span>
-          </Link>
+          </NavLink>
         );
       })}
     </div>

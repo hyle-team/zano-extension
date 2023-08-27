@@ -20,13 +20,11 @@
   &:focus {
     border-color: rgba(255, 255, 255, 0.2);
   }
-  &::after {
-    content: "";
+  .valueArrow {
     display: block;
     width: 18px;
     height: 18px;
     flex: 0 0 18px;
-    background: url("../../../assets/svg/arrow-select.svg") 0 0 no-repeat;
   }
   img {
     width: 18px;
@@ -43,7 +41,7 @@
   &.active {
     border-color: rgba(255, 255, 255, 0.5);
     border-radius: 8px 8px 0 0;
-    &::after {
+    .valueArrow {
       transform: rotate(-180deg);
     }
   }
@@ -59,6 +57,12 @@
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-top: none;
   background-color: #11316B;
+  visibility: hidden;
+  opacity: 0;
+  &.active{
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .option {
@@ -95,6 +99,13 @@
       height: 10px;
       opacity: 0;
       visibility: hidden;
+    }
+  }
+
+  &:focus,
+  &:active {
+    &::after {
+      opacity: 1;
     }
   }
 

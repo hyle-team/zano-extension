@@ -1,5 +1,4 @@
 import { useContext, useRef, useState } from "react";
-import { Link } from "react-chrome-extension-router";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
 import sendIcon from "../../assets/svg/send.svg";
@@ -7,6 +6,7 @@ import settingsIcon from "../../assets/svg/settings.svg";
 import showIcon from "../../assets/svg/show.svg";
 import hideIcon from "../../assets/svg/hide.svg";
 import lockedIcon from "../../assets/svg/lockedIcon.svg";
+import checkIcon from "../../assets/svg/check-icon.svg";
 import useAwayClick from "../../hooks/useAwayClick";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
@@ -16,16 +16,14 @@ import ModalTransactionStatus from "../../components/ModalTransactionStatus/Moda
 import WalletSend from "../WalletSend/WalletSend";
 import WalletSettings from "../WalletSettings/WalletSettings";
 import s from "./Wallet.module.scss";
+import NavLink from "../UI/NavLink/NavLink";
+import { classNames } from "../../utils/classNames";
 
 const Wallet = () => {
   const { state, dispatch } = useContext(Store);
-  const { SuccessCopyModal, copyToClipboard } = useCopy();
+  const { copied, copyToClipboard } = useCopy();
   const { censorValue } = useCensorDigits();
   const [menuVisible, setMenuVisible] = useState(false);
-
-  const aliasClasses = state.wallet.alias
-    ? [s.aliasContent, s.active].join(" ")
-    : s.aliasContent;
 
   const renderBalance = () => {
     const fiatBalance = (
@@ -40,7 +38,7 @@ const Wallet = () => {
             style={{
               color: state.priceData.change > 0 ? "#16D1D6" : "#FFCBCB",
             }}
-            className={s.percentСhange}
+            className={s.percentChange}
           >
             {state.priceData.change}%
           </span>
@@ -93,12 +91,14 @@ const Wallet = () => {
 
   return (
     <div className={s.wallet}>
-      {SuccessCopyModal}
       <ModalTransactionStatus />
-
       <div className={s.infoWallet}>
         <div>
-          <div className={aliasClasses}>
+          <div
+            className={classNames(s.aliasContent, {
+              [s.active]: state.wallet.alias,
+            })}
+          >
             {state.wallet.alias ? (
               `@${state.wallet.alias}`
             ) : (
@@ -142,10 +142,10 @@ const Wallet = () => {
 
           {menuVisible && (
             <div className={s.settings}>
-              <Link component={WalletSettings} className={s.settingsBtn}>
+              <NavLink component={WalletSettings} className={s.settingsBtn}>
                 <img src={settingsIcon} alt="settings icon" />
                 Settings
-              </Link>
+              </NavLink>
               <button
                 onClick={flipBalancesVisibility}
                 className={s.settingsBtn}
@@ -160,19 +160,25 @@ const Wallet = () => {
           )}
         </div>
 
-        <Link component={WalletSend} className="round-button">
+        <NavLink component={WalletSend} className="round-button">
           <img src={sendIcon} alt="send icon" />
           {/* Tooltip */}
           <span>send</span>
-        </Link>
+        </NavLink>
 
         <button
           onClick={() => copyToClipboard(state.wallet.address)}
           className="round-button"
         >
-          <img src={copyIcon} alt="copy icon" />
+          {copied
+            ? <img src={checkIcon} alt="copy icon" />
+            : <img src={copyIcon} alt="copy icon" />
+          }
           {/* Tooltip */}
-          <span>copy address</span>
+          {copied
+            ? <span>copied!</span>
+            : <span>copy address</span>
+          }
         </button>
       </div>
     </div>

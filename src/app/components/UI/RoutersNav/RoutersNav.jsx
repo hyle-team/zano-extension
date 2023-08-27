@@ -5,7 +5,12 @@ import s from "./RoutersNav.module.scss";
 
 const RoutersNav = ({ title, onClick }) => {
   const clickHandler = () => {
-    onClick ? onClick() : goBack();
+    if (onClick) {
+      onClick();
+    } else {
+      goBack();
+      document.body.scrollTop = 0;
+    }
   };
 
   return (

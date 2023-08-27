@@ -1,15 +1,4 @@
 @use "sass:math";
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type=number] {
-  -moz-appearance: textfield;
-}
-
-// =========================================================
 
 .label {
   display: flex;
@@ -18,11 +7,11 @@ input[type=number] {
   line-height: math.div(21, 18);
   color: #1F8FEB;
   height: 35px;
-
 }
 
 .myInput {
   transition: border-color 0.1s ease 0s;
+
   input {
     height: 41px;
     padding: 10px 12px;
@@ -32,11 +21,32 @@ input[type=number] {
     background-color: transparent;
     width: 100%;
     color: #ffffff;
+
     &:focus {
       border-color: rgba(255, 255, 255, 0.4);
     }
+
+    &.filled {
+      border-color: #16D1D6;
+    }
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.3);
     }
+
+    &.error, &.customError {
+      border-color: #FF6767;
+    }
   }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
 }

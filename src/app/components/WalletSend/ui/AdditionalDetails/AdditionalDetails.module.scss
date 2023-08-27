@@ -1,6 +1,7 @@
 @use "sass:math";
 
 .detailsSelect {
+  margin: 5px 0;
 
 }
 
@@ -13,17 +14,25 @@
   justify-content: space-between;
   height: 41px;
   width: 100%;
-  &::after {
-    content: "";
-    background: url("../../../assets/svg/arrow-select.svg") 0 0 no-repeat;
+  border: 2px solid transparent;
+  img{
     width: 18px;
     display: block;
     height: 18px;
     flex: 0 0 18px;
+    max-width: 100%;
   }
+
+  transition: border-color 0.2s ease 0s;
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
   &.active {
     border-radius: 8px 8px 0 0;
-    &::after {
+
+    img {
       transform: rotate(-180deg);
     }
   }

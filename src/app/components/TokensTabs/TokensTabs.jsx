@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Assets from "./Assets/Assets";
 import History from "./History/History";
 import s from "./TokensTabs.module.scss";

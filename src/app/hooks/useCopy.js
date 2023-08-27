@@ -1,22 +1,19 @@
 import copy from "copy-to-clipboard";
-import React, { useState } from "react";
-import CopyModal from "../components/UI/CopyModal/CopyModal";
+import { useState } from "react";
 
 export const useCopy = () => {
-  const [copyModalVisible, setCopyModalVisible] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const copyToClipboard = (text) => {
     copy(text);
-    if (!copyModalVisible) {
-      setCopyModalVisible(true);
-      setTimeout(() => {
-        setCopyModalVisible(false);
-      }, 3000);
+    if (!copied) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
     }
   };
 
   return {
     copyToClipboard,
-    SuccessCopyModal: <CopyModal isVisible={copyModalVisible} />,
+    copied,
   };
 };
