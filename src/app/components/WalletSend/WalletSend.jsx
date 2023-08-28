@@ -128,6 +128,7 @@ const WalletSend = () => {
                     placeholder="Amount to transfer"
                     label="Amount:"
                     inputData={amount}
+                    isError={amount.value > 1000}
                   />
                   <MyInput
                     placeholder="Enter the comment"

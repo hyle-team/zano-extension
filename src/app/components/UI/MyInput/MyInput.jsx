@@ -5,7 +5,15 @@ import { classNames } from "../../../utils/classNames";
 
 const MyInput = memo((props) => {
   const id = nextId();
-  const { label, inputData, isValid, noActiveBorder, type, ...otherProps } = props;
+  const {
+    label,
+    inputData,
+    isValid,
+    noActiveBorder,
+    type,
+    isError,
+    ...otherProps
+  } = props;
   const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } =
     inputData;
 
@@ -37,7 +45,7 @@ const MyInput = memo((props) => {
           value={value}
           className={classNames("", {
             [cls.filled]: isFilled && !noActiveBorder,
-            [cls.error]: isDirty && !inputValid,
+            [cls.error]: (isDirty && !inputValid) || isError,
             [cls.customError]: isDirty && isValid === false && inputValid
           })}
           {...otherProps}
