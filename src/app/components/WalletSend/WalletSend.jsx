@@ -64,7 +64,7 @@ const WalletSend = () => {
   const openExplorer = (txId) => {
     // eslint-disable-next-line no-undef
     chrome.tabs.create({
-      url: `https://explorer.zano.org/block/${txId}`,
+      url: `https://testnet-explorer.zano.org/block/${txId}`,
     });
   };
 
