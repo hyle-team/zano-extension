@@ -6,7 +6,7 @@ import TokensTabs from "./components/TokensTabs/TokensTabs";
 import AppLoader from "./components/UI/AppLoader/AppLoader";
 import Wallet from "./components/Wallet/Wallet";
 import ModalConfirmation from "./components/ModalConfirmation/ModalConfirmation";
-import { fetchBackground } from "./utils/utils";
+import { comparePasswords, fetchBackground, getSessionLogIn, passwordExists, setPassword, setSessionLogIn } from "./utils/utils";
 import {
   updateWalletConnected,
   updateActiveWalletId,
@@ -20,11 +20,21 @@ import {
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
+import PasswordPage from "./components/PasswordPage/PasswordPage";
+import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
 
 function App() {
   const { state, dispatch } = useContext(Store);
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
 
+  const [incorrectPassword, setIncorrectPassword] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(getSessionLogIn());
+
+  // Flags of display
+  // creatingPassword flag has an effect only in case of loggedIn flag is false.
+  // creatingPassword flag means whether to show the password create screen or existing password enter screen.
+  const creatingPassword = !passwordExists();
+  
   const executeTransfer = useCallback(async () => {
     try {
       const response = await fetchBackground({
@@ -44,7 +54,7 @@ function App() {
     setConfirmationModalOpen(false);
     updateConfirmationModal(dispatch, null);
     // eslint-disable-next-line no-undef
-    chrome.storage.local.remove(["pendingTx"]);
+    chrome.storage?.local?.remove?.(["pendingTx"]);
     // eslint-disable-next-line no-undef
     chrome.action.setBadgeText({ text: "" });
   };
@@ -152,7 +162,7 @@ function App() {
           ],
         });
         // eslint-disable-next-line no-undef
-        chrome.storage.local.set({ pendingTx: request });
+        chrome.storage?.local?.set?.({ pendingTx: request });
         setConfirmationModalOpen(true);
         sendResponse({ status: "confirmation_pending" });
       }
@@ -176,7 +186,7 @@ function App() {
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
-    chrome.storage.local.get(["pendingTx"], function (result) {
+    chrome.storage?.local?.get?.(["pendingTx"], function (result) {
       if (result.pendingTx) {
         updateConfirmationModal(dispatch, {
           method: "SEND_TRANSFER",
@@ -194,11 +204,11 @@ function App() {
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
-    chrome.storage.local.get(["key"], function (result) {
+    chrome.storage?.local?.get?.(["key"], function (result) {
       let walletId = 0;
       if (!result.key) {
         // eslint-disable-next-line no-undef
-        chrome.storage.local.set({ key: walletId }, function () {
+        chrome.storage?.local?.set?.({ key: walletId }, function () {
           console.log("Active wallet set to", walletId);
         });
       } else {
@@ -222,14 +232,46 @@ function App() {
             onClose={handleCancel}
             onConfirm={handleConfirm}
           />
-          <Header />
+          {loggedIn  && <Header />}
           <AppLoader />
-          <div className="container">
-            <Router>
-              <Wallet />
-              <TokensTabs />
-            </Router>
-          </div>
+          {
+            loggedIn 
+            ?
+            (
+              <div className="container">
+                <Router>
+                  <Wallet />
+                  <TokensTabs />
+                </Router>
+              </div>
+            ) 
+            :
+            (
+              creatingPassword ? 
+              <PasswordCreatePage 
+                incorrectPassword={incorrectPassword} 
+                setIncorrectPassword={setIncorrectPassword} 
+                onConfirm={(password) => {
+                  setPassword(password);
+                  setLoggedIn(true);
+                  setSessionLogIn(true);
+                }}
+              /> : 
+              <PasswordPage 
+                incorrectPassword={incorrectPassword} 
+                setIncorrectPassword={setIncorrectPassword} 
+                onConfirm={(password) => {
+                  if (comparePasswords(password)) {
+                    setLoggedIn(true);
+                    setSessionLogIn(true);
+                  } else {
+                    setIncorrectPassword(true);
+                  }
+                }}
+              />
+            ) 
+          }
+          
         </>
       )}
     </div>

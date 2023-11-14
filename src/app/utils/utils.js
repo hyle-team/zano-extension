@@ -1,4 +1,5 @@
 import Big from "big.js";
+import sha256 from "sha256";
 
 export async function fetchBackground(data) {
   return new Promise((resolve, reject) => {
@@ -27,3 +28,28 @@ export const addZeros = (amount) => {
   const fixedAmount = bigAmount.times(multiplier);
   return fixedAmount;
 };
+
+export const setPassword = (password) => {
+  localStorage.setItem("hash", sha256(password));
+}
+
+export const comparePasswords = (password) => {
+  const hash = localStorage.getItem("hash");
+  return hash === sha256(password);
+}
+
+export const passwordExists = () => {
+  return !!localStorage.getItem("hash");
+}
+
+export const getSessionLogIn = () => {
+  return !!sessionStorage.getItem("login");
+}
+
+export const setSessionLogIn = (login) => {
+  if (login) {
+    sessionStorage.setItem("login", true);
+  } else {
+    sessionStorage.removeItem("login");
+  }
+}

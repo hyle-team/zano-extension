@@ -40,7 +40,7 @@ const MyInput = memo((props) => {
         <input
           onBlur={onBlur}
           onChange={(e) => onInputHandler(e)}
-          type="text"
+          type={type}
           id={id}
           value={value}
           className={classNames("", {
