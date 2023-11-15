@@ -15,6 +15,8 @@ chrome.runtime.onStartup.addListener(() => {
 
 let pendingTx = null;
 
+const userData = { login: false };
+
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
   if (result.pendingTx) {
@@ -148,6 +150,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ error: "No pending transaction" });
       }
       break;
+    
+    case "SET_LOGIN": {
+      userData.login = request.login;
+      sendResponse({ success: true });
+      break;
+    }
+
+    case "GET_LOGIN": {
+      sendResponse({ login: userData.login });
+      break;
+    }
 
     default:
       console.error("Unknown message method:", request.method);

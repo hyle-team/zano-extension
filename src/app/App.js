@@ -1,3 +1,4 @@
+/*global chrome*/
 import { useContext, useEffect, useState, useCallback } from "react";
 import { Router } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
@@ -28,12 +29,19 @@ function App() {
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
 
   const [incorrectPassword, setIncorrectPassword] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(getSessionLogIn());
+  const [loggedIn, setLoggedIn] = useState(false);
 
   // Flags of display
   // creatingPassword flag has an effect only in case of loggedIn flag is false.
   // creatingPassword flag means whether to show the password create screen or existing password enter screen.
   const creatingPassword = !passwordExists();
+
+  useEffect(() => {
+    async function loadLogin() {
+      setLoggedIn(await getSessionLogIn());
+    }
+    loadLogin();
+  }, []);
   
   const executeTransfer = useCallback(async () => {
     try {

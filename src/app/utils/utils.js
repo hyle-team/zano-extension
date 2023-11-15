@@ -1,3 +1,4 @@
+/*global chrome*/
 import Big from "big.js";
 import sha256 from "sha256";
 
@@ -42,14 +43,11 @@ export const passwordExists = () => {
   return !!localStorage.getItem("hash");
 }
 
-export const getSessionLogIn = () => {
-  return !!sessionStorage.getItem("login");
+export const getSessionLogIn = async () => {
+  // return !!localStorage.getItem("login");
+  return !!(await fetchBackground({ method: "GET_LOGIN" })).login;
 }
 
-export const setSessionLogIn = (login) => {
-  if (login) {
-    sessionStorage.setItem("login", true);
-  } else {
-    sessionStorage.removeItem("login");
-  }
+export const setSessionLogIn = async (login) => {
+  await fetchBackground({ method: "SET_LOGIN", login: !!login })
 }
