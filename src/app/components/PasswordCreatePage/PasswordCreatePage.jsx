@@ -46,7 +46,7 @@ function PasswordCreatePage(props) {
 				src={logo}
 				alt="Zano"
 			/>
-			<p>This password will unlock your Zano wallet on that device only. Zano cannot recover this password.</p>
+			<p>This password will unlock your Zano extension on that device.</p>
 			<div className={s.inputPanel}>
 				<MyInput
 					type="password"
