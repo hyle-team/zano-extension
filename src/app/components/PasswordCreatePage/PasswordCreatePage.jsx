@@ -30,8 +30,7 @@ function PasswordCreatePage(props) {
 	function onButtonClick() {
 		const correctPassword = (
 			password === passwordRepeat && 
-			password && 
-			password.match(/^[0-9a-z]+$/)
+			password
 		);
 
 		if (!correctPassword) return setInvalidPassword(true);

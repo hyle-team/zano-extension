@@ -61,9 +61,7 @@ function App() {
   const closeModal = () => {
     setConfirmationModalOpen(false);
     updateConfirmationModal(dispatch, null);
-    // eslint-disable-next-line no-undef
     chrome.storage?.local?.remove?.(["pendingTx"]);
-    // eslint-disable-next-line no-undef
     chrome.action.setBadgeText({ text: "" });
   };
 
@@ -93,7 +91,6 @@ function App() {
 
   useEffect(() => {
     const checkConnection = async () => {
-      // eslint-disable-next-line no-undef
       if (!chrome?.runtime?.sendMessage) return;
 
       const balanceData = await fetchBackground({
@@ -103,7 +100,6 @@ function App() {
     };
 
     const getWalletData = async () => {
-      // eslint-disable-next-line no-undef
       if (!chrome?.runtime?.sendMessage) return;
 
       const walletsList = await fetchBackground({ method: "GET_WALLETS" });
@@ -169,7 +165,6 @@ function App() {
             request.destinationChainId,
           ],
         });
-        // eslint-disable-next-line no-undef
         chrome.storage?.local?.set?.({ pendingTx: request });
         setConfirmationModalOpen(true);
         sendResponse({ status: "confirmation_pending" });
@@ -177,23 +172,18 @@ function App() {
       return true;
     };
 
-    // eslint-disable-next-line no-undef
     if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
-      // eslint-disable-next-line no-undef
       chrome.runtime.onMessage.addListener(listener);
     }
 
     return () => {
-      // eslint-disable-next-line no-undef
       if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
-        // eslint-disable-next-line no-undef
         chrome.runtime.onMessage.removeListener(listener);
       }
     };
   }, [dispatch]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
     chrome.storage?.local?.get?.(["pendingTx"], function (result) {
       if (result.pendingTx) {
         updateConfirmationModal(dispatch, {
@@ -211,11 +201,9 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
     chrome.storage?.local?.get?.(["key"], function (result) {
       let walletId = 0;
       if (!result.key) {
-        // eslint-disable-next-line no-undef
         chrome.storage?.local?.set?.({ key: walletId }, function () {
           console.log("Active wallet set to", walletId);
         });

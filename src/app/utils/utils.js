@@ -5,7 +5,6 @@ import sha256 from "sha256";
 export async function fetchBackground(data) {
   return new Promise((resolve, reject) => {
     try {
-      // eslint-disable-next-line no-undef
       chrome.runtime.sendMessage(data, function (response) {
         resolve(response);
       });
@@ -44,7 +43,6 @@ export const passwordExists = () => {
 }
 
 export const getSessionLogIn = async () => {
-  // return !!localStorage.getItem("login");
   return !!(await fetchBackground({ method: "GET_LOGIN" })).login;
 }
 
