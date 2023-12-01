@@ -174,13 +174,13 @@ export const ionicSwap = async (swapParams) => {
       method: "ionic_swap_generate_proposal",
       params: {
         proposal: {
-          to_bob: [
+          to_initiator: [
             {
               asset_id: swapParams.destinationAssetID,
               amount: swapParams.destinationAssetAmount * 1e12,
             },
           ],
-          to_alice: [
+          to_finalizer: [
             {
               asset_id: swapParams.currentAssetID,
               amount: swapParams.currentAssetAmount * 1e12,
@@ -194,6 +194,13 @@ export const ionicSwap = async (swapParams) => {
       },
     }),
   });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
 };
 
 export const ionicSwapAccept = async (swapParams) => {
