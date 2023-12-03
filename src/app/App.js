@@ -38,7 +38,8 @@ function App() {
 
   useEffect(() => {
     async function loadLogin() {
-      setLoggedIn(await getSessionLogIn());
+      const sessionLoggedIn = await getSessionLogIn();
+      setLoggedIn(sessionLoggedIn);
     }
     loadLogin();
   }, []);

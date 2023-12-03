@@ -58,7 +58,8 @@ function PasswordCreatePage(props) {
 					type="password"
 					placeholder="Repeat password"
 					inputData={{ value: passwordRepeat, isDirty: !!(incorrectPassword || invalidPassword) }}
-					onChange={(event) => onPasswordInput(event, true)}
+					onChange={event => onPasswordInput(event, true)}
+					onKeyDown={event => event.key === "Enter" ? onButtonClick() : undefined}
 				/>
 				<Button onClick={onButtonClick}>
 					Create

@@ -37,6 +37,7 @@ function PasswordPage(props) {
 					type="password"
 					inputData={{ value: password, isDirty: !!incorrectPassword }}
 					onChange={onInputChange}
+					onKeyDown={event => event.key === "Enter" ? onButtonClick() : undefined}
 				/>
 				<Button onClick={onButtonClick}>
 					Enter
