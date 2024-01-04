@@ -163,36 +163,41 @@ export const getWalletData = async () => {
 };
 
 export const ionicSwap = async (swapParams) => {
+
+  const swapRequest = {
+    jsonrpc: "2.0",
+    id: "0",
+    method: "ionic_swap_generate_proposal",
+    params: {
+      proposal: {
+        to_initiator: [
+          {
+            asset_id: swapParams.destinationAssetID,
+            amount: swapParams.destinationAssetAmount * 1e12,
+          },
+        ],
+        to_finalizer: [
+          {
+            asset_id: swapParams.currentAssetID,
+            amount: swapParams.currentAssetAmount * 1e12,
+          },
+        ],
+        mixins: 10,
+        fee_paid_by_a: 10000000000,
+        expiration_time: swapParams.expirationTimestamp,
+      },
+      destination_address: swapParams.destinationAddress,
+    }
+  };
+
+  console.log('send swap request:', swapRequest);
+
   const response = await fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "ionic_swap_generate_proposal",
-      params: {
-        proposal: {
-          to_initiator: [
-            {
-              asset_id: swapParams.destinationAssetID,
-              amount: swapParams.destinationAssetAmount * 1e12,
-            },
-          ],
-          to_finalizer: [
-            {
-              asset_id: swapParams.currentAssetID,
-              amount: swapParams.currentAssetAmount * 1e12,
-            },
-          ],
-          mixins: 10,
-          fee_paid_by_a: 10000000000,
-          expiration_time: swapParams.expirationTimestamp,
-        },
-        destination_address: swapParams.destinationAddress,
-      },
-    }),
+    body: JSON.stringify(swapRequest)
   });
 
   if (!response.ok) {
@@ -204,6 +209,9 @@ export const ionicSwap = async (swapParams) => {
 };
 
 export const ionicSwapAccept = async (swapParams) => {
+  
+  console.log(swapParams.hex_raw_proposal);
+
   const response = await fetch("http://localhost:12111/json_rpc", {
     method: "POST",
     headers: {
