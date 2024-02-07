@@ -43,7 +43,7 @@ function App() {
     }
     loadLogin();
   }, []);
-  
+
   const executeTransfer = useCallback(async () => {
     try {
       const response = await fetchBackground({
@@ -229,9 +229,18 @@ function App() {
             onClose={handleCancel}
             onConfirm={handleConfirm}
           />
-          {loggedIn  && <Header />}
+          {/* {loggedIn && <Header />} */}
+          <Header/>
           <AppLoader />
-          {
+
+          <div className="container">
+            <Router>
+              <Wallet />
+              <TokensTabs />
+            </Router>
+          </div>
+
+          {/* {
             loggedIn 
             ?
             (
@@ -267,8 +276,8 @@ function App() {
                 }}
               />
             ) 
-          }
-          
+          } */}
+
         </>
       )}
     </div>
