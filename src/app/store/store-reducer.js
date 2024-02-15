@@ -108,6 +108,8 @@ const reducer = (state, action) => {
       return { ...state, confirmationModal: action.payload };
     case "TRANSACTION_STATUS_UPDATED":
       return { ...state, transactionStatus: action.payload };
+    case "SET_CONNECT_KEY":
+      return { ...state, connectKey: action.payload }
     default:
       return state;
   }

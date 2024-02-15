@@ -337,3 +337,11 @@ export const transferBridge = async (
   const data = await response.json();
   return data;
 };
+
+export const createConnectKey = async () => {
+  await fetch("http://localhost:12111/connect-api-consumer");
+}
+
+export const validateConnectKey = async () => {
+  await fetch("http://localhost:12111/validate-connect-key");
+}

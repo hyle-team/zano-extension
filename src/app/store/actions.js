@@ -67,3 +67,10 @@ export const updateTransactionStatus = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const setConnectKey = (dispatch, state) => {
+  return dispatch({
+    type: "SET_CONNECT_KEY",
+    payload: state
+  });
+};

@@ -23,6 +23,8 @@ import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
+import ConnectPage from "./components/ConnectPage/ConnectPage";
+import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -219,6 +221,8 @@ function App() {
     });
   }, [dispatch]);
 
+  const appConnected = !!(state.connectKey || ConnectKeyUtils.getConnectKeyEncrypted());
+
   return (
     <div className="App">
       <AppPlug />
@@ -229,55 +233,58 @@ function App() {
             onClose={handleCancel}
             onConfirm={handleConfirm}
           />
-          {/* {loggedIn && <Header />} */}
-          <Header/>
+          {loggedIn && <Header />}
+          {/* <Header/> */}
           <AppLoader />
 
-          <div className="container">
+          {/* <div className="container">
             <Router>
               <Wallet />
               <TokensTabs />
             </Router>
-          </div>
+          </div> */}
 
-          {/* {
-            loggedIn 
-            ?
+          {appConnected ?
             (
-              <div className="container">
-                <Router>
-                  <Wallet />
-                  <TokensTabs />
-                </Router>
-              </div>
-            ) 
-            :
-            (
-              creatingPassword ? 
-              <PasswordCreatePage 
-                incorrectPassword={incorrectPassword} 
-                setIncorrectPassword={setIncorrectPassword} 
-                onConfirm={(password) => {
-                  setPassword(password);
-                  setLoggedIn(true);
-                  setSessionLogIn(true);
-                }}
-              /> : 
-              <PasswordPage 
-                incorrectPassword={incorrectPassword} 
-                setIncorrectPassword={setIncorrectPassword} 
-                onConfirm={(password) => {
-                  if (comparePasswords(password)) {
+              loggedIn 
+              ?
+              (
+                <div className="container">
+                  <Router>
+                    <Wallet />
+                    <TokensTabs />
+                  </Router>
+                </div>
+              ) 
+              :
+              (
+                creatingPassword ? 
+                <PasswordCreatePage 
+                  incorrectPassword={incorrectPassword} 
+                  setIncorrectPassword={setIncorrectPassword} 
+                  onConfirm={(password) => {
+                    setPassword(password);
+                    if (state.connectKey) ConnectKeyUtils.setConnectKey(state.connectKey, password);
                     setLoggedIn(true);
                     setSessionLogIn(true);
-                  } else {
-                    setIncorrectPassword(true);
-                  }
-                }}
-              />
-            ) 
-          } */}
-
+                  }}
+                /> : 
+                <PasswordPage 
+                  incorrectPassword={incorrectPassword} 
+                  setIncorrectPassword={setIncorrectPassword} 
+                  onConfirm={(password) => {
+                    if (comparePasswords(password)) {
+                      setLoggedIn(true);
+                      setSessionLogIn(true);
+                    } else {
+                      setIncorrectPassword(true);
+                    }
+                  }}
+                />
+              ) 
+            ) : 
+            <ConnectPage />  
+          }
         </>
       )}
     </div>
