@@ -21,6 +21,8 @@ function generateAccessToken() {
     salt: generateRandomString(64)
   })
 
+  console.log(dataToEncrypt);
+
   const encrypted = publicKey.encrypt(dataToEncrypt);
 
   return btoa(encrypted);

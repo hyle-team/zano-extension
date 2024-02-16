@@ -17,6 +17,8 @@ export default function ConnectPage() {
     const [keyValue, setKeyValue] = useState("");
     const [receivedPublicKey, setReceivedPublicKey] = useState("");
 
+    const [keyIncorrect, setKeyIncorrect] = useState(false);
+
     async function connectClick() {
         const response = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
         setReceivedPublicKey(response.publicKey);
@@ -27,13 +29,20 @@ export default function ConnectPage() {
         const publicKey = forge.pki.publicKeyFromPem(receivedPublicKey);
         const encrypted = publicKey.encrypt(keyValue);
         const response = await fetchBackground({ method: "VALIDATE_CONNECT_KEY", key: encrypted });
-        console.log(response);
+
         if (response.success) {
             setConnectData(dispatch, {
                 token: keyValue,
                 publicKey: receivedPublicKey
             });
+        } else {
+            setKeyIncorrect(true);
         }
+    }
+
+    function onKeyInput(event) {
+        setKeyValue(event.currentTarget.value);
+        setKeyIncorrect(false);
     }
 
     return (
@@ -51,9 +60,10 @@ export default function ConnectPage() {
                             return (
                                 <div className={s.connectCodeContent}>
                                     <MyInput 
-                                        inputData={{ value: keyValue }} 
+                                        inputData={{ value: keyValue, isDirty: keyIncorrect }} 
                                         label="Connect key"
-                                        onChange={event => setKeyValue(event.currentTarget.value)}
+                                        placeholder="Enter key here"
+                                        onChange={onKeyInput}
                                     />
                                     <Button onClick={continueClick}>Continue</Button>
                                 </div>

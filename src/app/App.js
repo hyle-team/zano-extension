@@ -34,6 +34,10 @@ function App() {
   const [incorrectPassword, setIncorrectPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
+  console.log(state);
+
+  const [firstWalletLoaded, setFirstWalletLoaded] = useState(false);
+
   // Flags of display
   // creatingPassword flag has an effect only in case of loggedIn flag is false.
   // creatingPassword flag means whether to show the password create screen or existing password enter screen.
@@ -126,18 +130,19 @@ function App() {
 
       console.log("wallet data updated");
       updateLoading(dispatch, false);
+      setFirstWalletLoaded(true);
     };
 
     const intervalId = setInterval(async () => {
       await checkConnection();
       console.log("connected", state.isConnected);
-      if (state.isConnected) {
+      if (state.isConnected && loggedIn) {
         await getWalletData();
       }
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [dispatch, state.isConnected, state.activeWalletId]);
+  }, [dispatch, state.isConnected, state.activeWalletId, loggedIn]);
 
   useEffect(() => {
     getZanoPrice().then((priceData) => {
@@ -289,7 +294,7 @@ function App() {
             onConfirm={handleConfirm}
           />
           {loggedIn && <Header />}
-          <AppLoader />
+          <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
           {appConnected ?
             (
@@ -304,7 +309,7 @@ function App() {
                   </div>
                 )
                 :
-                <PasswordPages />
+                PasswordPages()
             )
 
             :
