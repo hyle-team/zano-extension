@@ -1,25 +1,55 @@
 import { addZeros, removeZeros } from "../app/utils/utils";
+import { apiCredentials } from "./background";
+import forge from "node-forge";
+
+function generateAccessToken() {
+  if (!apiCredentials?.publicKey || !apiCredentials?.token) {
+    throw new Error("No API credentials found, extension is not connected");
+  }
+
+  const publicKey = forge.pki.publicKeyFromPem(apiCredentials.publicKey);
+
+  function generateRandomString(length) {
+    const bytes = forge.random.getBytesSync(Math.ceil(length / 2));
+    const hexString = forge.util.bytesToHex(bytes);
+    return hexString.substring(0, length);
+  }
+
+  const dataToEncrypt = JSON.stringify({
+    accessToken: apiCredentials.token,
+    timestamp: +Date.now(),
+    salt: generateRandomString(64)
+  })
+
+  const encrypted = publicKey.encrypt(dataToEncrypt);
+
+  return btoa(encrypted);
+}
+
+export const fetchData = async (method, params = {}) =>
+  fetch("http://localhost:12111/json_rpc", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Zano-Access-Token": generateAccessToken()
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "0",
+      method,
+      params,
+    }),
+  });
 
 const fetchTxData = async () => {
   try {
-    const response = await fetch("http://localhost:12111/json_rpc", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "0",
-        method: "get_recent_txs_and_info",
-        params: {
-          offset: 0,
-          update_provision_info: true,
-          exclude_mining_txs: true,
-          count: 20,
-          order: "FROM_END_TO_BEGIN",
-          exclude_unconfirmed: false,
-        },
-      }),
+    const response = await fetchData("get_recent_txs_and_info", {
+      offset: 0,
+      update_provision_info: true,
+      exclude_mining_txs: true,
+      count: 20,
+      order: "FROM_END_TO_BEGIN",
+      exclude_unconfirmed: false,
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -31,20 +61,6 @@ const fetchTxData = async () => {
     throw error;
   }
 };
-
-export const fetchData = async (method, params = {}) =>
-  fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method,
-      params,
-    }),
-  });
 
 export const getAlias = async (address) => {
   const response = await fetchData("get_alias_by_address", address);
@@ -192,12 +208,25 @@ export const ionicSwap = async (swapParams) => {
 
   console.log('send swap request:', swapRequest);
 
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetchData("ionic_swap_generate_proposal", {
+    proposal: {
+      to_initiator: [
+        {
+          asset_id: swapParams.destinationAssetID,
+          amount: swapParams.destinationAssetAmount * 1e12,
+        },
+      ],
+      to_finalizer: [
+        {
+          asset_id: swapParams.currentAssetID,
+          amount: swapParams.currentAssetAmount * 1e12,
+        },
+      ],
+      mixins: 10,
+      fee_paid_by_a: 10000000000,
+      expiration_time: swapParams.expirationTimestamp,
     },
-    body: JSON.stringify(swapRequest)
+    destination_address: swapParams.destinationAddress,
   });
 
   if (!response.ok) {
@@ -209,22 +238,11 @@ export const ionicSwap = async (swapParams) => {
 };
 
 export const ionicSwapAccept = async (swapParams) => {
-  
+
   console.log(swapParams.hex_raw_proposal);
 
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "ionic_swap_accept_proposal",
-      params: {
-        hex_raw_proposal: swapParams.hex_raw_proposal,
-      },
-    }),
+  const response = await fetchData("ionic_swap_accept_proposal", {
+    hex_raw_proposal: swapParams.hex_raw_proposal,
   });
 
   if (!response.ok) {
@@ -248,21 +266,10 @@ export const transfer = async (
     },
   ];
 
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "transfer",
-      params: {
-        destinations,
-        fee: 10000000000,
-        mixin: 10,
-      },
-    }),
+  const response = await fetchData("transfer", {
+    destinations,
+    fee: 10000000000,
+    mixin: 10,
   });
 
   if (!response.ok) {
@@ -302,30 +309,19 @@ export const transferBridge = async (
     byte.toString(16).padStart(2, "0")
   ).join("");
 
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "0",
-      method: "transfer",
-      params: {
-        destinations,
-        fee: 10000000000,
-        mixin: 10,
-        service_entries_permanent: true,
-        service_entries: [
-          {
-            service_id: "X",
-            instruction: "",
-            body: bodyHex,
-            flags: 5,
-          },
-        ],
+  const response = await fetchData("transfer", {
+    destinations,
+    fee: 10000000000,
+    mixin: 10,
+    service_entries_permanent: true,
+    service_entries: [
+      {
+        service_id: "X",
+        instruction: "",
+        body: bodyHex,
+        flags: 5,
       },
-    }),
+    ],
   });
 
   // console.log(response);
@@ -339,9 +335,20 @@ export const transferBridge = async (
 };
 
 export const createConnectKey = async () => {
-  await fetch("http://localhost:12111/connect-api-consumer");
+  return await fetch("http://localhost:12111/connect-api-consumer", {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then(r => r.json());
 }
 
-export const validateConnectKey = async () => {
-  await fetch("http://localhost:12111/validate-connect-key");
+export const validateConnectKey = async (key) => {
+  return await fetch("http://localhost:12111/validate-connection-key", {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ key })
+  }).then(r => r.json());
 }

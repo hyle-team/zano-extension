@@ -17,6 +17,7 @@ import {
   updateLoading,
   updateConfirmationModal,
   updateTransactionStatus,
+  setConnectData,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -96,10 +97,11 @@ function App() {
     const checkConnection = async () => {
       if (!chrome?.runtime?.sendMessage) return;
 
-      const balanceData = await fetchBackground({
-        method: "GET_WALLET_BALANCE",
+      const walletActive = await fetchBackground({
+        method: "PING_WALLET",
       });
-      updateWalletConnected(dispatch, !!balanceData.data);
+      updateWalletConnected(dispatch, walletActive.data);
+      updateLoading(dispatch, false);
     };
 
     const getWalletData = async () => {
@@ -223,6 +225,59 @@ function App() {
 
   const appConnected = !!(state.connectKey || ConnectKeyUtils.getConnectKeyEncrypted());
 
+  useEffect(() => {
+    if (state.connectKey && state.publicKey) {
+      fetchBackground({
+        method: "SET_API_CREDENTIALS",
+        credentials: {
+          token: state.connectKey,
+          publicKey: state.publicKey,
+        }
+      });
+    }
+  }, [state.connectKey, state.publicKey]);
+
+
+  function PasswordPages() {
+
+    if (creatingPassword) {
+      return (
+        <PasswordCreatePage
+          incorrectPassword={incorrectPassword}
+          setIncorrectPassword={setIncorrectPassword}
+          onConfirm={(password) => {
+            setPassword(password);
+            if (state.connectKey) ConnectKeyUtils.setConnectData(state.connectKey, state.publicKey, password);
+            setLoggedIn(true);
+            setSessionLogIn(true);
+          }}
+        />
+      );
+    } else {
+      return (
+        <PasswordPage
+          incorrectPassword={incorrectPassword}
+          setIncorrectPassword={setIncorrectPassword}
+          onConfirm={(password) => {
+            if (comparePasswords(password)) {
+              setLoggedIn(true);
+              setSessionLogIn(true);
+              const connectData = ConnectKeyUtils.getConnectData(password);
+              if (connectData?.token) {
+                setConnectData(dispatch, {
+                  token: connectData.token,
+                  publicKey: connectData.publicKey
+                });
+              }
+            } else {
+              setIncorrectPassword(true);
+            }
+          }}
+        />
+      );
+    }
+  }
+
   return (
     <div className="App">
       <AppPlug />
@@ -234,56 +289,27 @@ function App() {
             onConfirm={handleConfirm}
           />
           {loggedIn && <Header />}
-          {/* <Header/> */}
           <AppLoader />
-
-          {/* <div className="container">
-            <Router>
-              <Wallet />
-              <TokensTabs />
-            </Router>
-          </div> */}
 
           {appConnected ?
             (
-              loggedIn 
-              ?
-              (
-                <div className="container">
-                  <Router>
-                    <Wallet />
-                    <TokensTabs />
-                  </Router>
-                </div>
-              ) 
-              :
-              (
-                creatingPassword ? 
-                <PasswordCreatePage 
-                  incorrectPassword={incorrectPassword} 
-                  setIncorrectPassword={setIncorrectPassword} 
-                  onConfirm={(password) => {
-                    setPassword(password);
-                    if (state.connectKey) ConnectKeyUtils.setConnectKey(state.connectKey, password);
-                    setLoggedIn(true);
-                    setSessionLogIn(true);
-                  }}
-                /> : 
-                <PasswordPage 
-                  incorrectPassword={incorrectPassword} 
-                  setIncorrectPassword={setIncorrectPassword} 
-                  onConfirm={(password) => {
-                    if (comparePasswords(password)) {
-                      setLoggedIn(true);
-                      setSessionLogIn(true);
-                    } else {
-                      setIncorrectPassword(true);
-                    }
-                  }}
-                />
-              ) 
-            ) : 
-            <ConnectPage />  
+              loggedIn
+                ?
+                (
+                  <div className="container">
+                    <Router>
+                      <Wallet />
+                      <TokensTabs />
+                    </Router>
+                  </div>
+                )
+                :
+                <PasswordPages />
+            )
+
+            :
+
+            <ConnectPage />
           }
         </>
       )}

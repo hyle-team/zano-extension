@@ -1,11 +1,19 @@
 import CryptoJS from "crypto-js";
 
 export default class ConnectKeyUtils {
-    static setConnectKey(key, extPass) {
-        localStorage.setItem("connectKey", CryptoJS.AES.encrypt(key, extPass).toString());
+    static setConnectData(key, publicKey, extPass) {
+        const data = JSON.stringify({ token: key, publicKey: publicKey });
+        localStorage.setItem("connectKey", CryptoJS.AES.encrypt(data, extPass).toString());
     }
 
     static getConnectKeyEncrypted() {
         return localStorage.getItem("connectKey");
+    }
+    
+    static getConnectData(password) {
+        const encrypted = localStorage.getItem("connectKey");
+        const decrypted = CryptoJS.AES.decrypt(encrypted, password).toString(CryptoJS.enc.Utf8);
+        const data = JSON.parse(decrypted);
+        return data;
     }
 }

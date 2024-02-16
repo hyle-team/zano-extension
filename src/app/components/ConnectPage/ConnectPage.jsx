@@ -4,8 +4,9 @@ import logo from "../../assets/svg/logo.svg";
 import { useContext, useState } from "react";
 import MyInput from "../UI/MyInput/MyInput";
 import { fetchBackground } from "../../utils/utils";
-import { setConnectKey } from "../../store/actions";
+import { setConnectData } from "../../store/actions";
 import { Store } from "../../store/store-reducer";
+import forge from "node-forge";
 
 export default function ConnectPage() {
     const { dispatch } = useContext(Store);
@@ -14,15 +15,25 @@ export default function ConnectPage() {
     const [connectState, setConnectState] = useState("start");
 
     const [keyValue, setKeyValue] = useState("");
+    const [receivedPublicKey, setReceivedPublicKey] = useState("");
 
     async function connectClick() {
         const response = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
+        setReceivedPublicKey(response.publicKey);
         if (response.success) setConnectState("code");
     }
 
     async function continueClick() {
-        const response = await fetchBackground({ method: "VALIDATE_CONNECT_KEY" });
-        if (response.success) setConnectKey(dispatch, keyValue);
+        const publicKey = forge.pki.publicKeyFromPem(receivedPublicKey);
+        const encrypted = publicKey.encrypt(keyValue);
+        const response = await fetchBackground({ method: "VALIDATE_CONNECT_KEY", key: encrypted });
+        console.log(response);
+        if (response.success) {
+            setConnectData(dispatch, {
+                token: keyValue,
+                publicKey: receivedPublicKey
+            });
+        }
     }
 
     return (

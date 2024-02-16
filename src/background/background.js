@@ -15,6 +15,8 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
+export let apiCredentials = null;
+
 let pendingTx = null;
 
 const userData = { login: false };
@@ -29,6 +31,18 @@ chrome.storage.local.get("pendingTx", (result) => {
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.method) {
+    case "SET_API_CREDENTIALS":
+      apiCredentials = request.credentials;
+      break;
+
+    case "PING_WALLET": 
+      fetch('http://localhost:12111/ping')
+      .then(res => res.json())
+      .then(res => sendResponse({ data: true }))
+      .catch(err => sendResponse({ data: false }));
+      break;
+      
+
     case "SET_ACTIVE_WALLET":
       fetchData("mw_select_wallet", { wallet_id: request.id })
         .then((response) => response.json())
@@ -166,14 +180,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     case "CREATE_CONNECT_KEY": {
       createConnectKey()
-        .then(() => sendResponse({ success: true }))
+        .then((res) => sendResponse({ success: true, publicKey: res?.publicKey }))
         .catch(() => sendResponse({ error: "Internal error" }));
       break;
     }
 
     case "VALIDATE_CONNECT_KEY": {
-      validateConnectKey()
-        .then(() => sendResponse({ success: true }))
+      validateConnectKey(request.key)
+        .then((res) => sendResponse(res))
         .catch(() => sendResponse({ error: "Internal error" }));
       break;
     }
