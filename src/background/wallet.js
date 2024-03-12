@@ -28,7 +28,7 @@ function generateAccessToken() {
   return btoa(encrypted);
 }
 
-export const fetchData = async (method, params = {}) =>
+export const fetchData = async (method, params = {}) => {
   fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
     headers: {
