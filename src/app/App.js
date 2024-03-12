@@ -33,14 +33,12 @@ function App() {
   const [incorrectPassword, setIncorrectPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
-  console.log(state);
-
   const [firstWalletLoaded, setFirstWalletLoaded] = useState(false);
 
   // Flags of display
   // creatingPassword flag has an effect only in case of loggedIn flag is false.
   // creatingPassword flag means whether to show the password create screen or existing password enter screen.
-  const creatingPassword = !passwordExists();
+  // const creatingPassword = !passwordExists();
 
   useEffect(() => {
     async function loadLogin() {
@@ -268,48 +266,52 @@ function App() {
 
   return (
     <div className="App">
-      <AppPlug />
-      {state.isConnected && (
-        <>
-          <ModalConfirmation
-            isOpen={confirmationModalOpen}
-            onClose={handleCancel}
-            onConfirm={handleConfirm}
+      <>
+        <ModalConfirmation
+          isOpen={confirmationModalOpen}
+          onClose={handleCancel}
+          onConfirm={handleConfirm}
+        />
+        {loggedIn && state.isConnected && <Header />}
+        <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
+
+        {appConnected ?
+          (
+            loggedIn
+              ?
+              (
+                state.isConnected 
+                  ?
+                  (
+                    <div className="container">
+                      <Router>
+                        <Wallet />
+                        <TokensTabs />
+                      </Router>
+                    </div>
+                  ) 
+                  :
+                  <AppPlug />
+              )
+              :
+              PasswordPages()
+          )
+
+          :
+
+          <ConnectPage 
+            incorrectPassword={incorrectPassword}
+            setIncorrectPassword={setIncorrectPassword}
+            onConfirm={(password, connectKey, publicKey) => {
+              setPassword(password);
+              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, password);
+              setLoggedIn(true);
+              setSessionLogIn(true);
+            }}
           />
-          {loggedIn && <Header />}
-          <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
+        }
+      </>
 
-          {appConnected ?
-            (
-              loggedIn
-                ?
-                (
-                  <div className="container">
-                    <Router>
-                      <Wallet />
-                      <TokensTabs />
-                    </Router>
-                  </div>
-                )
-                :
-                PasswordPages()
-            )
-
-            :
-
-            <ConnectPage 
-              incorrectPassword={incorrectPassword}
-              setIncorrectPassword={setIncorrectPassword}
-              onConfirm={(password, connectKey, publicKey) => {
-                setPassword(password);
-                if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, password);
-                setLoggedIn(true);
-                setSessionLogIn(true);
-              }}
-            />
-          }
-        </>
-      )}
     </div>
   );
 }

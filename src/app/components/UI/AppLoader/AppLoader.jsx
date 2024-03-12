@@ -10,7 +10,7 @@ const AppLoader = ({ isSmall, firstWalletLoaded, loggedIn }) => {
 
   return (
     <>
-      {(state.isLoading || (loggedIn && !firstWalletLoaded)) && (
+      {(state.isLoading || (state.isConnected !== false && loggedIn && !firstWalletLoaded)) && (
         <div className={s.loaderWrapper}>
           <div className={s.loaderContent}>
             <div className={s.logo}>
