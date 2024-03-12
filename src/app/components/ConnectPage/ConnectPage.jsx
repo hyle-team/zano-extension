@@ -65,14 +65,15 @@ export default function ConnectPage({
         setConnectData(dispatch, {
             token: keyValue,
             publicKey: publicKeyResponse.publicKey,
-            port: walletPort // not handled
+            port: walletPort
         });
 
         if (onConfirm) {
             onConfirm(
                 password, 
                 keyValue, 
-                publicKeyResponse.publicKey
+                publicKeyResponse.publicKey,
+                walletPort
             );
         } else {
             throw new Error("No onConfirm function provided");

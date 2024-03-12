@@ -234,6 +234,7 @@ function App() {
         credentials: {
           token: state.connectKey,
           publicKey: state.publicKey,
+          port: state.port
         }
       });
     }
@@ -302,9 +303,9 @@ function App() {
           <ConnectPage 
             incorrectPassword={incorrectPassword}
             setIncorrectPassword={setIncorrectPassword}
-            onConfirm={(password, connectKey, publicKey) => {
+            onConfirm={(password, connectKey, publicKey, walletPort) => {
               setPassword(password);
-              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, password);
+              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, walletPort, password);
               setLoggedIn(true);
               setSessionLogIn(true);
             }}

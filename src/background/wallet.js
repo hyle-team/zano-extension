@@ -29,7 +29,7 @@ function generateAccessToken() {
 }
 
 export const fetchData = async (method, params = {}) =>
-  fetch("http://localhost:12111/json_rpc", {
+  fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -337,7 +337,7 @@ export const transferBridge = async (
 };
 
 export const createConnectKey = async () => {
-  return await fetch("http://localhost:12111/connect-api-consumer", {
+  return await fetch(`http://localhost:${apiCredentials.port}/connect-api-consumer`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -346,7 +346,7 @@ export const createConnectKey = async () => {
 }
 
 export const validateConnectKey = async (key) => {
-  return await fetch("http://localhost:12111/validate-connection-key", {
+  return await fetch(`http://localhost:${apiCredentials.port}/validate-connection-key`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",

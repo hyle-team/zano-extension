@@ -1,8 +1,8 @@
 import CryptoJS from "crypto-js";
 
 export default class ConnectKeyUtils {
-    static setConnectData(key, publicKey, extPass) {
-        const data = JSON.stringify({ token: key, publicKey: publicKey });
+    static setConnectData(key, publicKey, walletPort, extPass) {
+        const data = JSON.stringify({ token: key, publicKey: publicKey, port: walletPort });
         localStorage.setItem("connectKey", CryptoJS.AES.encrypt(data, extPass).toString());
     }
 

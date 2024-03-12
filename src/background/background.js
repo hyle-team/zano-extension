@@ -15,7 +15,9 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
-export let apiCredentials = null;
+export let apiCredentials = {
+  port: 12111,
+};
 
 let pendingTx = null;
 
@@ -40,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case "PING_WALLET": 
-      fetch('http://localhost:12111/ping')
+      fetch(`http://localhost:${apiCredentials.port}/ping`)
       .then(res => res.json())
       .then(res => sendResponse({ data: true }))
       .catch(err => sendResponse({ data: false }));
