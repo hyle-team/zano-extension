@@ -17,55 +17,66 @@ export default function ConnectPage({
 
 
     const [keyValue, setKeyValue] = useState("");
-    const [receivedPublicKey, setReceivedPublicKey] = useState("");
 
     const [keyIncorrect, setKeyIncorrect] = useState(false);
     const [portIncorrect, setPortIncorrect] = useState(false);
 
     const [password, setPassword] = useState("");
-	const [passwordRepeat, setPasswordRepeat] = useState("");
+    const [passwordRepeat, setPasswordRepeat] = useState("");
     const [walletPort, setWalletPort] = useState("12111");
 
-	const [invalidPassword, setInvalidPassword] = useState(false);
+    const [invalidPassword, setInvalidPassword] = useState(false);
 
-	function onPasswordInput(event, repeat) {
-		const { value } = event.currentTarget;
-		setIncorrectPassword(false);
-		setInvalidPassword(false);
-		if (repeat) {
-			setPasswordRepeat(value);
-		} else {
-			setPassword(value);
-		}
-	}
-
-    async function fetchPublicKey() {
-        const response = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
-        setReceivedPublicKey(response.publicKey);
+    function onPasswordInput(event, repeat) {
+        const { value } = event.currentTarget;
+        setIncorrectPassword(false);
+        setInvalidPassword(false);
+        if (repeat) {
+            setPasswordRepeat(value);
+        } else {
+            setPassword(value);
+        }
     }
 
     async function continueClick() {
 
-        
+
         const correctPassword = (
-            password === passwordRepeat && 
+            password === passwordRepeat &&
             password
         );
 
         if (!correctPassword) return setInvalidPassword(true);
 
         if (!parseInt(walletPort, 10)) {
+            console.log('PORT IS NOT A NUMBER');
             return setPortIncorrect(true);
         }
 
         await fetchBackground({ method: "SET_API_CREDENTIALS", credentials: { port: walletPort } });
 
+        const publicKeyResponse = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
+        
+        if (!publicKeyResponse.publicKey) {
+            console.log('NO PUBLIC KEY RECEIVED');
+            return setPortIncorrect(true);
+        }
+
         setConnectData(dispatch, {
             token: keyValue,
-            publicKey: receivedPublicKey
+            publicKey: publicKeyResponse.publicKey,
+            port: walletPort // not handled
         });
 
-        onConfirm && onConfirm(password, keyValue, receivedPublicKey);
+        if (onConfirm) {
+            onConfirm(
+                password, 
+                keyValue, 
+                publicKeyResponse.publicKey
+            );
+        } else {
+            throw new Error("No onConfirm function provided");
+        }
     }
 
     function onKeyInput(event) {
@@ -75,45 +86,45 @@ export default function ConnectPage({
 
     return (
         <div className={s.connect}>
-			<img
-				className={s.logoImage}
-				src={logo}
-				alt="Zano"
-			/>
+            <img
+                className={s.logoImage}
+                src={logo}
+                alt="Zano"
+            />
             <div className={s.connectCodeContent}>
                 <div className={s.input}>
-                    <MyInput 
-                            label="Wallet port"
+                    <MyInput
+                        label="Wallet port"
                         placeholder="Enter port here"
                         inputData={{ value: walletPort }}
-                    noValidation={true}
-                    type={"number"}
-                    onChange={event => {
-                        setWalletPort(event.currentTarget.value);
-                        setPortIncorrect(false);
-                    }} 
+                        noValidation={true}
+                        type={"number"}
+                        onChange={event => {
+                            setWalletPort(event.currentTarget.value);
+                            setPortIncorrect(false);
+                        }}
                     />
-                    {false && <p>Wallet is not responding</p>}
+                    {portIncorrect && <p>Wallet is not responding</p>}
                 </div>
 
-                <MyInput 
+                <MyInput
                     label="Wallet secret"
                     placeholder="Enter secret here"
                     inputData={{ value: keyValue, isDirty: keyIncorrect }}
                     onChange={onKeyInput}
                 />
-                <MyInput 
-					type="password"
+                <MyInput
+                    type="password"
                     label="Password"
                     placeholder="Password"
                     inputData={{ value: password, isDirty: !!(incorrectPassword || invalidPassword) }}
-					onChange={event => onPasswordInput(event, false)}
+                    onChange={event => onPasswordInput(event, false)}
                 />
-                <MyInput 
-					type="password"
+                <MyInput
+                    type="password"
                     placeholder="Repeat password"
                     inputData={{ value: passwordRepeat, isDirty: !!(incorrectPassword || invalidPassword) }}
-					onChange={event => onPasswordInput(event, true)}
+                    onChange={event => onPasswordInput(event, true)}
                 />
                 <Button onClick={continueClick}>Continue</Button>
             </div>

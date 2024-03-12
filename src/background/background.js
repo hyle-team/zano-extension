@@ -36,6 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ...(apiCredentials || {}),
         ...request.credentials
       };
+      console.log("API credentials set to", apiCredentials);
       break;
 
     case "PING_WALLET": 
