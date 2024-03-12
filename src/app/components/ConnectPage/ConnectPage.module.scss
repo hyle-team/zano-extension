@@ -20,9 +20,13 @@
     }
 
     .connectCodeContent {
-        margin-top: 130px;
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         gap: 10px;
+
+        > button {
+            margin-top: 10px;
+        }
     }
 }

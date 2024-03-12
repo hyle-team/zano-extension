@@ -23,7 +23,6 @@ import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
-import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 
@@ -244,43 +243,27 @@ function App() {
 
 
   function PasswordPages() {
-
-    if (creatingPassword) {
-      return (
-        <PasswordCreatePage
-          incorrectPassword={incorrectPassword}
-          setIncorrectPassword={setIncorrectPassword}
-          onConfirm={(password) => {
-            setPassword(password);
-            if (state.connectKey) ConnectKeyUtils.setConnectData(state.connectKey, state.publicKey, password);
+    return (
+      <PasswordPage
+        incorrectPassword={incorrectPassword}
+        setIncorrectPassword={setIncorrectPassword}
+        onConfirm={(password) => {
+          if (comparePasswords(password)) {
             setLoggedIn(true);
             setSessionLogIn(true);
-          }}
-        />
-      );
-    } else {
-      return (
-        <PasswordPage
-          incorrectPassword={incorrectPassword}
-          setIncorrectPassword={setIncorrectPassword}
-          onConfirm={(password) => {
-            if (comparePasswords(password)) {
-              setLoggedIn(true);
-              setSessionLogIn(true);
-              const connectData = ConnectKeyUtils.getConnectData(password);
-              if (connectData?.token) {
-                setConnectData(dispatch, {
-                  token: connectData.token,
-                  publicKey: connectData.publicKey
-                });
-              }
-            } else {
-              setIncorrectPassword(true);
+            const connectData = ConnectKeyUtils.getConnectData(password);
+            if (connectData?.token) {
+              setConnectData(dispatch, {
+                token: connectData.token,
+                publicKey: connectData.publicKey
+              });
             }
-          }}
-        />
-      );
-    }
+          } else {
+            setIncorrectPassword(true);
+          }
+        }}
+      />
+    );
   }
 
   return (
@@ -314,7 +297,16 @@ function App() {
 
             :
 
-            <ConnectPage />
+            <ConnectPage 
+              incorrectPassword={incorrectPassword}
+              setIncorrectPassword={setIncorrectPassword}
+              onConfirm={(password, connectKey, publicKey) => {
+                setPassword(password);
+                if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, password);
+                setLoggedIn(true);
+                setSessionLogIn(true);
+              }}
+            />
           }
         </>
       )}
