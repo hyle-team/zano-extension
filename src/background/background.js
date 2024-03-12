@@ -32,7 +32,10 @@ chrome.storage.local.get("pendingTx", (result) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.method) {
     case "SET_API_CREDENTIALS":
-      apiCredentials = request.credentials;
+      apiCredentials = {
+        ...(apiCredentials || {}),
+        ...request.credentials
+      };
       break;
 
     case "PING_WALLET": 

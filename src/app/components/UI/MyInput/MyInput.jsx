@@ -12,13 +12,14 @@ const MyInput = memo((props) => {
     noActiveBorder,
     type,
     isError,
+    noValidation,
     ...otherProps
   } = props;
   const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } =
     inputData;
 
   const onInputHandler = (e) => {
-    if (type === "number") {
+    if (type === "number" && !noValidation) {
       const newValue = e.target.value
         .replace(/[^0-9.]/g, "")
         .replace(/(\..*?)\..*/g, "$1")

@@ -20,9 +20,11 @@ export default function ConnectPage({
     const [receivedPublicKey, setReceivedPublicKey] = useState("");
 
     const [keyIncorrect, setKeyIncorrect] = useState(false);
+    const [portIncorrect, setPortIncorrect] = useState(false);
 
     const [password, setPassword] = useState("");
 	const [passwordRepeat, setPasswordRepeat] = useState("");
+    const [walletPort, setWalletPort] = useState("12111");
 
 	const [invalidPassword, setInvalidPassword] = useState(false);
 
@@ -37,15 +39,10 @@ export default function ConnectPage({
 		}
 	}
 
-    async function connectClick() {
+    async function fetchPublicKey() {
         const response = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
         setReceivedPublicKey(response.publicKey);
     }
-
-
-    useEffect(() => {
-        connectClick();
-    }, []);
 
     async function continueClick() {
 
@@ -57,21 +54,18 @@ export default function ConnectPage({
 
         if (!correctPassword) return setInvalidPassword(true);
 
-
-        const publicKey = forge.pki.publicKeyFromPem(receivedPublicKey);
-        const encrypted = publicKey.encrypt(keyValue);
-        const response = await fetchBackground({ method: "VALIDATE_CONNECT_KEY", key: encrypted });
-
-        if (response.success) {
-            setConnectData(dispatch, {
-                token: keyValue,
-                publicKey: receivedPublicKey
-            });
-    
-            onConfirm && onConfirm(password, keyValue, receivedPublicKey);
-        } else {
-            setKeyIncorrect(true);
+        if (!parseInt(walletPort, 10)) {
+            return setPortIncorrect(true);
         }
+
+        await fetchBackground({ method: "SET_API_CREDENTIALS", credentials: { port: walletPort } });
+
+        setConnectData(dispatch, {
+            token: keyValue,
+            publicKey: receivedPublicKey
+        });
+
+        onConfirm && onConfirm(password, keyValue, receivedPublicKey);
     }
 
     function onKeyInput(event) {
@@ -86,40 +80,17 @@ export default function ConnectPage({
 				src={logo}
 				alt="Zano"
 			/>
-            {/* <p>{connectState === "start" ? "Connect wallet app to continue" : "Type connect key from app"}</p> */}
-            {/* {
-                (() => {
-                    switch (connectState) {
-                        case "code": {
-                            return (
-                                <div className={s.connectCodeContent}>
-                                    <MyInput 
-                                        inputData={{ value: keyValue, isDirty: keyIncorrect }} 
-                                        label="Connect key"
-                                        placeholder="Enter key here"
-                                        onChange={onKeyInput}
-                                    />
-                                    <Button onClick={continueClick}>Continue</Button>
-                                </div>
-                                // <></>
-                            )
-                        }
-                        default: {
-                            return (
-                                <>
-                                    <Button onClick={connectClick}>Connect</Button>
-                                </>
-                            )
-                        }
-                    }
-                })()
-            } */}
             <div className={s.connectCodeContent}>
                 <MyInput 
-                    type="number"
                     label="Wallet port"
                     placeholder="Enter port here"
-                    inputData={{ value: "" }} 
+                    inputData={{ value: walletPort }}
+                    noValidation={true}
+                    type={"number"}
+                    onChange={event => {
+                        setWalletPort(event.currentTarget.value);
+                        setPortIncorrect(false);
+                    }} 
                 />
                 <MyInput 
                     label="Wallet secret"
