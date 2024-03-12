@@ -28,8 +28,9 @@ function generateAccessToken() {
   return btoa(encrypted);
 }
 
-export const fetchData = async (method, params = {}) =>
-  fetch("http://localhost:12111/json_rpc", {
+export const fetchData = async (method, params = {}) => {
+  const port = apiCredentials.port || 12111;
+  return fetch(`http://localhost:${port}/json_rpc`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -42,7 +43,8 @@ export const fetchData = async (method, params = {}) =>
       params,
     }),
   });
-
+}
+  
 const fetchTxData = async () => {
   try {
     const response = await fetchData("get_recent_txs_and_info", {
@@ -337,7 +339,9 @@ export const transferBridge = async (
 };
 
 export const createConnectKey = async () => {
-  return await fetch("http://localhost:12111/connect-api-consumer", {
+  const port = apiCredentials.port || 12111;
+
+  return await fetch(`http://localhost:${port}/connect-api-consumer`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -346,7 +350,9 @@ export const createConnectKey = async () => {
 }
 
 export const validateConnectKey = async (key) => {
-  return await fetch("http://localhost:12111/validate-connection-key", {
+  const port = apiCredentials.port || 12111;
+
+  return await fetch(`http://localhost:${port}/validate-connection-key`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",

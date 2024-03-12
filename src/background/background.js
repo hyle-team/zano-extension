@@ -30,13 +30,15 @@ chrome.storage.local.get("pendingTx", (result) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  const port = apiCredentials.port || 12111;
+
   switch (request.method) {
     case "SET_API_CREDENTIALS":
       apiCredentials = request.credentials;
       break;
 
     case "PING_WALLET": 
-      fetch('http://localhost:12111/ping')
+      fetch(`http://localhost:${port}/ping`)
       .then(res => res.json())
       .then(res => sendResponse({ data: true }))
       .catch(err => sendResponse({ data: false }));
