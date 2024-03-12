@@ -42,7 +42,8 @@ export const fetchData = async (method, params = {}) =>
       params,
     }),
   });
-
+}
+  
 const fetchTxData = async () => {
   try {
     const response = await fetchData("get_recent_txs_and_info", {
