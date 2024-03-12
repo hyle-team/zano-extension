@@ -32,7 +32,6 @@ chrome.storage.local.get("pendingTx", (result) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  const port = apiCredentials.port || 12111;
 
   switch (request.method) {
     case "SET_API_CREDENTIALS":
@@ -41,6 +40,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ...request.credentials
       };
       console.log("API credentials set to", apiCredentials);
+      sendResponse({ success: true });
       break;
 
     case "PING_WALLET": 
