@@ -86,41 +86,17 @@ export default function ConnectPage({
 				src={logo}
 				alt="Zano"
 			/>
-            {/* <p>{connectState === "start" ? "Connect wallet app to continue" : "Type connect key from app"}</p> */}
-            {/* {
-                (() => {
-                    switch (connectState) {
-                        case "code": {
-                            return (
-                                <div className={s.connectCodeContent}>
-                                    <MyInput 
-                                        inputData={{ value: keyValue, isDirty: keyIncorrect }} 
-                                        label="Connect key"
-                                        placeholder="Enter key here"
-                                        onChange={onKeyInput}
-                                    />
-                                    <Button onClick={continueClick}>Continue</Button>
-                                </div>
-                                // <></>
-                            )
-                        }
-                        default: {
-                            return (
-                                <>
-                                    <Button onClick={connectClick}>Connect</Button>
-                                </>
-                            )
-                        }
-                    }
-                })()
-            } */}
             <div className={s.connectCodeContent}>
-                <MyInput 
-                    type="number"
-                    label="Wallet port"
-                    placeholder="Enter port here"
-                    inputData={{ value: "" }} 
-                />
+                <div className={s.input}>
+                    <MyInput 
+                        type="number"
+                        label="Wallet port"
+                        placeholder="Enter port here"
+                        inputData={{ value: "" }} 
+                    />
+                    {false && <p>Wallet is not responding</p>}
+                </div>
+
                 <MyInput 
                     label="Wallet secret"
                     placeholder="Enter secret here"
