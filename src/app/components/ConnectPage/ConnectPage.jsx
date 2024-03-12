@@ -81,17 +81,21 @@ export default function ConnectPage({
 				alt="Zano"
 			/>
             <div className={s.connectCodeContent}>
-                <MyInput 
-                    label="Wallet port"
-                    placeholder="Enter port here"
-                    inputData={{ value: walletPort }}
+                <div className={s.input}>
+                    <MyInput 
+                            label="Wallet port"
+                        placeholder="Enter port here"
+                        inputData={{ value: walletPort }}
                     noValidation={true}
                     type={"number"}
                     onChange={event => {
                         setWalletPort(event.currentTarget.value);
                         setPortIncorrect(false);
                     }} 
-                />
+                    />
+                    {false && <p>Wallet is not responding</p>}
+                </div>
+
                 <MyInput 
                     label="Wallet secret"
                     placeholder="Enter secret here"
