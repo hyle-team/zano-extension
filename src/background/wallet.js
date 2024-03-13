@@ -2,31 +2,40 @@ import { addZeros, removeZeros } from "../app/utils/utils";
 import { apiCredentials } from "./background";
 import forge from "node-forge";
 
-function generateAccessToken() {
-  if (!apiCredentials?.publicKey || !apiCredentials?.token) {
-    throw new Error("No API credentials found, extension is not connected");
+function createJWSToken(payload, secrete_str) {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64').replace(/=/g, '');
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64').replace(/=/g, '');
+  
+    const signature = forge.hmac.create();
+    signature.start('sha256', secrete_str);
+    signature.update(`${encodedHeader}.${encodedPayload}`);
+    const encodedSignature = forge.util.encode64(signature.digest().getBytes()).replace(/=/g, '');
+  
+    return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
   }
-
-  const publicKey = forge.pki.publicKeyFromPem(apiCredentials.publicKey);
-
+  
   function generateRandomString(length) {
-    const bytes = forge.random.getBytesSync(Math.ceil(length / 2));
-    const hexString = forge.util.bytesToHex(bytes);
-    return hexString.substring(0, length);
+      const bytes = forge.random.getBytesSync(Math.ceil(length / 2));
+      const hexString = forge.util.bytesToHex(bytes);
+      return hexString.substring(0, length);
   }
-
-  const dataToEncrypt = JSON.stringify({
-    accessToken: apiCredentials.token,
-    timestamp: +Date.now(),
-    salt: generateRandomString(64)
-  })
-
-  console.log(dataToEncrypt);
-
-  const encrypted = publicKey.encrypt(dataToEncrypt);
-
-  return btoa(encrypted);
-}
+  
+  function generateAccessToken() {
+  
+    if (!apiCredentials?.token) {
+      throw new Error("No API credentials found, extension is not connected");
+    }
+    
+    // Example payload
+    const payload = {
+      user: 'zano_extension',
+      salt: generateRandomString(64),
+      exp: Math.floor(Date.now() / 1000) + (60), // Expires in 1 minute
+    };
+    
+    return createJWSToken(payload, apiCredentials?.token);
+  }
 
 export const fetchData = async (method, params = {}) => {
   fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
