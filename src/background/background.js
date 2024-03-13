@@ -32,7 +32,7 @@ chrome.storage.local.get("pendingTx", (result) => {
 
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
+  console.log('got call', request);
   switch (request.method) {
     case "SET_API_CREDENTIALS":
       apiCredentials = {

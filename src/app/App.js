@@ -101,7 +101,7 @@ function App() {
       const walletActive = await fetchBackground({
         method: "GET_WALLETS",
       });
-      updateWalletConnected(dispatch, walletActive.data);
+      updateWalletConnected(dispatch, !walletActive.error);
       updateLoading(dispatch, false);
     };
 

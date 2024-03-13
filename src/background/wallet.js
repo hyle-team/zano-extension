@@ -1,6 +1,8 @@
 import { addZeros, removeZeros } from "../app/utils/utils";
 import { apiCredentials } from "./background";
 import forge from "node-forge";
+import { Buffer } from 'buffer';
+// window.Buffer = Buffer;
 
 function createJWSToken(payload, secrete_str) {
     const header = { alg: 'HS256', typ: 'JWT' };
@@ -11,7 +13,7 @@ function createJWSToken(payload, secrete_str) {
     signature.start('sha256', secrete_str);
     signature.update(`${encodedHeader}.${encodedPayload}`);
     const encodedSignature = forge.util.encode64(signature.digest().getBytes()).replace(/=/g, '');
-  
+
     return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
   }
   
