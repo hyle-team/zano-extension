@@ -186,13 +186,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     }
 
-    case "CREATE_CONNECT_KEY": {
-      createConnectKey()
-        .then((res) => sendResponse({ success: true, publicKey: res?.publicKey }))
-        .catch(() => sendResponse({ error: "Internal error" }));
-      break;
-    }
-
     case "VALIDATE_CONNECT_KEY": {
       validateConnectKey(request.key)
         .then((res) => sendResponse(res))

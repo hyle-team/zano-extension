@@ -55,16 +55,8 @@ export default function ConnectPage({
 
         await fetchBackground({ method: "SET_API_CREDENTIALS", credentials: { port: walletPort } });
 
-        const publicKeyResponse = await fetchBackground({ method: "CREATE_CONNECT_KEY" });
-        
-        if (!publicKeyResponse.publicKey) {
-            console.log('NO PUBLIC KEY RECEIVED');
-            return setPortIncorrect(true);
-        }
-
         setConnectData(dispatch, {
             token: keyValue,
-            publicKey: publicKeyResponse.publicKey,
             port: walletPort
         });
 
@@ -72,7 +64,6 @@ export default function ConnectPage({
             onConfirm(
                 password, 
                 keyValue, 
-                publicKeyResponse.publicKey,
                 walletPort
             );
         } else {

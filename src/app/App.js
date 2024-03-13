@@ -228,17 +228,16 @@ function App() {
   const appConnected = !!(state.connectKey || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
-    if (state.connectKey && state.publicKey) {
+    if (state.connectKey) {
       fetchBackground({
         method: "SET_API_CREDENTIALS",
         credentials: {
           token: state.connectKey,
-          publicKey: state.publicKey,
           port: state.port
         }
       });
     }
-  }, [state.connectKey, state.publicKey]);
+  }, [state.connectKey]);
 
 
   function PasswordPages() {
@@ -253,8 +252,7 @@ function App() {
             const connectData = ConnectKeyUtils.getConnectData(password);
             if (connectData?.token) {
               setConnectData(dispatch, {
-                token: connectData.token,
-                publicKey: connectData.publicKey
+                token: connectData.token
               });
             }
           } else {
@@ -303,9 +301,9 @@ function App() {
           <ConnectPage 
             incorrectPassword={incorrectPassword}
             setIncorrectPassword={setIncorrectPassword}
-            onConfirm={(password, connectKey, publicKey, walletPort) => {
+            onConfirm={(password, connectKey, walletPort) => {
               setPassword(password);
-              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, publicKey, walletPort, password);
+              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, walletPort, password);
               setLoggedIn(true);
               setSessionLogIn(true);
             }}

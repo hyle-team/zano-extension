@@ -109,7 +109,7 @@ const reducer = (state, action) => {
     case "TRANSACTION_STATUS_UPDATED":
       return { ...state, transactionStatus: action.payload };
     case "SET_CONNECT_DATA":
-      return { ...state, connectKey: action.payload.token, publicKey: action.payload.publicKey }
+      return { ...state, connectKey: action.payload.token }
     default:
       return state;
   }
