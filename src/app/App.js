@@ -99,7 +99,7 @@ function App() {
       if (!chrome?.runtime?.sendMessage) return;
 
       const walletActive = await fetchBackground({
-        method: "PING_WALLET",
+        method: "GET_WALLETS",
       });
       updateWalletConnected(dispatch, walletActive.data);
       updateLoading(dispatch, false);
