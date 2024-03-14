@@ -23,14 +23,20 @@ function createJWSToken(payload, secrete_str) {
       return hexString.substring(0, length);
   }
   
-  function generateAccessToken() {
+  function generateAccessToken(httpBody) {
   
     if (!apiCredentials?.token) {
       throw new Error("No API credentials found, extension is not connected");
     }
-    
+
+    // Calculate the SHA-256 hash of the HTTP body
+    const md = forge.md.sha256.create();
+    md.update(httpBody);
+    const bodyHash = md.digest().toHex();
+      
     // Example payload
     const payload = {
+      body_hash: bodyHash,
       user: 'zano_extension',
       salt: generateRandomString(64),
       exp: Math.floor(Date.now() / 1000) + (60), // Expires in 1 minute
@@ -40,18 +46,21 @@ function createJWSToken(payload, secrete_str) {
   }
 
 export const fetchData = async (method, params = {}) => {
-  fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Zano-Access-Token": generateAccessToken()
-    },
-    body: JSON.stringify({
+
+  const httpBody = JSON.stringify({
       jsonrpc: "2.0",
       id: "0",
       method,
       params,
-    }),
+    }); 
+    
+  fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Zano-Access-Token": generateAccessToken(httpBody)
+    },
+    body: httpBody,
   });
 }
   
