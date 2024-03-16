@@ -99,7 +99,7 @@ function App() {
       if (!chrome?.runtime?.sendMessage) return;
 
       const walletActive = await fetchBackground({
-        method: "GET_WALLETS",
+        method: "GET_WALLET_DATA",
       });
       updateWalletConnected(dispatch, !walletActive.error);
       updateLoading(dispatch, false);
@@ -225,19 +225,19 @@ function App() {
     });
   }, [dispatch]);
 
-  const appConnected = !!(state.connectKey || ConnectKeyUtils.getConnectKeyEncrypted());
+  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
-    if (state.connectKey) {
+    if (state.connectCredentials.token) {
       fetchBackground({
         method: "SET_API_CREDENTIALS",
         credentials: {
-          token: state.connectKey,
-          port: state.port
+          token: state.connectCredentials.token,
+          port: state?.connectCredentials?.port || 12111,
         }
       });
     }
-  }, [state.connectKey]);
+  }, [state.connectCredentials]);
 
 
   function PasswordPages() {
@@ -250,9 +250,11 @@ function App() {
             setLoggedIn(true);
             setSessionLogIn(true);
             const connectData = ConnectKeyUtils.getConnectData(password);
+            console.log('connectData', connectData);
             if (connectData?.token) {
               setConnectData(dispatch, {
-                token: connectData.token
+                token: connectData.token,
+                port: connectData.port
               });
             }
           } else {

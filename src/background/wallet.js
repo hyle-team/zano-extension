@@ -54,7 +54,7 @@ export const fetchData = async (method, params = {}) => {
       params,
     }); 
     
-  fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
+  return fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -88,7 +88,7 @@ const fetchTxData = async () => {
 export const getAlias = async (address) => {
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
-  if (data.result.status === "OK") {
+  if (data.result?.status === "OK") {
     return data.result.alias_info_list[0].alias;
   } else {
     return "";
@@ -109,6 +109,13 @@ export const getWallets = async () => {
   try {
     const response = await fetchData("mw_get_wallets");
     const data = await response.json();
+
+    if (!data?.result?.wallets) {
+      return [];
+    }
+
+    console.log('wallets:', data.result.wallets);
+
     const wallets = await Promise.all(
       data.result.wallets.map(async (wallet) => {
         const alias = await getAlias(wallet.wi.address);
@@ -195,7 +202,7 @@ export const getWalletData = async () => {
       return 0;
     });
 
-  // console.log(assets);
+  console.log('get alias:', address);
 
   const alias = await getAlias(address);
   return { address, alias, balance, transactions, assets };
