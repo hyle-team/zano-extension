@@ -3,18 +3,22 @@ import s from "./ConnectPage.module.scss";
 import logo from "../../assets/svg/logo.svg";
 import { useContext, useEffect, useState } from "react";
 import MyInput from "../UI/MyInput/MyInput";
-import { fetchBackground } from "../../utils/utils";
+import { fetchBackground, getSessionPassword } from "../../utils/utils";
 import { setConnectData } from "../../store/actions";
 import { Store } from "../../store/store-reducer";
-import forge from "node-forge";
+import ConnectKeyUtils from "../../utils/ConnectKeyUtils";
 
 export default function ConnectPage({
     incorrectPassword,
     setIncorrectPassword,
     onConfirm,
+    passwordExists,
+    setConnectOpened,
 }) {
-    const { dispatch } = useContext(Store);
 
+    const updateSettings = !!passwordExists;
+
+    const { dispatch } = useContext(Store);
 
     const [keyValue, setKeyValue] = useState("");
 
@@ -26,6 +30,17 @@ export default function ConnectPage({
     const [walletPort, setWalletPort] = useState("12111");
 
     const [invalidPassword, setInvalidPassword] = useState(false);
+
+    useEffect(() => {
+        async function getExistingPort() {
+            if (!passwordExists) return;
+            const password = await getSessionPassword();
+            if (!password) return;
+            const connectData = ConnectKeyUtils.getConnectData(password);
+            if (connectData?.port) setWalletPort(connectData.port);
+        }
+        getExistingPort();
+    }, [passwordExists]);
 
     function onPasswordInput(event, repeat) {
         const { value } = event.currentTarget;
@@ -41,12 +56,14 @@ export default function ConnectPage({
     async function continueClick() {
 
 
-        const correctPassword = (
-            password === passwordRepeat &&
-            password
-        );
-
-        if (!correctPassword) return setInvalidPassword(true);
+        if (!updateSettings) {
+            const correctPassword = (
+                password === passwordRepeat &&
+                password
+            );
+    
+            if (!correctPassword) return setInvalidPassword(true);
+        }
 
         if (!parseInt(walletPort, 10)) {
             console.log('PORT IS NOT A NUMBER');
@@ -61,11 +78,14 @@ export default function ConnectPage({
         });
 
         if (onConfirm) {
-            onConfirm(
-                password, 
+            await onConfirm(
+                !updateSettings ? password : undefined, 
                 keyValue, 
                 walletPort
             );
+            if (updateSettings) {
+                setConnectOpened(false);
+            }
         } else {
             throw new Error("No onConfirm function provided");
         }
@@ -105,20 +125,34 @@ export default function ConnectPage({
                     inputData={{ value: keyValue, isDirty: keyIncorrect }}
                     onChange={onKeyInput}
                 />
-                <MyInput
-                    type="password"
-                    label="Password"
-                    placeholder="Password"
-                    inputData={{ value: password, isDirty: !!(incorrectPassword || invalidPassword) }}
-                    onChange={event => onPasswordInput(event, false)}
-                />
-                <MyInput
-                    type="password"
-                    placeholder="Repeat password"
-                    inputData={{ value: passwordRepeat, isDirty: !!(incorrectPassword || invalidPassword) }}
-                    onChange={event => onPasswordInput(event, true)}
-                />
-                <Button onClick={continueClick}>Continue</Button>
+                {!updateSettings && 
+                    <>
+                        <MyInput
+                            type="password"
+                            label="Password"
+                            placeholder="Password"
+                            inputData={{ value: password, isDirty: !!(incorrectPassword || invalidPassword) }}
+                            onChange={event => onPasswordInput(event, false)}
+                        />
+                        <MyInput
+                            type="password"
+                            placeholder="Repeat password"
+                            inputData={{ value: passwordRepeat, isDirty: !!(incorrectPassword || invalidPassword) }}
+                            onChange={event => onPasswordInput(event, true)}
+                        />
+                    </>
+                }
+                <Button onClick={continueClick}>
+                    {updateSettings ? "Save" : "Continue"}
+                </Button>
+                {updateSettings &&
+                    <Button 
+                        theme="outline"
+                        onClick={() => setConnectOpened(false)}
+                    >
+                        Back
+                    </Button>
+                }
             </div>
         </div>
     )

@@ -6,7 +6,6 @@ import {
   transferBridge,
   ionicSwap,
   ionicSwapAccept,
-  createConnectKey,
   validateConnectKey
 } from "./wallet";
 
@@ -21,7 +20,7 @@ export let apiCredentials = {
 
 let pendingTx = null;
 
-const userData = { login: false };
+const userData = { password: undefined };
 
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
@@ -174,14 +173,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       break;
     
-    case "SET_LOGIN": {
-      userData.login = request.login;
+    case "SET_PASSWORD": {
+      userData.password = request.password;
       sendResponse({ success: true });
       break;
     }
 
-    case "GET_LOGIN": {
-      sendResponse({ login: userData.login });
+    case "GET_PASSWORD": {
+      sendResponse({ password: userData.password });
       break;
     }
 

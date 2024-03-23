@@ -7,7 +7,7 @@ import TokensTabs from "./components/TokensTabs/TokensTabs";
 import AppLoader from "./components/UI/AppLoader/AppLoader";
 import Wallet from "./components/Wallet/Wallet";
 import ModalConfirmation from "./components/ModalConfirmation/ModalConfirmation";
-import { comparePasswords, fetchBackground, getSessionLogIn, passwordExists, setPassword, setSessionLogIn } from "./utils/utils";
+import { comparePasswords, fetchBackground, getSessionPassword, passwordExists, setPassword, setSessionPassword } from "./utils/utils";
 import {
   updateWalletConnected,
   updateActiveWalletId,
@@ -35,6 +35,8 @@ function App() {
 
   const [firstWalletLoaded, setFirstWalletLoaded] = useState(false);
 
+  const [connectOpened, setConnectOpened] = useState(false);
+
   // Flags of display
   // creatingPassword flag has an effect only in case of loggedIn flag is false.
   // creatingPassword flag means whether to show the password create screen or existing password enter screen.
@@ -42,7 +44,7 @@ function App() {
 
   useEffect(() => {
     async function loadLogin() {
-      const sessionLoggedIn = await getSessionLogIn();
+      const sessionLoggedIn = !!(await getSessionPassword());
       setLoggedIn(sessionLoggedIn);
     }
     loadLogin();
@@ -248,7 +250,7 @@ function App() {
         onConfirm={(password) => {
           if (comparePasswords(password)) {
             setLoggedIn(true);
-            setSessionLogIn(true);
+            setSessionPassword(password);
             const connectData = ConnectKeyUtils.getConnectData(password);
             console.log('connectData', connectData);
             if (connectData?.token) {
@@ -276,7 +278,7 @@ function App() {
         {loggedIn && state.isConnected && <Header />}
         <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
-        {appConnected ?
+        {(appConnected && !connectOpened) ?
           (
             loggedIn
               ?
@@ -292,7 +294,9 @@ function App() {
                     </div>
                   ) 
                   :
-                  <AppPlug />
+                  <AppPlug 
+                    setConnectOpened={setConnectOpened}
+                  />
               )
               :
               PasswordPages()
@@ -303,11 +307,17 @@ function App() {
           <ConnectPage 
             incorrectPassword={incorrectPassword}
             setIncorrectPassword={setIncorrectPassword}
-            onConfirm={(password, connectKey, walletPort) => {
+            passwordExists={passwordExists()}
+            setConnectOpened={setConnectOpened}
+            onConfirm={async (inputPassword, connectKey, walletPort) => {
+              const password = inputPassword || (await getSessionPassword());
+
+              if (!password) return;
               setPassword(password);
+
               if (connectKey) ConnectKeyUtils.setConnectData(connectKey, walletPort, password);
               setLoggedIn(true);
-              setSessionLogIn(true);
+              await setSessionPassword(password);
             }}
           />
         }
