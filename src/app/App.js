@@ -1,6 +1,6 @@
 /*global chrome*/
 import { useContext, useEffect, useState, useCallback } from "react";
-import { Router } from "react-chrome-extension-router";
+import { Router, goTo } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
@@ -23,6 +23,7 @@ import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
+import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -218,6 +219,10 @@ function App() {
       updateActiveWalletId(dispatch, walletId);
     });
   }, [dispatch]);
+
+  // useEffect(() => {
+  //   goTo(MessageSignPage);
+  // }, []);
 
   return (
     <div className="App">
