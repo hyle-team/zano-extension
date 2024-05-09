@@ -1,3 +1,4 @@
+/*global chrome*/
 import {
   fetchData,
   getWalletData,
@@ -13,9 +14,14 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
+const REQUEST_TIMEOUT = 30000;
+
 let pendingTx = null;
 
 const userData = { login: false };
+
+const signReqFinalizers = {};
+const signReqs = [];
 
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
@@ -159,6 +165,59 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     case "GET_LOGIN": {
       sendResponse({ login: userData.login });
+      break;
+    }
+
+    case "GET_SIGN_REQUESTS": {
+      sendResponse({ data: signReqs });
+      break;
+    }
+
+    case "FINALIZE_MESSAGE_SIGN": {
+      const reqId = request.id;
+      const success = request.success;
+      const signReq = signReqs.find((req) => req.id === reqId);
+
+      if (signReq && signReqFinalizers[reqId]) {
+        signReqs.splice(signReqs.indexOf(signReq), 1);
+        signReqFinalizers[reqId](success ? { data: "TEST_SIGN" } : { error: "Sign request denied by user" });
+        delete signReqFinalizers[reqId];
+      } else {
+        sendResponse({ error: "Sign request not found" });
+      }
+
+      sendResponse({ data: true });
+
+      break;
+    }
+
+    case "REQUEST_MESSAGE_SIGN": {
+      chrome.windows.create({
+        url: chrome.runtime.getURL("index.html"),
+        type: "popup",
+        width: 360,
+        height: 600,
+      });
+
+      const signReqId = crypto.randomUUID();
+
+      signReqFinalizers[signReqId] = (result) => {
+        sendResponse(result);
+      };
+
+      signReqs.push({id: signReqId, message: request.message});
+
+      setTimeout(() => {
+        const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
+
+        if (signReqIndex === -1) {
+          return;
+        }
+
+        signReqs.splice(signReqIndex, 1);
+        delete signReqFinalizers[signReqId];
+      }, REQUEST_TIMEOUT);
+
       break;
     }
 

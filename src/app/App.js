@@ -220,9 +220,17 @@ function App() {
     });
   }, [dispatch]);
 
-  // useEffect(() => {
-  //   goTo(MessageSignPage);
-  // }, []);
+  useEffect(() => {
+    async function getSignRequests() {
+      const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
+      const signRequests = response.data;
+
+      if (signRequests && signRequests.length > 0) {
+        goTo(MessageSignPage, { signRequests });
+      }
+    }
+    getSignRequests();
+  }, []);
 
   return (
     <div className="App">
