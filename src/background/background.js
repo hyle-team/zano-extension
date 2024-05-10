@@ -179,13 +179,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const success = request.success;
       const signReq = signReqs.find((req) => req.id === reqId);
 
-      function finalize(data) {
-        signReqFinalizers[reqId](data);
-        signReqs.splice(signReqs.indexOf(signReq), 1);
-        delete signReqFinalizers[reqId];
-      }
+      
 
       if (signReq && signReqFinalizers[reqId]) {
+
+        function finalize(data) {
+          signReqFinalizers[reqId](data);
+          signReqs.splice(signReqs.indexOf(signReq), 1);
+          delete signReqFinalizers[reqId];
+          chrome.windows.remove(signReq.windowId);
+        }
+
         if (!success) {
           finalize({ error: "Sign request denied by user" });
           sendResponse({ data: true });
@@ -222,28 +226,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       chrome.windows.create({
         url: chrome.runtime.getURL("index.html"),
         type: "popup",
-        width: 360,
-        height: 600,
-      });
+        width: 370,
+        height: 630,
+      }).then(requestWindow => {
+        const signReqId = crypto.randomUUID();
 
-      const signReqId = crypto.randomUUID();
+        signReqFinalizers[signReqId] = (result) => {
+          sendResponse(result);
+        };
 
-      signReqFinalizers[signReqId] = (result) => {
-        sendResponse(result);
-      };
+        signReqs.push({id: signReqId, windowId: requestWindow.id, message: request.message});
 
-      signReqs.push({id: signReqId, message: request.message});
+        setTimeout(() => {
+          const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
 
-      setTimeout(() => {
-        const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
+          if (signReqIndex === -1) {
+            return;
+          }
 
-        if (signReqIndex === -1) {
-          return;
-        }
+          signReqs.splice(signReqIndex, 1);
+          delete signReqFinalizers[signReqId];
+        }, REQUEST_TIMEOUT);
+      })
 
-        signReqs.splice(signReqIndex, 1);
-        delete signReqFinalizers[signReqId];
-      }, REQUEST_TIMEOUT);
+      
 
       break;
     }
