@@ -6,7 +6,8 @@ import {
   transfer,
   transferBridge,
   ionicSwap,
-  ionicSwapAccept
+  ionicSwapAccept,
+  signMessage
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -178,15 +179,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const success = request.success;
       const signReq = signReqs.find((req) => req.id === reqId);
 
-      if (signReq && signReqFinalizers[reqId]) {
+      function finalize(data) {
+        signReqFinalizers[reqId](data);
         signReqs.splice(signReqs.indexOf(signReq), 1);
-        signReqFinalizers[reqId](success ? { data: "TEST_SIGN" } : { error: "Sign request denied by user" });
         delete signReqFinalizers[reqId];
-      } else {
-        sendResponse({ error: "Sign request not found" });
       }
 
-      sendResponse({ data: true });
+      if (signReq && signReqFinalizers[reqId]) {
+        if (!success) {
+          finalize({ error: "Sign request denied by user" });
+          sendResponse({ data: true });
+        } else {
+          const message = signReq.message;
+
+          signMessage(message)
+            .then(data => {
+              finalize({ data });
+              sendResponse({ data: true });
+            })
+            .catch((error) => {
+              console.error("Error signing message:", error);
+
+              finalize({
+                error: "An error occurred while signing message",
+              });
+              
+              sendResponse({
+                error: "An error occurred while signing message",
+              });
+            });
+        }
+
+        
+      } else {
+        return sendResponse({ error: "Sign request not found" });
+      }
 
       break;
     }

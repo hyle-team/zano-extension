@@ -1,4 +1,5 @@
 import { addZeros, removeZeros } from "../app/utils/utils";
+import { Buffer } from "buffer";
 
 const fetchTxData = async () => {
   try {
@@ -337,3 +338,31 @@ export const transferBridge = async (
   const data = await response.json();
   return data;
 };
+
+export const signMessage = async (message) => {
+  const base64 = Buffer.from(message).toString("base64");
+
+  const signRequest = {
+    jsonrpc: "2.0",
+    id: "0",
+    method: "sign_message",
+    params: {
+      "buff": base64,
+    }
+  };
+
+  const response = await fetch("http://localhost:12111/json_rpc", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(signRequest),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
