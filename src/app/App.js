@@ -119,6 +119,10 @@ function App() {
       });
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
+
+      console.log('WALLET DATA:');
+      console.log(walletData.data);
+
       updateWalletData(dispatch, {
         address,
         alias,
@@ -288,7 +292,7 @@ function App() {
                   (
                     <div className="container">
                       <Router>
-                        <Wallet />
+                        <Wallet  setConnectOpened={setConnectOpened} />
                         <TokensTabs />
                       </Router>
                     </div>
