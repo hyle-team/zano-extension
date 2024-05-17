@@ -367,22 +367,11 @@ export const transferBridge = async (
 export const signMessage = async (message) => {
   const base64 = Buffer.from(message).toString("base64");
 
-  const signRequest = {
-    jsonrpc: "2.0",
-    id: "0",
-    method: "sign_message",
-    params: {
-      "buff": base64,
-    }
+  const signRequest ={
+    "buff": base64,
   };
 
-  const response = await fetch("http://localhost:12111/json_rpc", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(signRequest),
-  });
+  const response = await fetchData("sign_message", signRequest);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
