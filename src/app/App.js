@@ -23,7 +23,6 @@ import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
-import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
 import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
