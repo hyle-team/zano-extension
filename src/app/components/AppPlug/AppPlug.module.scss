@@ -29,6 +29,9 @@
   font-size: 18px;
   line-height: math.div(21, 18);
   transform: translate(0, -30px);
+  display: flex;
+  flex-direction: column;
+
   strong {
     margin-bottom: 8px;
     text-align: center;
@@ -38,9 +41,6 @@
     font-size: 18px;
     line-height: math.div(24, 18);
     color: rgba(255, 255, 255, 0.8);
-    &:not(:last-child) {
-      margin-bottom: 25px;
-    }
   }
 }
 
@@ -51,6 +51,7 @@
 .plugButton {
   display: flex;
   align-items: center;
+  justify-content: center;
   column-gap: 6px;
   font-size: 18px;
   line-height: math.div(21, 18);

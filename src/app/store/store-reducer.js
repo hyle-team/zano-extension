@@ -70,7 +70,7 @@ const initialState = {
   },
   displayUsd: false,
   isLoading: true,
-  isConnected: true,
+  isConnected: undefined,
   isBalancesHidden: false,
   priceData: { price: 1, change: -4.6 },
   confirmationModal: null,
@@ -80,6 +80,10 @@ const initialState = {
     code: 0,
     message: "",
   },
+  connectCredentials: {
+    token: null,
+    port: null,
+  }
 };
 
 const reducer = (state, action) => {
@@ -108,6 +112,8 @@ const reducer = (state, action) => {
       return { ...state, confirmationModal: action.payload };
     case "TRANSACTION_STATUS_UPDATED":
       return { ...state, transactionStatus: action.payload };
+    case "SET_CONNECT_DATA":
+      return { ...state, connectCredentials: action.payload }
     default:
       return state;
   }

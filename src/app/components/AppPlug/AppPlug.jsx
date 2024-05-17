@@ -5,8 +5,10 @@ import questionIcon from "../../assets/svg/question.svg";
 import { Store } from "../../store/store-reducer";
 import s from "./AppPlug.module.scss";
 
-const AppPlug = () => {
+const AppPlug = (props) => {
   const { state } = useContext(Store);
+
+  const { setConnectOpened } = props;
 
   const btnClasses = state.isLoading
     ? [s.plugButton, s.hidden].join(" ")
@@ -31,7 +33,13 @@ const AppPlug = () => {
               <div className={s.plugText}>
                 Make sure you're running <br />a wallet with RPC enabled
               </div>
+              
+              <button className={btnClasses} onClick={() => setConnectOpened(true)}>
+                Connection Settings
+              </button>
             </div>
+
+            
 
             <button className={btnClasses}>
               <img src={questionIcon} alt="question icon" />

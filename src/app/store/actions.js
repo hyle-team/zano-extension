@@ -67,3 +67,10 @@ export const updateTransactionStatus = (dispatch, state) => {
     payload: state,
   });
 };
+
+export const setConnectData = (dispatch, state) => {
+  return dispatch({
+    type: "SET_CONNECT_DATA",
+    payload: state
+  });
+};

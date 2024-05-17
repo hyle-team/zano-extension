@@ -7,7 +7,7 @@ import TokensTabs from "./components/TokensTabs/TokensTabs";
 import AppLoader from "./components/UI/AppLoader/AppLoader";
 import Wallet from "./components/Wallet/Wallet";
 import ModalConfirmation from "./components/ModalConfirmation/ModalConfirmation";
-import { comparePasswords, fetchBackground, getSessionLogIn, passwordExists, setPassword, setSessionLogIn } from "./utils/utils";
+import { comparePasswords, fetchBackground, getSessionPassword, passwordExists, setPassword, setSessionPassword } from "./utils/utils";
 import {
   updateWalletConnected,
   updateActiveWalletId,
@@ -17,6 +17,7 @@ import {
   updateLoading,
   updateConfirmationModal,
   updateTransactionStatus,
+  setConnectData,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -24,6 +25,8 @@ import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import PasswordCreatePage from "./components/PasswordCreatePage/PasswordCreatePage";
 import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
+import ConnectPage from "./components/ConnectPage/ConnectPage";
+import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -32,14 +35,18 @@ function App() {
   const [incorrectPassword, setIncorrectPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
+  const [firstWalletLoaded, setFirstWalletLoaded] = useState(false);
+
+  const [connectOpened, setConnectOpened] = useState(false);
+
   // Flags of display
   // creatingPassword flag has an effect only in case of loggedIn flag is false.
   // creatingPassword flag means whether to show the password create screen or existing password enter screen.
-  const creatingPassword = !passwordExists();
+  // const creatingPassword = !passwordExists();
 
   useEffect(() => {
     async function loadLogin() {
-      const sessionLoggedIn = await getSessionLogIn();
+      const sessionLoggedIn = !!(await getSessionPassword());
       setLoggedIn(sessionLoggedIn);
     }
     loadLogin();
@@ -95,10 +102,11 @@ function App() {
     const checkConnection = async () => {
       if (!chrome?.runtime?.sendMessage) return;
 
-      const balanceData = await fetchBackground({
-        method: "GET_WALLET_BALANCE",
+      const walletActive = await fetchBackground({
+        method: "GET_WALLET_DATA",
       });
-      updateWalletConnected(dispatch, !!balanceData.data);
+      updateWalletConnected(dispatch, !walletActive.error);
+      updateLoading(dispatch, false);
     };
 
     const getWalletData = async () => {
@@ -113,6 +121,10 @@ function App() {
       });
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
+
+      console.log('WALLET DATA:');
+      console.log(walletData.data);
+
       updateWalletData(dispatch, {
         address,
         alias,
@@ -123,18 +135,19 @@ function App() {
 
       console.log("wallet data updated");
       updateLoading(dispatch, false);
+      setFirstWalletLoaded(true);
     };
 
     const intervalId = setInterval(async () => {
       await checkConnection();
       console.log("connected", state.isConnected);
-      if (state.isConnected) {
+      if (state.isConnected && loggedIn) {
         await getWalletData();
       }
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [dispatch, state.isConnected, state.activeWalletId]);
+  }, [dispatch, state.isConnected, state.activeWalletId, loggedIn]);
 
   useEffect(() => {
     getZanoPrice().then((priceData) => {
@@ -231,68 +244,102 @@ function App() {
     }
     getSignRequests();
   }, []);
+  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
+
+  useEffect(() => {
+    if (state.connectCredentials.token) {
+      fetchBackground({
+        method: "SET_API_CREDENTIALS",
+        credentials: {
+          token: state.connectCredentials.token,
+          port: state?.connectCredentials?.port || 12111,
+        }
+      });
+    }
+  }, [state.connectCredentials]);
+
+
+  function PasswordPages() {
+    return (
+      <PasswordPage
+        incorrectPassword={incorrectPassword}
+        setIncorrectPassword={setIncorrectPassword}
+        onConfirm={(password) => {
+          if (comparePasswords(password)) {
+            setLoggedIn(true);
+            setSessionPassword(password);
+            const connectData = ConnectKeyUtils.getConnectData(password);
+            console.log('connectData', connectData);
+            if (connectData?.token) {
+              setConnectData(dispatch, {
+                token: connectData.token,
+                port: connectData.port
+              });
+            }
+          } else {
+            setIncorrectPassword(true);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <div className="App">
-      <AppPlug />
-      {state.isConnected && (
-        <>
-          <ModalConfirmation
-            isOpen={confirmationModalOpen}
-            onClose={handleCancel}
-            onConfirm={handleConfirm}
+      <>
+        <ModalConfirmation
+          isOpen={confirmationModalOpen}
+          onClose={handleCancel}
+          onConfirm={handleConfirm}
+        />
+        {loggedIn && state.isConnected && <Header />}
+        <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
+
+        {(appConnected && !connectOpened) ?
+          (
+            loggedIn
+              ?
+              (
+                state.isConnected 
+                  ?
+                  (
+                    <div className="container">
+                      <Router>
+                        <Wallet  setConnectOpened={setConnectOpened} />
+                        <TokensTabs />
+                      </Router>
+                    </div>
+                  ) 
+                  :
+                  <AppPlug 
+                    setConnectOpened={setConnectOpened}
+                  />
+              )
+              :
+              PasswordPages()
+          )
+
+          :
+
+          <ConnectPage 
+            incorrectPassword={incorrectPassword}
+            setIncorrectPassword={setIncorrectPassword}
+            passwordExists={passwordExists()}
+            setConnectOpened={setConnectOpened}
+            onConfirm={async (inputPassword, connectKey, walletPort) => {
+              const password = inputPassword || (await getSessionPassword());
+
+              if (!password) return;
+              setPassword(password);
+
+              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, walletPort, password);
+              setLoggedIn(true);
+              await setSessionPassword(password);
+            }}
           />
-          {/* {loggedIn && <Header />} */}
-          <Header/>
-          <AppLoader />
+        }
+      </>
 
-          <div className="container">
-            <Router>
-              <Wallet />
-              <TokensTabs />
-            </Router>
-          </div>
-
-          {/* {
-            loggedIn 
-            ?
-            (
-              <div className="container">
-                <Router>
-                  <Wallet />
-                  <TokensTabs />
-                </Router>
-              </div>
-            ) 
-            :
-            (
-              creatingPassword ? 
-              <PasswordCreatePage 
-                incorrectPassword={incorrectPassword} 
-                setIncorrectPassword={setIncorrectPassword} 
-                onConfirm={(password) => {
-                  setPassword(password);
-                  setLoggedIn(true);
-                  setSessionLogIn(true);
-                }}
-              /> : 
-              <PasswordPage 
-                incorrectPassword={incorrectPassword} 
-                setIncorrectPassword={setIncorrectPassword} 
-                onConfirm={(password) => {
-                  if (comparePasswords(password)) {
-                    setLoggedIn(true);
-                    setSessionLogIn(true);
-                  } else {
-                    setIncorrectPassword(true);
-                  }
-                }}
-              />
-            ) 
-          } */}
-
-        </>
-      )}
     </div>
   );
 }

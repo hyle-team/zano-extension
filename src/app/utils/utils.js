@@ -42,10 +42,10 @@ export const passwordExists = () => {
   return !!localStorage.getItem("hash");
 }
 
-export const getSessionLogIn = async () => {
-  return !!(await fetchBackground({ method: "GET_LOGIN" })).login;
+export const getSessionPassword = async () => {
+  return (await fetchBackground({ method: "GET_PASSWORD" })).password;
 }
 
-export const setSessionLogIn = async (login) => {
-  await fetchBackground({ method: "SET_LOGIN", login: !!login })
+export const setSessionPassword = async (password) => {
+  await fetchBackground({ method: "SET_PASSWORD", password })
 }

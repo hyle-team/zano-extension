@@ -7,7 +7,8 @@ import {
   transferBridge,
   ionicSwap,
   ionicSwapAccept,
-  signMessage
+  signMessage,
+  validateConnectKey
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -16,10 +17,13 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 const REQUEST_TIMEOUT = 30000;
+export let apiCredentials = {
+  port: 12111,
+};
 
 let pendingTx = null;
 
-const userData = { login: false };
+const userData = { password: undefined };
 
 const signReqFinalizers = {};
 const signReqs = [];
@@ -34,6 +38,23 @@ chrome.storage.local.get("pendingTx", (result) => {
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.method) {
+    case "SET_API_CREDENTIALS":
+      apiCredentials = {
+        ...(apiCredentials || {}),
+        ...request.credentials
+      };
+      console.log("API credentials set to", apiCredentials);
+      sendResponse({ success: true });
+      break;
+
+    case "PING_WALLET": 
+      fetch(`http://localhost:${apiCredentials.port}/ping`)
+      .then(res => res.json())
+      .then(res => sendResponse({ data: true }))
+      .catch(err => sendResponse({ data: false }));
+      break;
+      
+
     case "SET_ACTIVE_WALLET":
       fetchData("mw_select_wallet", { wallet_id: request.id })
         .then((response) => response.json())
@@ -158,14 +179,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       break;
     
-    case "SET_LOGIN": {
-      userData.login = request.login;
+    case "SET_PASSWORD": {
+      userData.password = request.password;
       sendResponse({ success: true });
       break;
     }
 
-    case "GET_LOGIN": {
-      sendResponse({ login: userData.login });
+    case "GET_PASSWORD": {
+      sendResponse({ password: userData.password });
+      break;
+    }
+
+    case "VALIDATE_CONNECT_KEY": {
+      validateConnectKey(request.key)
+        .then((res) => sendResponse(res))
+        .catch(() => sendResponse({ error: "Internal error" }));
       break;
     }
 

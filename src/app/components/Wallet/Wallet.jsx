@@ -19,7 +19,7 @@ import s from "./Wallet.module.scss";
 import NavLink from "../UI/NavLink/NavLink";
 import { classNames } from "../../utils/classNames";
 
-const Wallet = () => {
+const Wallet = ({ setConnectOpened }) => {
   const { state, dispatch } = useContext(Store);
   const { copied, copyToClipboard } = useCopy();
   const { censorValue } = useCensorDigits();
@@ -142,10 +142,10 @@ const Wallet = () => {
 
           {menuVisible && (
             <div className={s.settings}>
-              <NavLink component={WalletSettings} className={s.settingsBtn}>
+              <div className={s.settingsBtn} onClick={() => setConnectOpened(true)}>
                 <img src={settingsIcon} alt="settings icon" />
                 Settings
-              </NavLink>
+              </div>
               <button
                 onClick={flipBalancesVisibility}
                 className={s.settingsBtn}
