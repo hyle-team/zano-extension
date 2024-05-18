@@ -1,5 +1,5 @@
 class Zano {
-    async request(method, params) {
+    async request(method, params, timeoutParam = 30e3) {
 
         function getRandonString(length) {
             let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -15,18 +15,22 @@ class Zano {
 
 
         const listenerID = getRandonString(16);
-
+        const timeoutMs = typeof timeoutParam === "number" ? timeoutParam : null;
 
         return new Promise((resolve, reject) => {
 
-            const timeout = setTimeout(() => {
-                reject('Request timeout exceeded');
-                document.removeEventListener(`zano_response_${listenerID}`, handleResponse);
-            }, 30000);
+            const timeout = timeoutMs !== null ? (
+                setTimeout(() => {
+                    reject('Request timeout exceeded');
+                    document.removeEventListener(`zano_response_${listenerID}`, handleResponse);
+                }, timeoutMs)
+            ) : undefined;
 
             function handleResponse(e) {                
                 document.removeEventListener(`zano_response_${listenerID}`, handleResponse);
-                clearTimeout(timeout);  
+                if (timeout) {
+                    clearTimeout(timeout);  
+                }
                 resolve(e.detail);
             }
 
@@ -36,6 +40,7 @@ class Zano {
                 detail: {
                     method: method,
                     listenerID: listenerID,
+                    timeout: timeoutMs,
                     ...params
                 }
             }));

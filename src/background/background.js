@@ -16,7 +16,6 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
-const REQUEST_TIMEOUT = 30000;
 export let apiCredentials = {
   port: 12111,
 };
@@ -265,16 +264,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         signReqs.push({id: signReqId, windowId: requestWindow.id, message: request.message});
 
-        setTimeout(() => {
-          const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
-
-          if (signReqIndex === -1) {
-            return;
-          }
-
-          signReqs.splice(signReqIndex, 1);
-          delete signReqFinalizers[signReqId];
-        }, REQUEST_TIMEOUT);
+        if (typeof request.timeout === "number") {
+          setTimeout(() => {
+            const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
+  
+            if (signReqIndex === -1) {
+              return;
+            }
+  
+            signReqs.splice(signReqIndex, 1);
+            delete signReqFinalizers[signReqId];
+            sendResponse({ error: "Timeout exceeded" });
+          }, request.timeout);
+        }
       })
 
       
