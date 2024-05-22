@@ -3,7 +3,7 @@
   "name": "Zano Companion",
   "version": "1.0",
   "description": "A browser extension for Zano wallet app",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://api.coingecko.com;"
   },
