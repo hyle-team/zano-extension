@@ -106,9 +106,14 @@ const WalletSend = () => {
     );
   };
 
+  
   return (
     <>
       {(() => {
+
+        console.log("activeStep", activeStep);
+        console.log("address", address);
+
         switch (activeStep) {
           // Send form
           case 0:
@@ -163,12 +168,12 @@ const WalletSend = () => {
                 <div style={{ minHeight: "410px" }} className="table">
                   <TableRow
                     label="Amount"
-                    value={amount.value + " " + asset.ticker}
+                    value={amount?.value + " " + asset?.ticker}
                   />
-                  <TableRow label="From" value={state.wallet.address} />
-                  <TableRow label="To" value={address} />
-                  <TableRow label="Comment" value={comment.value} />
-                  <TableRow label="Fee" value={fee.value} />
+                  <TableRow label="From" value={state?.wallet?.address} />
+                  <TableRow label="To" value={address.value} />
+                  <TableRow label="Comment" value={comment?.value} />
+                  <TableRow label="Fee" value={fee?.value} />
                 </div>
 
                 <Button
@@ -230,7 +235,7 @@ const WalletSend = () => {
               </div>
             );
           default:
-            return;
+            return <></>;
         }
       })()}
     </>
