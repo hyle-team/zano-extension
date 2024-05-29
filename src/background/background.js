@@ -6,7 +6,8 @@ import {
   transferBridge,
   ionicSwap,
   ionicSwapAccept,
-  validateConnectKey
+  validateConnectKey,
+  getAliasDetails
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -186,6 +187,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     case "VALIDATE_CONNECT_KEY": {
       validateConnectKey(request.key)
+        .then((res) => sendResponse(res))
+        .catch(() => sendResponse({ error: "Internal error" }));
+      break;
+    }
+
+    case "GET_ALIAS_DETAILS": {
+      getAliasDetails(request.alias)
         .then((res) => sendResponse(res))
         .catch(() => sendResponse({ error: "Internal error" }));
       break;

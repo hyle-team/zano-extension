@@ -10,7 +10,7 @@ import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import s from "./WalletSend.module.scss";
 import { fetchBackground } from "../../utils/utils";
-import { getAliasDetails } from "../../../background/wallet";
+// import { getAliasDetails } from "../../../background/wallet";
 import AssetsSelect from "./ui/AssetsSelect/AssetsSelect";
 import AdditionalDetails from "./ui/AdditionalDetails/AdditionalDetails";
 
@@ -88,7 +88,7 @@ const WalletSend = () => {
     })();
   }, [address.value]);
 
-  const fetchAddress = async (alias) => await getAliasDetails(alias);
+  const fetchAddress = async (alias) => await fetchBackground({ method: "GET_ALIAS_DETAILS", alias });
 
   const checkAvailableBalance = (amount, asset) =>
     asset.unlockedBalance !== asset.balance
