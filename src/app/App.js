@@ -262,6 +262,12 @@ function App() {
         setIncorrectPassword={setIncorrectPassword}
         onConfirm={(password) => {
           if (comparePasswords(password)) {
+            updateLoading(dispatch, true);
+
+            setTimeout(() => {
+              updateLoading(dispatch, false);
+            }, 2000);
+
             setLoggedIn(true);
             setSessionPassword(password);
             const connectData = ConnectKeyUtils.getConnectData(password);
