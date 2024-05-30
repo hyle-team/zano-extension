@@ -7,7 +7,14 @@ import TokensTabs from "./components/TokensTabs/TokensTabs";
 import AppLoader from "./components/UI/AppLoader/AppLoader";
 import Wallet from "./components/Wallet/Wallet";
 import ModalConfirmation from "./components/ModalConfirmation/ModalConfirmation";
-import { comparePasswords, fetchBackground, getSessionPassword, passwordExists, setPassword, setSessionPassword } from "./utils/utils";
+import {
+  comparePasswords,
+  fetchBackground,
+  getSessionPassword,
+  passwordExists,
+  setPassword,
+  setSessionPassword,
+} from "./utils/utils";
 import {
   updateWalletConnected,
   updateActiveWalletId,
@@ -25,6 +32,7 @@ import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
+import { defaultPort } from "./config/config";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -120,7 +128,7 @@ function App() {
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
 
-      console.log('WALLET DATA:');
+      console.log("WALLET DATA:");
       console.log(walletData.data);
 
       updateWalletData(dispatch, {
@@ -231,7 +239,9 @@ function App() {
     });
   }, [dispatch]);
 
-  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
+  const appConnected = !!(
+    state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
+  );
 
   useEffect(() => {
     if (state.connectCredentials.token) {
@@ -239,12 +249,11 @@ function App() {
         method: "SET_API_CREDENTIALS",
         credentials: {
           token: state.connectCredentials.token,
-          port: state?.connectCredentials?.port || 12111,
-        }
+          port: state?.connectCredentials?.port || defaultPort,
+        },
       });
     }
   }, [state.connectCredentials]);
-
 
   function PasswordPages() {
     return (
@@ -256,11 +265,11 @@ function App() {
             setLoggedIn(true);
             setSessionPassword(password);
             const connectData = ConnectKeyUtils.getConnectData(password);
-            console.log('connectData', connectData);
+            console.log("connectData", connectData);
             if (connectData?.token) {
               setConnectData(dispatch, {
                 token: connectData.token,
-                port: connectData.port
+                port: connectData.port,
               });
             }
           } else {
@@ -282,33 +291,23 @@ function App() {
         {loggedIn && state.isConnected && <Header />}
         <AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
-        {(appConnected && !connectOpened) ?
-          (
-            loggedIn
-              ?
-              (
-                state.isConnected 
-                  ?
-                  (
-                    <div className="container">
-                      <Router>
-                        <Wallet  setConnectOpened={setConnectOpened} />
-                        <TokensTabs />
-                      </Router>
-                    </div>
-                  ) 
-                  :
-                  <AppPlug 
-                    setConnectOpened={setConnectOpened}
-                  />
-              )
-              :
-              PasswordPages()
+        {appConnected && !connectOpened ? (
+          loggedIn ? (
+            state.isConnected ? (
+              <div className="container">
+                <Router>
+                  <Wallet setConnectOpened={setConnectOpened} />
+                  <TokensTabs />
+                </Router>
+              </div>
+            ) : (
+              <AppPlug setConnectOpened={setConnectOpened} />
+            )
+          ) : (
+            PasswordPages()
           )
-
-          :
-
-          <ConnectPage 
+        ) : (
+          <ConnectPage
             incorrectPassword={incorrectPassword}
             setIncorrectPassword={setIncorrectPassword}
             passwordExists={passwordExists()}
@@ -319,14 +318,18 @@ function App() {
               if (!password) return;
               setPassword(password);
 
-              if (connectKey) ConnectKeyUtils.setConnectData(connectKey, walletPort, password);
+              if (connectKey)
+                ConnectKeyUtils.setConnectData(
+                  connectKey,
+                  walletPort,
+                  password
+                );
               setLoggedIn(true);
               await setSessionPassword(password);
             }}
           />
-        }
+        )}
       </>
-
     </div>
   );
 }

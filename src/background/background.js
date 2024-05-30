@@ -7,7 +7,7 @@ import {
   ionicSwap,
   ionicSwapAccept,
   validateConnectKey,
-  getAliasDetails
+  getAliasDetails,
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -16,7 +16,7 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 export let apiCredentials = {
-  port: 12111,
+  port: 11211,
 };
 
 let pendingTx = null;
@@ -36,19 +36,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "SET_API_CREDENTIALS":
       apiCredentials = {
         ...(apiCredentials || {}),
-        ...request.credentials
+        ...request.credentials,
       };
       console.log("API credentials set to", apiCredentials);
       sendResponse({ success: true });
       break;
 
-    case "PING_WALLET": 
+    case "PING_WALLET":
       fetch(`http://localhost:${apiCredentials.port}/ping`)
-      .then(res => res.json())
-      .then(res => sendResponse({ data: true }))
-      .catch(err => sendResponse({ data: false }));
+        .then((res) => res.json())
+        .then((res) => sendResponse({ data: true }))
+        .catch((err) => sendResponse({ data: false }));
       break;
-      
 
     case "SET_ACTIVE_WALLET":
       fetchData("mw_select_wallet", { wallet_id: request.id })
@@ -131,7 +130,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       break;
 
-
     case "BRIDGING_TRANSFER":
       pendingTx = {
         assetId: request.assetId,
@@ -173,7 +171,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ error: "No pending transaction" });
       }
       break;
-    
+
     case "SET_PASSWORD": {
       userData.password = request.password;
       sendResponse({ success: true });

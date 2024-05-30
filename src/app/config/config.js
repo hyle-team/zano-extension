@@ -12,3 +12,5 @@ export const whitelistedAssets = [
     full_name: "Confidential token",
   },
 ];
+
+export const defaultPort = 11211;
