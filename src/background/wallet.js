@@ -66,7 +66,7 @@ export const fetchData = async (method, params = {}) => {
   
 const fetchTxData = async () => {
   try {
-    const response = await fetchData("get_recent_txs_and_info", {
+    const response = await fetchData("get_recent_txs_and_info2", {
       offset: 0,
       update_provision_info: true,
       exclude_mining_txs: true,
@@ -117,7 +117,7 @@ export const getWallets = async () => {
     console.log('wallets:', data.result.wallets);
 
     const wallets = await Promise.all(
-      data.result.wallets.map(async (wallet) => {
+      data.result.wallets.filter(e => !e?.wi?.is_watch_only).map(async (wallet) => {
         const alias = await getAlias(wallet.wi.address);
         const balance = wallet.wi.balances.find(
           (asset) =>

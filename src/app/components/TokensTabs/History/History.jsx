@@ -30,7 +30,7 @@ const HistoryItem = ({ transfer, fee }) => {
         )}{" "}
         {
           whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
-            .ticker
+            ?.ticker || '???'
         }
       </span>
     </div>
