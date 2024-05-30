@@ -1,0 +1,48 @@
+.signContainer {
+    padding-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    .title {
+        font-size: 24px;
+    }
+
+    .text {
+        text-align: center;
+    }
+
+    .subtext {
+        margin-top: 20px;
+        opacity: 0.7;
+        font-size: 14px;
+    }
+
+    .messageBlock {
+        width: 100%;
+        border: 1px solid #ffffff62;
+        border-left: 0;
+        border-right: 0;
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .messageTitle {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+    }
+
+    .buttonsContainer {
+        margin-top: 80px;
+        width: 100%;
+        display: flex;
+        gap: 10px;
+
+        > * {
+            flex: 1;
+        }
+    }
+}

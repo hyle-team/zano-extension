@@ -364,6 +364,22 @@ export const transferBridge = async (
   return data;
 };
 
+export const signMessage = async (message) => {
+  const base64 = Buffer.from(message).toString("base64");
+
+  const signRequest ={
+    "buff": base64,
+  };
+
+  const response = await fetchData("sign_message", signRequest);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
 export const createConnectKey = async () => {
   return await fetch(`http://localhost:${apiCredentials.port}/connect-api-consumer`, {
     method: 'POST',

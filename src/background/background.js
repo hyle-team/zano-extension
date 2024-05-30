@@ -1,3 +1,4 @@
+/*global chrome*/
 import {
   fetchData,
   getWalletData,
@@ -6,6 +7,7 @@ import {
   transferBridge,
   ionicSwap,
   ionicSwapAccept,
+  signMessage,
   validateConnectKey,
   getAliasDetails,
 } from "./wallet";
@@ -22,6 +24,9 @@ export let apiCredentials = {
 let pendingTx = null;
 
 const userData = { password: undefined };
+
+const signReqFinalizers = {};
+const signReqs = [];
 
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
@@ -194,6 +199,94 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       getAliasDetails(request.alias)
         .then((res) => sendResponse(res))
         .catch(() => sendResponse({ error: "Internal error" }));
+      break;
+    }
+
+    case "GET_SIGN_REQUESTS": {
+      sendResponse({ data: signReqs });
+      break;
+    }
+
+    case "FINALIZE_MESSAGE_SIGN": {
+      const reqId = request.id;
+      const success = request.success;
+      const signReq = signReqs.find((req) => req.id === reqId);
+
+      
+
+      if (signReq && signReqFinalizers[reqId]) {
+
+        function finalize(data) {
+          signReqFinalizers[reqId](data);
+          signReqs.splice(signReqs.indexOf(signReq), 1);
+          delete signReqFinalizers[reqId];
+          chrome.windows.remove(signReq.windowId);
+        }
+
+        if (!success) {
+          finalize({ error: "Sign request denied by user" });
+          sendResponse({ data: true });
+        } else {
+          const message = signReq.message;
+
+          signMessage(message)
+            .then(data => {
+              finalize({ data });
+              sendResponse({ data: true });
+            })
+            .catch((error) => {
+              console.error("Error signing message:", error);
+
+              finalize({
+                error: "An error occurred while signing message",
+              });
+              
+              sendResponse({
+                error: "An error occurred while signing message",
+              });
+            });
+        }
+
+        
+      } else {
+        return sendResponse({ error: "Sign request not found" });
+      }
+
+      break;
+    }
+
+    case "REQUEST_MESSAGE_SIGN": {
+      chrome.windows.create({
+        url: chrome.runtime.getURL("index.html"),
+        type: "popup",
+        width: 370,
+        height: 630,
+      }).then(requestWindow => {
+        const signReqId = crypto.randomUUID();
+
+        signReqFinalizers[signReqId] = (result) => {
+          sendResponse(result);
+        };
+
+        signReqs.push({id: signReqId, windowId: requestWindow.id, message: request.message});
+
+        if (typeof request.timeout === "number") {
+          setTimeout(() => {
+            const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
+  
+            if (signReqIndex === -1) {
+              return;
+            }
+  
+            signReqs.splice(signReqIndex, 1);
+            delete signReqFinalizers[signReqId];
+            sendResponse({ error: "Timeout exceeded" });
+          }, request.timeout);
+        }
+      })
+
+      
+
       break;
     }
 

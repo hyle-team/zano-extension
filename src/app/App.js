@@ -1,6 +1,6 @@
 /*global chrome*/
 import { useContext, useEffect, useState, useCallback } from "react";
-import { Router } from "react-chrome-extension-router";
+import { Router, goTo } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
 import Header from "./components/Header/Header";
 import TokensTabs from "./components/TokensTabs/TokensTabs";
@@ -30,6 +30,7 @@ import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
+import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";
@@ -239,9 +240,18 @@ function App() {
     });
   }, [dispatch]);
 
-  const appConnected = !!(
-    state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
-  );
+  useEffect(() => {
+    async function getSignRequests() {
+      const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
+      const signRequests = response.data;
+
+      if (signRequests && signRequests.length > 0) {
+        goTo(MessageSignPage, { signRequests });
+      }
+    }
+    getSignRequests();
+  }, []);
+  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
     if (state.connectCredentials.token) {
