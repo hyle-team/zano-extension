@@ -61,11 +61,11 @@ const Header = () => {
       {dropdownOpen && (
         <div onClick={toggleDropdown} className={s.dropdown}>
           <div onClick={(e) => e.stopPropagation()} className={s.dropdownList}>
-            {state.walletsList.map((wallet, i) => (
+            {state.walletsList.map((wallet) => (
               <button
                 key={wallet.address}
                 className={s.dropdownTitle}
-                onClick={() => switchWallet(i)}
+                onClick={() => switchWallet(wallet.wallet_id)}
               >
                 <div>
                   {wallet.alias

@@ -117,7 +117,7 @@ export const getWallets = async () => {
     console.log('wallets:', data.result.wallets);
 
     const wallets = await Promise.all(
-      data.result.wallets.filter(e => !e?.wi?.is_watch_only).map(async (wallet) => {
+      data.result.wallets.map(async (wallet) => {
         const alias = await getAlias(wallet.wi.address);
         const balance = wallet.wi.balances.find(
           (asset) =>
@@ -129,10 +129,16 @@ export const getWallets = async () => {
           address: wallet.wi.address,
           alias: alias,
           balance: removeZeros(balance),
+          is_watch_only: wallet?.wi?.is_watch_only,
+          wallet_id: wallet.wallet_id,
         };
       })
     );
-    return wallets;
+
+    return wallets.filter(e => !e.is_watch_only).map(e => {
+      delete e.is_watch_only;
+      return e;
+    });
   } catch (error) {
     console.error("Error fetching wallet data:", error);
     throw error;
