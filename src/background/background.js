@@ -35,8 +35,29 @@ chrome.storage.local.get("pendingTx", (result) => {
   }
 });
 
+
+// requests that can only be made by the extension frontend
+const SELF_ONLY_REQUESTS = [
+  'SET_API_CREDENTIALS', 
+  'VALIDATE_CONNECT_KEY', 
+  'GET_PASSWORD',
+  'GET_SIGN_REQUESTS',
+  'FINALIZE_MESSAGE_SIGN',
+  'SET_PASSWORD',
+  'SEND_TRANSFER',
+  'EXECUTE_BRIDGING_TRANSFER'
+];
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  
+  const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+
+  if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
+    console.error("Unauthorized request from", sender.url);
+    return sendResponse({ error: "Unauthorized request" });
+  }
+
   switch (request.method) {
     case "SET_API_CREDENTIALS":
       apiCredentials = {
@@ -114,25 +135,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case "IONIC_SWAP":
-      ionicSwap(request)
-        .then((data) => {
-          sendResponse({ data });
-        })
-        .catch((error) => {
-          console.error("Error sending transfer:", error);
-          sendResponse({ error: "An error occurred while sending transfer" });
-        });
+      // ionicSwap(request)
+      //   .then((data) => {
+      //     sendResponse({ data });
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error sending transfer:", error);
+      //     sendResponse({ error: "An error occurred while sending transfer" });
+      //   });
       break;
 
     case "IONIC_SWAP_ACCEPT":
-      ionicSwapAccept(request)
-        .then((data) => {
-          sendResponse({ data });
-        })
-        .catch((error) => {
-          console.error("Error sending transfer:", error);
-          sendResponse({ error: "An error occurred while sending transfer" });
-        });
+      // ionicSwapAccept(request)
+      //   .then((data) => {
+      //     sendResponse({ data });
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error sending transfer:", error);
+      //     sendResponse({ error: "An error occurred while sending transfer" });
+      //   });
       break;
 
     case "BRIDGING_TRANSFER":
