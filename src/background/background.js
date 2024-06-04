@@ -28,12 +28,24 @@ const userData = { password: undefined };
 const signReqFinalizers = {};
 const signReqs = [];
 
+const ionicSwapReqs = {};
+const acceptIonicSwapReqs = {};
+
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
   if (result.pendingTx) {
     pendingTx = result.pendingTx;
   }
 });
+
+function openWindow() {
+  return chrome.windows.create({
+    url: chrome.runtime.getURL("index.html"),
+    type: "popup",
+    width: 370,
+    height: 630,
+  });
+}
 
 
 // requests that can only be made by the extension frontend
@@ -43,6 +55,10 @@ const SELF_ONLY_REQUESTS = [
   'GET_PASSWORD',
   'GET_SIGN_REQUESTS',
   'FINALIZE_MESSAGE_SIGN',
+  'GET_IONIC_SWAP_REQUESTS',
+  'FINALIZE_IONIC_SWAP_REQUEST',
+  'GET_ACCEPT_IONIC_SWAP_REQUESTS',
+  'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
   'SET_PASSWORD',
   'SEND_TRANSFER',
   'EXECUTE_BRIDGING_TRANSFER'
@@ -134,26 +150,123 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       break;
 
-    case "IONIC_SWAP":
-      // ionicSwap(request)
-      //   .then((data) => {
-      //     sendResponse({ data });
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error sending transfer:", error);
-      //     sendResponse({ error: "An error occurred while sending transfer" });
-      //   });
+    case "GET_IONIC_SWAP_REQUESTS":
+      sendResponse({ 
+        data: Object.entries(ionicSwapReqs).map(([id, req]) => ({ ...req, id, finalize: undefined })) 
+      });
       break;
 
+    case "FINALIZE_IONIC_SWAP_REQUEST": {
+      const reqId = request.id;
+      const success = request.success;
+      const req = ionicSwapReqs[reqId];
+
+      if (req) {
+        function finalize(data) {
+          req.finalizer(data);
+          delete ionicSwapReqs[reqId];
+          chrome.windows.remove(req.windowId);
+        }
+
+        if (!success) {
+          finalize({ error: "Request denied by user" });
+          sendResponse({ data: true });
+        } else {
+          const swap = req.swap;
+          
+          ionicSwap(swap)
+            .then((data) => {
+              finalize({ data });
+              sendResponse({ data: true });
+            })
+            .catch((error) => {
+              console.error("Error creating ionic swap:", error);
+              finalize({ error: "An error occurred while creating ionic swap" });
+              sendResponse({ error: "An error occurred while creating ionic swap" });
+            });
+        }
+        
+      } else {
+        return sendResponse({ error: "Sign request not found" });
+      }
+
+      break;
+    }
+      
+    case "IONIC_SWAP": {
+      openWindow().then(requestWindow => {
+        const reqId = crypto.randomUUID();
+        const req = {windowId: requestWindow.id, swap: request, finalizer: (data) => sendResponse(data)};
+        ionicSwapReqs[reqId] = req;
+
+        if (typeof request.timeout === "number") {
+          setTimeout(() => {
+            delete ionicSwapReqs[reqId];
+            sendResponse({ error: "Timeout exceeded" });
+          }, request.timeout);
+        }
+      });
+
+      break;
+    }
+     
+
+    case "GET_ACCEPT_IONIC_SWAP_REQUESTS":
+      sendResponse({ 
+        data: Object.entries(acceptIonicSwapReqs).map(([id, req]) => ({ ...req, id, finalize: undefined })) 
+      });
+      break;
+
+    case "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST": {
+      const reqId = request.id;
+      const success = request.success;
+      const req = acceptIonicSwapReqs[reqId];
+
+      if (req) {
+        function finalize(data) {
+          req.finalizer(data);
+          delete acceptIonicSwapReqs[reqId];
+          chrome.windows.remove(req.windowId);
+        }
+
+        if (!success) {
+          finalize({ error: "Request denied by user" });
+          sendResponse({ data: true });
+        } else {
+          const hex = req.hex;
+          
+          ionicSwapAccept({ hex_raw_proposal: hex })
+            .then((data) => {
+              finalize({ data });
+              sendResponse({ data: true });
+            })
+            .catch((error) => {
+              console.error("Error accepting ionic swap:", error);
+              finalize({ error: "An error occurred while accepting ionic swap" });
+              sendResponse({ error: "An error occurred while accepting ionic swap" });
+            });
+        }
+        
+      } else {
+        return sendResponse({ error: "Ionic swap accept request not found" });
+      }
+
+      break;
+    }
+      
     case "IONIC_SWAP_ACCEPT":
-      // ionicSwapAccept(request)
-      //   .then((data) => {
-      //     sendResponse({ data });
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error sending transfer:", error);
-      //     sendResponse({ error: "An error occurred while sending transfer" });
-      //   });
+      openWindow().then(requestWindow => {
+        const reqId = crypto.randomUUID();
+        const req = {windowId: requestWindow.id, hex_raw_proposal: request.hex_raw_proposal, finalizer: (data) => sendResponse(data)};
+        acceptIonicSwapReqs[reqId] = req;
+
+        if (typeof request.timeout === "number") {
+          setTimeout(() => {
+            delete acceptIonicSwapReqs[reqId];
+            sendResponse({ error: "Timeout exceeded" });
+          }, request.timeout);
+        }
+      });
       break;
 
     case "BRIDGING_TRANSFER":
@@ -277,12 +390,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     case "REQUEST_MESSAGE_SIGN": {
-      chrome.windows.create({
-        url: chrome.runtime.getURL("index.html"),
-        type: "popup",
-        width: 370,
-        height: 630,
-      }).then(requestWindow => {
+      openWindow().then(requestWindow => {
         const signReqId = crypto.randomUUID();
 
         signReqFinalizers[signReqId] = (result) => {

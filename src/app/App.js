@@ -34,6 +34,8 @@ import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";
+import OuterConfirmation from "./components/OuterConfirmation/OuterConfirmation";
+import Formatters from "./utils/formatters";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -241,16 +243,70 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    async function getSignRequests() {
-      const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
-      const signRequests = response.data;
 
-      if (signRequests && signRequests.length > 0) {
-        goTo(MessageSignPage, { signRequests });
+    async function modalLoad() {
+      async function getSignRequests() {
+        const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
+        const signRequests = response.data;
+  
+        if (signRequests && signRequests.length > 0) {
+          goTo(MessageSignPage, { signRequests });
+        }
       }
+
+      async function getIonicSwapRequests() {
+        const ionicSwapRes = await fetchBackground({ method: "GET_IONIC_SWAP_REQUESTS" });
+        const swapRequests = ionicSwapRes.data;
+
+        const swapPageReqs = swapRequests.map(e => {
+          const {swap} = e;
+
+          return {
+            id: e.id,
+            method: "FINALIZE_IONIC_SWAP_REQUEST",
+            name: "Ionic Swap",
+            params: [
+              {
+                key: "Address",
+                value: Formatters.walletAddress(swap.destinationAddress)
+              }
+            ]
+          }
+        }); 
+
+        const ionicSwapAcceptRes = await fetchBackground({ method: "GET_ACCEPT_IONIC_SWAP_REQUESTS" });
+        const acceptSwapAccepts = ionicSwapAcceptRes.data;
+
+        const acceptPageReqs = acceptSwapAccepts.map(e => {
+          const {hex_raw_proposal} = e;
+          return {
+            id: e.id,
+            method: "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST",
+            name: "Accept Ionic Swap",
+            params: [
+              {
+                key: "Hex Proposal",
+                value: Formatters.walletAddress(hex_raw_proposal)
+              }
+            ]
+          }
+        });
+
+        const pageReqs = [...swapPageReqs, ...acceptPageReqs];
+  
+        if (pageReqs && pageReqs.length > 0) {
+          goTo(OuterConfirmation, { reqs: pageReqs });
+        }
+      }
+
+      await getIonicSwapRequests();
+      await getSignRequests();
     }
-    getSignRequests();
+
+    modalLoad();
   }, []);
+
+  
   const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
