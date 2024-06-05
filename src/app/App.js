@@ -242,7 +242,13 @@ function App() {
     });
   }, [dispatch]);
 
+
+  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
+
   useEffect(() => {
+    function getAssetById(id) {
+      return state.wallet.assets.find(asset => asset.assetId === id);
+    }
 
     async function modalLoad() {
       async function getSignRequests() {
@@ -261,6 +267,20 @@ function App() {
         const swapPageReqs = swapRequests.map(e => {
           const {swap} = e;
 
+          const swapParams = {};
+
+          swapParams.address = swap.destinationAddress;
+
+          const receivingAsset = getAssetById(swap.destinationAssetID);
+          const receivingAmount = swap.destinationAssetAmount;
+
+          swapParams.receiving = `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
+
+          const sendingAsset = getAssetById(swap.currentAssetID);
+          const sendingAmount = swap.currentAssetAmount;
+
+          swapParams.sending = `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
+          
           return {
             id: e.id,
             method: "FINALIZE_IONIC_SWAP_REQUEST",
@@ -268,17 +288,47 @@ function App() {
             params: [
               {
                 key: "Address",
-                value: Formatters.walletAddress(swap.destinationAddress)
+                value: swapParams.address ? Formatters.walletAddress(swapParams.address) : "???"
+              },
+              {
+                key: "Sending",
+                value: swapParams.sending || "???"
+              },
+              {
+                key: "Receiving",
+                value: swapParams.receiving || "???"
               }
             ]
           }
         }); 
 
         const ionicSwapAcceptRes = await fetchBackground({ method: "GET_ACCEPT_IONIC_SWAP_REQUESTS" });
-        const acceptSwapAccepts = ionicSwapAcceptRes.data;
+        const acceptSwapReqs = ionicSwapAcceptRes.data;
 
-        const acceptPageReqs = acceptSwapAccepts.map(e => {
-          const {hex_raw_proposal} = e;
+        const acceptPageReqs = await Promise.all(acceptSwapReqs.map(async e => {
+          const hex_raw_proposal = e?.hex_raw_proposal;
+
+          const swap = (await fetchBackground({ method: "GET_IONIC_SWAP_PROPOSAL_INFO", hex_raw_proposal }))?.data?.result?.proposal;
+
+          const swapParams = {};
+
+          if (swap) {
+            const receivingAsset = getAssetById(swap.to_finalizer[0]?.asset_id);
+            const receivingAmount = swap.to_finalizer[0]?.amount / 10 ** (receivingAsset?.decimalPoint || 12);
+            
+            if (!isNaN(receivingAmount)) {
+              swapParams.receiving = `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
+            }
+
+            const sendingAsset = getAssetById(swap.to_initiator[0]?.asset_id);
+            const sendingAmount = swap.to_initiator[0]?.amount / 10 ** (sendingAsset?.decimalPoint || 12);
+            
+            if (!isNaN(sendingAmount)) {
+              swapParams.sending = `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
+            }
+          }
+
+
           return {
             id: e.id,
             method: "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST",
@@ -287,10 +337,18 @@ function App() {
               {
                 key: "Hex Proposal",
                 value: Formatters.walletAddress(hex_raw_proposal)
-              }
+              },
+              {
+                key: "Sending",
+                value: swapParams.sending || "???"
+              },
+              {
+                key: "Receiving",
+                value: swapParams.receiving || "???"
+              },
             ]
           }
-        });
+        }));
 
         const pageReqs = [...swapPageReqs, ...acceptPageReqs];
   
@@ -303,11 +361,12 @@ function App() {
       await getSignRequests();
     }
 
-    modalLoad();
-  }, []);
+    if (appConnected && !connectOpened && loggedIn && state.isConnected) {
+      modalLoad();
+    }
 
-  
-  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
+    console.log("ASSETS", state.wallet.assets);
+  }, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
 
   useEffect(() => {
     if (state.connectCredentials.token) {

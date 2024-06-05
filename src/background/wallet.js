@@ -190,6 +190,7 @@ export const getWalletData = async () => {
       name: asset.asset_info.full_name,
       ticker: asset.asset_info.ticker,
       assetId: asset.asset_info.asset_id,
+      decimalPoint: asset.asset_info.decimal_point,
       balance: removeZeros(asset.total),
       unlockedBalance: removeZeros(asset.unlocked),
     }))
@@ -404,3 +405,15 @@ export const validateConnectKey = async (key) => {
     body: JSON.stringify({ key })
   }).then(r => r.json());
 }
+
+export const getSwapProposalInfo = async (hex) => {
+  const response = await fetchData("ionic_swap_get_proposal_info", { hex_raw_proposal: hex });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return data;
+};

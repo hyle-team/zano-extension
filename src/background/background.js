@@ -10,6 +10,7 @@ import {
   signMessage,
   validateConnectKey,
   getAliasDetails,
+  getSwapProposalInfo,
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -415,6 +416,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
 
       
+
+      break;
+    }
+
+    case "GET_IONIC_SWAP_PROPOSAL_INFO": {
+      const hex = request.hex_raw_proposal;
+
+      getSwapProposalInfo(hex)
+        .then((data) => {
+          sendResponse({ data });
+        })
+        .catch((error) => {
+          console.error("Error getting ionic swap proposal info:", error);
+          sendResponse({ error: "An error occurred while getting ionic swap proposal info" });
+        });
 
       break;
     }
