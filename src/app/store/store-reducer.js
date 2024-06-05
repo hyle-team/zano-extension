@@ -83,7 +83,8 @@ const initialState = {
   connectCredentials: {
     token: null,
     port: null,
-  }
+  },
+  whitelistedAssets: [],
 };
 
 const reducer = (state, action) => {
@@ -114,6 +115,8 @@ const reducer = (state, action) => {
       return { ...state, transactionStatus: action.payload };
     case "SET_CONNECT_DATA":
       return { ...state, connectCredentials: action.payload }
+    case "SET_WHITE_LIST":
+      return { ...state, whitelistedAssets: action.payload }
     default:
       return state;
   }
