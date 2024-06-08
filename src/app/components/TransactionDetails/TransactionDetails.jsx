@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import Big from "big.js";
 import copyIcon from "../../assets/svg/copy-blue.svg";
 import incomingIcon from "../../assets/svg/incoming_ico.svg";
@@ -6,9 +6,10 @@ import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
 import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import Formatters from "../../utils/formatters";
-import { whitelistedAssets } from "../../config/config";
+import { Store } from "../../store/store-reducer";
 
 const TransactionDetails = (props) => {
+  const { state } = useContext(Store);
   const { copyToClipboard, SuccessCopyModal } = useCopy();
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const TransactionDetails = (props) => {
                       : transfer.amount
                   )}{" "}
                   {
-                    whitelistedAssets.find(
+                     state.whitelistedAssets.find(
                       (asset) => asset.asset_id === transfer.assetId
                     ).ticker
                   }

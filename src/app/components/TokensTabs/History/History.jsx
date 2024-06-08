@@ -6,11 +6,13 @@ import sendIcon from "../../../assets/svg/send-colored.svg";
 import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
-import { whitelistedAssets } from "../../../config/config";
 import Formatters from "../../../utils/formatters";
 import NavLink from '../../UI/NavLink/NavLink';
 
+
 const HistoryItem = ({ transfer, fee }) => {
+  const { state } = useContext(Store);
+
   if (transfer.amount === fee) return null;
   const amount = new Big(transfer.amount);
   const fixedFee = new Big(fee);
@@ -29,7 +31,7 @@ const HistoryItem = ({ transfer, fee }) => {
             : transfer.amount
         )}{" "}
         {
-          whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
+          state.whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
             ?.ticker || '???'
         }
       </span>
@@ -39,6 +41,7 @@ const HistoryItem = ({ transfer, fee }) => {
 
 const History = () => {
   const { state } = useContext(Store);
+
   return (
     <div>
       {state.wallet.transactions.map((tx) => {

@@ -417,3 +417,22 @@ export const getSwapProposalInfo = async (hex) => {
 
   return data;
 };
+
+export async function getWhiteList() {
+  const fetchedWhiteList = await fetch('https://api.zano.org/assets_whitelist.json')
+  .then(response => response.json())
+  .then(data => data.assets);
+
+  if (fetchedWhiteList.every(e => e.asset_id !== "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a")) {
+    fetchedWhiteList.push({
+      asset_id:
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+      ticker: "ZANO",
+      full_name: "Zano",
+      decimal_point: 12
+    });
+  }
+
+  return fetchedWhiteList;
+
+}

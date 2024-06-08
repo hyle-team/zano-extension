@@ -74,3 +74,10 @@ export const setConnectData = (dispatch, state) => {
     payload: state
   });
 };
+
+export const setWhiteList = (dispatch, state) => {
+  return dispatch({
+    type: "SET_WHITE_LIST",
+    payload: state
+  });
+}

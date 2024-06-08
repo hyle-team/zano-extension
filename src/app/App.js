@@ -25,6 +25,7 @@ import {
   updateConfirmationModal,
   updateTransactionStatus,
   setConnectData,
+  setWhiteList
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
@@ -159,6 +160,16 @@ function App() {
   }, [dispatch, state.isConnected, state.activeWalletId, loggedIn]);
 
   useEffect(() => {
+    async function updateWhiteList() {
+      const whiteList = await fetchBackground({ method: "GET_WHITELIST" });
+      if (whiteList.data) {
+        setWhiteList(dispatch, whiteList.data);
+      }
+    }
+    updateWhiteList();
+  }, []);
+
+  useEffect(() => {
     getZanoPrice().then((priceData) => {
       console.log("price data", priceData);
       updatePriceData(dispatch, priceData);
@@ -271,12 +282,12 @@ function App() {
 
           swapParams.address = swap.destinationAddress;
 
-          const receivingAsset = getAssetById(swap.destinationAssetID);
+          const receivingAsset = getAssetById(swap.destinationAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.destinationAssetID);
           const receivingAmount = swap.destinationAssetAmount;
 
           swapParams.receiving = `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
 
-          const sendingAsset = getAssetById(swap.currentAssetID);
+          const sendingAsset = getAssetById(swap.currentAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.currentAssetID);
           const sendingAmount = swap.currentAssetAmount;
 
           swapParams.sending = `${sendingAmount} ${sendingAsset?.ticker || "???"}`;

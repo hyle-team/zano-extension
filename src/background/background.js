@@ -11,6 +11,7 @@ import {
   validateConnectKey,
   getAliasDetails,
   getSwapProposalInfo,
+  getWhiteList
 } from "./wallet";
 
 // eslint-disable-next-line no-undef
@@ -432,6 +433,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ error: "An error occurred while getting ionic swap proposal info" });
         });
 
+      break;
+    }
+
+    case "GET_WHITELIST": {
+      getWhiteList()
+      .then((data) => {
+        sendResponse({ data });
+      })
+      .catch((error) => {
+        console.error("Error getting whitelist:", error);
+        sendResponse({ error: "An error occurred while getting whitelist" });
+      });
       break;
     }
 
