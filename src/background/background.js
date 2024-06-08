@@ -14,6 +14,16 @@ import {
   getWhiteList
 } from "./wallet";
 
+const POPUP_HEIGHT = 630;
+const POPUP_WIDTH = 370;
+
+chrome.windows.onBoundsChanged.addListener((window) => {
+  chrome.windows.update(window.id, {
+    width: POPUP_WIDTH,
+    height: POPUP_HEIGHT
+  });
+});
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
@@ -44,8 +54,8 @@ function openWindow() {
   return chrome.windows.create({
     url: chrome.runtime.getURL("index.html"),
     type: "popup",
-    width: 370,
-    height: 630,
+    width: POPUP_WIDTH,
+    height: POPUP_HEIGHT,
   });
 }
 
