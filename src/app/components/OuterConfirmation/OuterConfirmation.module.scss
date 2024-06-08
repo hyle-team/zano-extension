@@ -1,5 +1,5 @@
 .confirmationContainer {
-    height: calc(100vh - 70px);
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -7,17 +7,19 @@
     padding: 20px;
     padding-top: 80px;
     position: relative;
-
+ 
     .title {
         font-size: 24px;
     }
 
     .table {
-        padding-top: 100px;
+        margin-top: 100px;
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        max-height: 150px;
+        overflow: auto;
 
         .row {
             width: 100%;
