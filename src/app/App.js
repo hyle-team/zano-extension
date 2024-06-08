@@ -285,12 +285,12 @@ function App() {
           const receivingAsset = getAssetById(swap.destinationAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.destinationAssetID);
           const receivingAmount = swap.destinationAssetAmount;
 
-          swapParams.receiving = `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
+          swapParams.receiving = receivingAmount && `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
 
           const sendingAsset = getAssetById(swap.currentAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.currentAssetID);
           const sendingAmount = swap.currentAssetAmount;
 
-          swapParams.sending = `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
+          swapParams.sending = sendingAmount && `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
           
           return {
             id: e.id,
@@ -375,8 +375,6 @@ function App() {
     if (appConnected && !connectOpened && loggedIn && state.isConnected) {
       modalLoad();
     }
-
-    console.log("ASSETS", state.wallet.assets);
   }, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
 
   useEffect(() => {
