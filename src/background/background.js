@@ -27,6 +27,7 @@ class PopupRequestsMethods {
     openWindow().then(requestWindow => {
       const reqId = crypto.randomUUID();
       const req = {windowId: requestWindow.id, finalizer: (data) => sendResponse(data), ...reqParams};
+      allPopupIds.push(requestWindow.id);
       savedRequests[requestType][reqId] = req;
 
       if (typeof request.timeout === "number") {
@@ -89,10 +90,12 @@ class PopupRequestsMethods {
 }
 
 chrome.windows.onBoundsChanged.addListener((window) => {
-  chrome.windows.update(window.id, {
-    width: POPUP_WIDTH,
-    height: POPUP_HEIGHT
-  });
+  if (allPopupIds.includes(window.id) && window.width !== POPUP_WIDTH && window.height !== POPUP_HEIGHT) {
+    chrome.windows.update(window.id, {
+      width: POPUP_WIDTH,
+      height: POPUP_HEIGHT
+    });
+  }
 });
 
 // eslint-disable-next-line no-undef
@@ -148,6 +151,9 @@ const savedRequests = {
   "IONIC_SWAP": {},
   "ACCEPT_IONIC_SWAP": {},
 };
+
+
+const allPopupIds = [];
 
 // eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
@@ -478,6 +484,8 @@ async function processRequest(request, sender, sendResponse) {
         signReqFinalizers[signReqId] = (result) => {
           sendResponse(result);
         };
+
+        allPopupIds.push(requestWindow.id);
 
         signReqs.push({id: signReqId, windowId: requestWindow.id, message: request.message});
 
