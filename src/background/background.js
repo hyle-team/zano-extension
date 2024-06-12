@@ -100,13 +100,46 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
-export let apiCredentials = {
+const defaultCredentials = {
   port: 11211,
 };
 
+export let apiCredentials = JSON.parse(JSON.stringify(defaultCredentials));
+
 let pendingTx = null;
 
-const userData = { password: undefined };
+const defaultUserData = { password: undefined };
+
+async function setUserData(state) {
+  await new Promise((resolve) => {
+    chrome.storage.local.set({ userData: state }, resolve);
+  });
+}
+
+async function getUserData() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get("userData", (result) => {
+      resolve(result.userData || defaultUserData);
+    });
+  });
+}
+
+async function updateUserData(newData) {
+  const currentData = await getUserData();
+  return setUserData({...currentData, ...newData});
+}
+
+async function recoverApiCredentials() {
+  apiCredentials = (await getUserData()).apiCredentials || defaultCredentials;
+}
+
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.remove('userData', function() {
+      console.log('State cleared on browser startup');
+  });
+});
+
+
 
 const signReqFinalizers = {};
 const signReqs = [];
@@ -152,9 +185,19 @@ const SELF_ONLY_REQUESTS = [
   'GET_WALLETS'
 ];
 
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//   processRequest(request, sender).then(sendResponse);
+//   return true;
+// });
+
+// async function processRequest(request, sender) {
+  
+// }
+
 // eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  
+
   const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
   if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
@@ -162,14 +205,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return sendResponse({ error: "Unauthorized request" });
   }
 
+  // if (!isFromExtensionFrontend) {
+  //   console.log('Updating API credentials');
+  //   await recoverApiCredentials();
+  // }
+
   switch (request.method) {
     case "SET_API_CREDENTIALS":
+      console.log("Setting API credentials", request.credentials);
       apiCredentials = {
         ...(apiCredentials || {}),
         ...request.credentials,
       };
-      console.log("API credentials set to", apiCredentials);
       sendResponse({ success: true });
+      updateUserData({
+        apiCredentials: apiCredentials
+      }).then(() => {
+        console.log("API credentials set to", apiCredentials);
+        sendResponse({ success: true });
+      });
       break;
 
     case "PING_WALLET":
@@ -342,13 +396,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case "SET_PASSWORD": {
-      userData.password = request.password;
-      sendResponse({ success: true });
+      updateUserData({ password: request.password }).then(() => {
+        sendResponse({ success: true });
+      });
       break;
     }
 
     case "GET_PASSWORD": {
-      sendResponse({ password: userData.password });
+      getUserData()
+      .then((userData) => {
+        sendResponse({ password: userData?.password });
+      });
       break;
     }
 

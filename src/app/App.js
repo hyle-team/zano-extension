@@ -56,8 +56,16 @@ function App() {
 
   useEffect(() => {
     async function loadLogin() {
-      const sessionLoggedIn = !!(await getSessionPassword());
-      setLoggedIn(sessionLoggedIn);
+      const password = (await getSessionPassword());
+      setLoggedIn(!!password);
+      if (password) {
+        const connectData = ConnectKeyUtils.getConnectData(password);
+
+        setConnectData(dispatch, {
+          token: connectData.token,
+          port: connectData.port,
+        });
+      }
     }
     loadLogin();
   }, []);
@@ -378,6 +386,7 @@ function App() {
   }, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
 
   useEffect(() => {
+    console.log("connectCredentials", state.connectCredentials);
     if (state.connectCredentials.token) {
       fetchBackground({
         method: "SET_API_CREDENTIALS",
@@ -395,6 +404,7 @@ function App() {
         incorrectPassword={incorrectPassword}
         setIncorrectPassword={setIncorrectPassword}
         onConfirm={(password) => {
+          console.log(password, comparePasswords(password));
           if (comparePasswords(password)) {
             updateLoading(dispatch, true);
 

@@ -43,7 +43,8 @@ export const passwordExists = () => {
 }
 
 export const getSessionPassword = async () => {
-  return (await fetchBackground({ method: "GET_PASSWORD" })).password;
+  const sessionPass = (await fetchBackground({ method: "GET_PASSWORD" })).password;
+  return sessionPass;
 }
 
 export const setSessionPassword = async (password) => {
