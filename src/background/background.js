@@ -186,18 +186,12 @@ const SELF_ONLY_REQUESTS = [
 ];
 
 
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   processRequest(request, sender).then(sendResponse);
-//   return true;
-// });
-
-// async function processRequest(request, sender) {
-  
-// }
-
-// eslint-disable-next-line no-undef
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  processRequest(request, sender, sendResponse);
+  return true;
+});
 
+async function processRequest(request, sender, sendResponse) {
   const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
   if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
@@ -205,10 +199,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return sendResponse({ error: "Unauthorized request" });
   }
 
-  // if (!isFromExtensionFrontend) {
-  //   console.log('Updating API credentials');
-  //   await recoverApiCredentials();
-  // }
+  if (!isFromExtensionFrontend) {
+    console.log('Updating API credentials');
+    await recoverApiCredentials();
+  }
 
   switch (request.method) {
     case "SET_API_CREDENTIALS":
@@ -539,5 +533,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ error: `Unknown method: ${request.method}` });
   }
 
-  return true;
-});
+}
