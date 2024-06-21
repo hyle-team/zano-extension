@@ -17,7 +17,8 @@ export async function fetchBackground(data) {
 
 const multiplier = new Big((1e12).toString());
 
-export const removeZeros = (amount) => {
+export const removeZeros = (amount, decimal_point = 12) => {
+  const multiplier = new Big(10).pow(decimal_point);
   const bigAmount = new Big(amount);
   const fixedAmount = bigAmount.div(multiplier).toString();
   return fixedAmount;

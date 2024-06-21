@@ -62,7 +62,7 @@ const TransactionDetails = (props) => {
                   {
                      state.whitelistedAssets.find(
                       (asset) => asset.asset_id === transfer.assetId
-                    ).ticker
+                    )?.ticker ?? "???"
                   }
                 </div>
                 <div className="table__icon">

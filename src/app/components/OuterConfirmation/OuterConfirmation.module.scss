@@ -1,5 +1,7 @@
+@import "src/app/styles/variables";
+
 .confirmationContainer {
-    height: 100%;
+    height: calc($appHeight - 72px);
     display: flex;
     flex-direction: column;
     align-items: center;

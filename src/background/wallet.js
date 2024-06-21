@@ -151,6 +151,37 @@ export const getWalletData = async () => {
   const address = addressParsed.result.address;
   const balanceResponse = await fetchData("getbalance");
   const balanceParsed = await balanceResponse.json();
+
+  const assets = balanceParsed.result.balances
+    .map((asset) => ({
+      name: asset.asset_info.full_name,
+      ticker: asset.asset_info.ticker,
+      assetId: asset.asset_info.asset_id,
+      decimalPoint: asset.asset_info.decimal_point,
+      balance: removeZeros(asset.total, asset.asset_info.decimal_point),
+      unlockedBalance: removeZeros(asset.unlocked, asset.asset_info.decimal_point),
+    }))
+    .sort((a, b) => {
+      if (
+        a.assetId ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+      ) {
+        return -1;
+      } else if (
+        b.assetId ===
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+      ) {
+        return 1;
+      }
+      return 0;
+    });
+
+  function getAssetDecimalPoint(assetId) {
+    return assets.find(
+      asset => asset.assetId === assetId
+    )?.decimalPoint;
+  }
+
   const balance = removeZeros(
     balanceParsed.result.balances.find(
       (asset) =>
@@ -178,36 +209,14 @@ export const getWalletData = async () => {
         fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
         transfers: tx.subtransfers.map((transfer) => ({
-          amount: removeZeros(transfer.amount),
+          amount: removeZeros(transfer.amount, getAssetDecimalPoint(transfer.asset_id) || 12),
           assetId: transfer.asset_id,
           incoming: transfer.is_income,
         })),
       }));
   }
 
-  const assets = balanceParsed.result.balances
-    .map((asset) => ({
-      name: asset.asset_info.full_name,
-      ticker: asset.asset_info.ticker,
-      assetId: asset.asset_info.asset_id,
-      decimalPoint: asset.asset_info.decimal_point,
-      balance: removeZeros(asset.total),
-      unlockedBalance: removeZeros(asset.unlocked),
-    }))
-    .sort((a, b) => {
-      if (
-        a.assetId ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-      ) {
-        return -1;
-      } else if (
-        b.assetId ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-      ) {
-        return 1;
-      }
-      return 0;
-    });
+  
 
   console.log('get alias:', address);
 
