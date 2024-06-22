@@ -14,6 +14,10 @@ const AppPlug = (props) => {
     ? [s.plugButton, s.hidden].join(" ")
     : s.plugButton;
 
+  const openDocs = () => {
+    window.open("https://docs.zano.org/docs/use/companion", "_blank");
+  };
+
   return (
     <>
       {!state.isConnected && (
@@ -33,17 +37,17 @@ const AppPlug = (props) => {
               <div className={s.plugText}>
                 Make sure you're running <br />a wallet with RPC enabled
               </div>
-              
-              <button className={btnClasses} onClick={() => setConnectOpened(true)}>
+
+              <button
+                className={btnClasses}
+                onClick={() => setConnectOpened(true)}
+              >
                 Connection Settings
               </button>
             </div>
-
-            
-
-            <button className={btnClasses}>
+            <button className={btnClasses} onClick={openDocs}>
               <img src={questionIcon} alt="question icon" />
-              How to run a local wallet?
+              How to connect to the wallet?
             </button>
           </div>
         </div>
