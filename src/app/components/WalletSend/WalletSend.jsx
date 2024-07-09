@@ -9,7 +9,7 @@ import Button from "../UI/Button/Button";
 import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import s from "./WalletSend.module.scss";
-import { fetchBackground } from "../../utils/utils";
+import { fetchBackground, validateTokensInput } from "../../utils/utils";
 // import { getAliasDetails } from "../../../background/wallet";
 import AssetsSelect from "./ui/AssetsSelect/AssetsSelect";
 import AdditionalDetails from "./ui/AdditionalDetails/AdditionalDetails";
@@ -23,6 +23,7 @@ const WalletSend = () => {
   // Form data
   const [asset, setAsset] = useState(state.wallet.assets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
+  const [amountValid, setAmountValid] = useState(false);
 
   const address = useInput("", { customValidation: true });
   const amount = useInput("", {
@@ -88,6 +89,11 @@ const WalletSend = () => {
     })();
   }, [address.value]);
 
+  useEffect(() => {
+    const isValid = validateTokensInput(amount.value, asset.decimalPoint);
+    setAmountValid(isValid);
+  }, [amount.value, asset]);
+
   const fetchAddress = async (alias) => await fetchBackground({ method: "GET_ALIAS_DETAILS", alias });
 
   const checkAvailableBalance = (amount, asset) =>
@@ -133,7 +139,7 @@ const WalletSend = () => {
                     placeholder="Amount to transfer"
                     label="Amount:"
                     inputData={amount}
-                    isError={amount.value > 1000}
+                    isError={amount.value && !amountValid}
                   />
                   <MyInput
                     placeholder="Enter the comment"
@@ -151,6 +157,7 @@ const WalletSend = () => {
                     disabled={
                       !submitAddress ||
                       !amount.value ||
+                      !amountValid ||
                       !checkAvailableBalance(amount.value, asset)
                     }
                   >
