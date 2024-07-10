@@ -47,10 +47,9 @@ const Assets = () => {
                 <div>
                   <div className={s.assetInfoLabel}>Balance</div>
                   <div className={s.assetInfoValue}>
-                    {[
-                      censorValue(Number(asset.balance).toFixed(2)),
-                      asset.ticker,
-                    ].join(" ")}
+                    <span>{censorValue(Number(asset.balance).toFixed(2))}</span>
+                    {" "}
+                    {asset.ticker}
                   </div>
                 </div>
                 <div>
