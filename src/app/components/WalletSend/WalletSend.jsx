@@ -36,7 +36,7 @@ const WalletSend = () => {
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
-  const sendTransfer = (destination, amount, comment, assetId) => {
+  const sendTransfer = (destination, amount, comment, assetId, decimalPoint) => {
     return new Promise(async (resolve, reject) => {
       // eslint-disable-next-line no-undef
       if (chrome.runtime.sendMessage) {
@@ -47,6 +47,7 @@ const WalletSend = () => {
           destination,
           amount,
           comment,
+          decimalPoint,
         });
 
         if (response.data) {
@@ -189,7 +190,8 @@ const WalletSend = () => {
                       submitAddress,
                       amount.value,
                       comment.value,
-                      asset.assetId
+                      asset.assetId,
+                      asset.decimalPoint
                     );
                     console.log("transfer status", transferStatus);
                     if (transferStatus.result) {

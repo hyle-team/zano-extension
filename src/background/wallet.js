@@ -259,13 +259,13 @@ export const ionicSwap = async (swapParams) => {
       to_initiator: [
         {
           asset_id: swapParams.destinationAssetID,
-          amount: swapParams.destinationAssetAmount * 1e12,
+          amount: addZeros(swapParams.destinationAssetAmount, 12),
         },
       ],
       to_finalizer: [
         {
           asset_id: swapParams.currentAssetID,
-          amount: swapParams.currentAssetAmount * 1e12,
+          amount: addZeros(swapParams.currentAssetAmount * 1e12),
         },
       ],
       mixins: 10,
@@ -302,12 +302,13 @@ export const ionicSwapAccept = async (swapParams) => {
 export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
   destination,
-  amount
+  amount,
+  decimalPoint
 ) => {
   const destinations = [
     {
       address: destination,
-      amount: addZeros(amount),
+      amount: addZeros(amount, typeof decimalPoint === "number" ? decimalPoint : 12),
       asset_id: assetId,
     },
   ];
