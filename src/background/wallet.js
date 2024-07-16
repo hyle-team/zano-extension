@@ -226,14 +226,6 @@ export const getWalletData = async () => {
 
 export const ionicSwap = async (swapParams) => {
 
-  const destinationAssetDP = typeof swapParams.destinationAssetDP === "number" 
-    ? swapParams.destinationAssetDP
-    : 12; 
-
-  const currentAssetDP = typeof swapParams.currentAssetDP === "number" 
-    ? swapParams.currentAssetDP
-    : 12;
-
   const swapRequest = {
     jsonrpc: "2.0",
     id: "0",
@@ -243,13 +235,13 @@ export const ionicSwap = async (swapParams) => {
         to_initiator: [
           {
             asset_id: swapParams.destinationAssetID,
-            amount: addZeros(swapParams.destinationAssetAmount, destinationAssetDP),
+            amount: addZeros(swapParams.destinationAssetAmount, 12),
           },
         ],
         to_finalizer: [
           {
             asset_id: swapParams.currentAssetID,
-            amount: addZeros(swapParams.currentAssetAmount, currentAssetDP),
+            amount: addZeros(swapParams.currentAssetAmount, 12),
           },
         ],
         mixins: 10,
@@ -273,7 +265,7 @@ export const ionicSwap = async (swapParams) => {
       to_finalizer: [
         {
           asset_id: swapParams.currentAssetID,
-          amount: addZeros(swapParams.currentAssetAmount * 1e12),
+          amount: addZeros(swapParams.currentAssetAmount, 12),
         },
       ],
       mixins: 10,

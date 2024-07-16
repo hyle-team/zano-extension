@@ -280,6 +280,18 @@ function App() {
       }
 
       async function getIonicSwapRequests() {
+        function getSwapAmountText(amount, asset) {
+          const zanoId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
+
+          const isZano = asset?.assetId === zanoId;
+
+          const result = `${
+            !isZano ? amount.toString().replace(".", "?") : amount
+          } ${asset?.ticker || "???"}`;
+
+          return result;
+        }
+
         const ionicSwapRes = await fetchBackground({ method: "GET_IONIC_SWAP_REQUESTS" });
         const swapRequests = ionicSwapRes.data;
 
@@ -293,12 +305,12 @@ function App() {
           const receivingAsset = getAssetById(swap.destinationAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.destinationAssetID);
           const receivingAmount = swap.destinationAssetAmount;
 
-          swapParams.receiving = receivingAmount && `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
+          swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
 
           const sendingAsset = getAssetById(swap.currentAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.currentAssetID);
           const sendingAmount = swap.currentAssetAmount;
 
-          swapParams.sending = sendingAmount && `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
+          swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
           
           return {
             id: e.id,
@@ -336,14 +348,14 @@ function App() {
             const receivingAmount = swap.to_finalizer[0]?.amount / 10 ** (receivingAsset?.decimalPoint || 12);
             
             if (!isNaN(receivingAmount)) {
-              swapParams.receiving = `${receivingAmount} ${receivingAsset?.ticker || "???"}`;
+              swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
             }
 
             const sendingAsset = getAssetById(swap.to_initiator[0]?.asset_id);
             const sendingAmount = swap.to_initiator[0]?.amount / 10 ** (sendingAsset?.decimalPoint || 12);
-            
+
             if (!isNaN(sendingAmount)) {
-              swapParams.sending = `${sendingAmount} ${sendingAsset?.ticker || "???"}`;
+              swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
             }
           }
 
