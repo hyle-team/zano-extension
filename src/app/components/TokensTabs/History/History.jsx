@@ -9,7 +9,7 @@ import s from "./History.module.scss";
 import NavLink from '../../UI/NavLink/NavLink';
 
 
-const HistoryItem = ({ transfer, fee }) => {
+const HistoryItem = ({ transfer, fee, isInitiator }) => {
   const { state } = useContext(Store);
 
   if (transfer.amount === fee) return null;
@@ -24,7 +24,7 @@ const HistoryItem = ({ transfer, fee }) => {
       <span>
         {transfer.assetId ===
             "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-            ? transfer.incoming
+            ? !isInitiator
               ? amount.toFixed()
               : amount.minus(fixedFee).toFixed()
             : amount.toFixed()
@@ -58,7 +58,7 @@ const History = () => {
             )}
 
             {tx.transfers.map((transfer) => (
-              <HistoryItem transfer={transfer} fee={tx.fee} />
+              <HistoryItem transfer={transfer} fee={tx.fee} isInitiator={tx.isInitiator} />
             ))}
             <span className={s.historyAddress}>{tx.txHash}</span>
           </NavLink>

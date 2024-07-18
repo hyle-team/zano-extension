@@ -5,7 +5,6 @@ import incomingIcon from "../../assets/svg/incoming_ico.svg";
 import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
 import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
-import Formatters from "../../utils/formatters";
 import { Store } from "../../store/store-reducer";
 import styles from "./TransactionDetails.module.scss";
 
@@ -55,7 +54,7 @@ const TransactionDetails = (props) => {
                   <p className="table__value">
                     {transfer.assetId ===
                       "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-                      ? transfer.incoming
+                      ? !props.isInitiator
                         ? amount.toFixed()
                         : amount.minus(fixedFee).toFixed()
                       : amount.toFixed()

@@ -193,8 +193,6 @@ export const getWalletData = async () => {
   const txData = txDataResponse.result.transfers;
   let transactions = [];
 
-  // console.log(txData);
-
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
@@ -208,6 +206,7 @@ export const getWalletData = async () => {
         comment: tx.comment,
         fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
+        isInitiator: !!tx.employed_entries?.spent?.some?.(e => e?.index === 0),
         transfers: tx.subtransfers.map((transfer) => ({
           amount: removeZeros(transfer.amount, getAssetDecimalPoint(transfer.asset_id) || 12),
           assetId: transfer.asset_id,
