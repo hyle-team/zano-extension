@@ -37,6 +37,8 @@ import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";
 import OuterConfirmation from "./components/OuterConfirmation/OuterConfirmation";
 import Formatters from "./utils/formatters";
+import Big from "big.js";
+import swapModalStyles from "./styles/SwapModal.module.scss";
 
 function App() {
   const { state, dispatch } = useContext(Store);
@@ -285,9 +287,14 @@ function App() {
 
           const isZano = asset?.assetId === zanoId;
 
-          const result = `${
-            !isZano ? amount.toString().replace(".", "?") : amount
-          } ${asset?.ticker || "???"}`;
+          const result = (
+            <>
+              <span className={swapModalStyles.swapAmount}>
+                {!isZano ? amount.toFixed().replace(".", "?") : amount.toFixed()}
+              </span>
+              {" "}{asset?.ticker || "***"}
+            </>
+          );
 
           return result;
         }
@@ -303,12 +310,12 @@ function App() {
           swapParams.address = swap.destinationAddress;
 
           const receivingAsset = getAssetById(swap.destinationAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.destinationAssetID);
-          const receivingAmount = swap.destinationAssetAmount;
+          const receivingAmount = new Big(swap.destinationAssetAmount);
 
           swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
 
           const sendingAsset = getAssetById(swap.currentAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.currentAssetID);
-          const sendingAmount = swap.currentAssetAmount;
+          const sendingAmount = new Big(swap.currentAssetAmount);
 
           swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
           
@@ -343,18 +350,24 @@ function App() {
 
           const swapParams = {};
 
+          function toBigWithDecimal(amount, decimalPoint = 12) {
+            if (amount) {
+              return new Big(amount).div(new Big(10).pow(decimalPoint));
+            }
+          }
+
           if (swap) {
             const receivingAsset = getAssetById(swap.to_finalizer[0]?.asset_id);
-            const receivingAmount = swap.to_finalizer[0]?.amount / 10 ** (receivingAsset?.decimalPoint || 12);
+            const receivingAmount = toBigWithDecimal(swap.to_finalizer[0]?.amount, receivingAsset?.decimalPoint || 12);
             
-            if (!isNaN(receivingAmount)) {
+            if (receivingAmount !== undefined) {
               swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
             }
 
             const sendingAsset = getAssetById(swap.to_initiator[0]?.asset_id);
-            const sendingAmount = swap.to_initiator[0]?.amount / 10 ** (sendingAsset?.decimalPoint || 12);
+            const sendingAmount = toBigWithDecimal(swap.to_initiator[0]?.amount, sendingAsset?.decimalPoint || 12);
 
-            if (!isNaN(sendingAmount)) {
+            if (sendingAmount !== undefined) {
               swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
             }
           }
