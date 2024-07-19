@@ -227,46 +227,18 @@ export const getWalletData = async () => {
 
 export const ionicSwap = async (swapParams) => {
 
-  const swapRequest = {
-    jsonrpc: "2.0",
-    id: "0",
-    method: "ionic_swap_generate_proposal",
-    params: {
-      proposal: {
-        to_initiator: [
-          {
-            asset_id: swapParams.destinationAssetID,
-            amount: addZeros(swapParams.destinationAssetAmount, 12),
-          },
-        ],
-        to_finalizer: [
-          {
-            asset_id: swapParams.currentAssetID,
-            amount: addZeros(swapParams.currentAssetAmount, 12),
-          },
-        ],
-        mixins: 10,
-        fee_paid_by_a: 10000000000,
-        expiration_time: swapParams.expirationTimestamp,
-      },
-      destination_address: swapParams.destinationAddress,
-    }
-  };
-
-  console.log('send swap request:', swapRequest);
-
   const response = await fetchData("ionic_swap_generate_proposal", {
     proposal: {
       to_initiator: [
         {
           asset_id: swapParams.destinationAssetID,
-          amount: addZeros(swapParams.destinationAssetAmount, 12),
+          amount: addZeros(swapParams.destinationAssetAmount, swapParams.destinationAsset.decimal_point),
         },
       ],
       to_finalizer: [
         {
           asset_id: swapParams.currentAssetID,
-          amount: addZeros(swapParams.currentAssetAmount, 12),
+          amount: addZeros(swapParams.currentAssetAmount, swapParams.currentAsset.decimal_point),
         },
       ],
       mixins: 10,
