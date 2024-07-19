@@ -39,10 +39,12 @@ import OuterConfirmation from "./components/OuterConfirmation/OuterConfirmation"
 import Formatters from "./utils/formatters";
 import Big from "big.js";
 import swapModalStyles from "./styles/SwapModal.module.scss";
+import useGetAsset from "./hooks/useGetAsset";
 
 function App() {
   const { state, dispatch } = useContext(Store);
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
+  const {getAssetById} = useGetAsset();
 
   const [incorrectPassword, setIncorrectPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
@@ -267,10 +269,6 @@ function App() {
   const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
-    function getAssetById(id) {
-      return state.wallet.assets.find(asset => asset.assetId === id);
-    }
-
     async function modalLoad() {
       async function getSignRequests() {
         const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
@@ -309,12 +307,12 @@ function App() {
 
           swapParams.address = swap.destinationAddress;
 
-          const receivingAsset = getAssetById(swap.destinationAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.destinationAssetID);
+          const receivingAsset = getAssetById(swap.destinationAssetID);
           const receivingAmount = new Big(swap.destinationAssetAmount);
 
           swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
 
-          const sendingAsset = getAssetById(swap.currentAssetID) || state.whitelistedAssets.find(e => e.asset_id === swap.currentAssetID);
+          const sendingAsset = getAssetById(swap.currentAssetID);
           const sendingAmount = new Big(swap.currentAssetAmount);
 
           swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);

@@ -7,10 +7,11 @@ import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
 import NavLink from '../../UI/NavLink/NavLink';
+import useGetAsset from "../../../hooks/useGetAsset";
 
 
 const HistoryItem = ({ transfer, fee, isInitiator }) => {
-  const { state } = useContext(Store);
+  const {getAssetById} = useGetAsset();
 
   if (transfer.amount === fee) return null;
   const amount = new Big(transfer.amount);
@@ -30,7 +31,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }) => {
             : amount.toFixed()
         }{" "}
         {
-          state.whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
+          getAssetById(transfer.assetId)
             ?.ticker || '***'
         }
       </span>
