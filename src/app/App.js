@@ -284,9 +284,9 @@ function App() {
           const result = (
             <>
               <span className={swapModalStyles.swapAmount}>
-                {(!asset) ? amount.toFixed().replace(".", "?") : amount.toFixed()}
+                {amount.toFixed()}
               </span>
-              {" "}{asset?.ticker || "***"}
+              {" "}{asset.ticker}
             </>
           );
 
@@ -303,12 +303,12 @@ function App() {
 
           swapParams.address = swap.destinationAddress;
 
-          const receivingAsset = getAssetById(swap.destinationAssetID);
+          const receivingAsset = swap.destinationAsset;
           const receivingAmount = new Big(swap.destinationAssetAmount);
 
           swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
 
-          const sendingAsset = getAssetById(swap.currentAssetID);
+          const sendingAsset = swap.currentAsset;
           const sendingAmount = new Big(swap.currentAssetAmount);
 
           swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
@@ -337,29 +337,31 @@ function App() {
         const ionicSwapAcceptRes = await fetchBackground({ method: "GET_ACCEPT_IONIC_SWAP_REQUESTS" });
         const acceptSwapReqs = ionicSwapAcceptRes.data;
 
+        console.log("ACCEPT SWAP", acceptSwapReqs);
+
         const acceptPageReqs = await Promise.all(acceptSwapReqs.map(async e => {
           const hex_raw_proposal = e?.hex_raw_proposal;
 
-          const swap = (await fetchBackground({ method: "GET_IONIC_SWAP_PROPOSAL_INFO", hex_raw_proposal }))?.data?.result?.proposal;
+          const swap = e?.swapProposal;
 
           const swapParams = {};
 
-          function toBigWithDecimal(amount, decimalPoint = 12) {
+          function toBigWithDecimal(amount, decimalPoint) {
             if (amount) {
               return new Big(amount).div(new Big(10).pow(decimalPoint));
             }
           }
 
           if (swap) {
-            const receivingAsset = getAssetById(swap.to_finalizer[0]?.asset_id);
-            const receivingAmount = toBigWithDecimal(swap.to_finalizer[0]?.amount, receivingAsset?.decimalPoint || 12);
+            const receivingAsset = e?.receivingAsset;
+            const receivingAmount = toBigWithDecimal(swap.to_finalizer[0]?.amount, receivingAsset.decimal_point);
             
             if (receivingAmount !== undefined) {
               swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
             }
 
-            const sendingAsset = getAssetById(swap.to_initiator[0]?.asset_id);
-            const sendingAmount = toBigWithDecimal(swap.to_initiator[0]?.amount, sendingAsset?.decimalPoint || 12);
+            const sendingAsset = e?.sendingAsset;
+            const sendingAmount = toBigWithDecimal(swap.to_initiator[0]?.amount, sendingAsset.decimal_point);
 
             if (sendingAmount !== undefined) {
               swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);

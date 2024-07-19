@@ -11,11 +11,35 @@ import {
   validateConnectKey,
   getAliasDetails,
   getSwapProposalInfo,
-  getWhiteList
+  getWhiteList,
+  getAssetInfo
 } from "./wallet";
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
+
+const ZANO_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
+
+async function getAsset(assetId) {
+  if (assetId === ZANO_ID) {
+    return {
+      asset_id:
+        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+      ticker: "ZANO",
+      full_name: "Zano",
+      decimal_point: 12
+    };
+  } else {
+    const assetRsp = await getAssetInfo(assetId);
+    const asset = assetRsp?.result?.asset_descriptor;
+
+    if (!asset) {
+      return undefined;
+    }
+
+    return asset;
+  }
+}
 
 class PopupRequestsMethods {
   static onRequestCreate(
@@ -313,6 +337,21 @@ async function processRequest(request, sender, sendResponse) {
     }
       
     case "IONIC_SWAP": {
+      try {
+        const destinationAsset = await getAsset(request.destinationAssetID);
+        const currentAsset = await getAsset(request.currentAssetID);
+
+        if (!destinationAsset || !currentAsset) {
+          throw new Error("One or both assets not found");
+        }
+
+        request.currentAsset = currentAsset;
+        request.destinationAsset = destinationAsset;
+
+      } catch {
+        return sendResponse({ error: "Failed to fetch one or both of assets" });
+      }
+
       PopupRequestsMethods.onRequestCreate(
         "IONIC_SWAP",
         request,
@@ -344,14 +383,45 @@ async function processRequest(request, sender, sendResponse) {
       break;
     }
       
-    case "IONIC_SWAP_ACCEPT":
+    case "IONIC_SWAP_ACCEPT": {
+      try {
+        const swapProposalRsp = await getSwapProposalInfo(request.hex_raw_proposal);
+        const swapProposal = swapProposalRsp.result.proposal;
+
+        if (!swapProposal) {
+          throw new Error("Swap proposal not found");
+        }
+
+        request.swapProposal = swapProposal;
+
+        const receivingAssetID = swapProposal?.to_finalizer?.[0]?.asset_id;
+        const sendingAssetID = swapProposal?.to_initiator?.[0]?.asset_id;
+
+        if (!receivingAssetID || !sendingAssetID) {
+          throw new Error("Invalid swap proposal");
+        }
+
+        const receivingAsset = await getAsset(receivingAssetID);
+        const sendingAsset = await getAsset(sendingAssetID);
+
+        if (!receivingAsset || !sendingAsset) {
+          throw new Error("One or both assets not found");
+        }
+
+        request.receivingAsset = receivingAsset;
+        request.sendingAsset = sendingAsset;
+      } catch {
+        return sendResponse({ error: "Failed to fetch proposal or assets info" });
+      }
       PopupRequestsMethods.onRequestCreate(
         "ACCEPT_IONIC_SWAP",
         request,
         sendResponse,
-        {hex_raw_proposal: request.hex_raw_proposal}
+        request
       );
       break;
+    }
+      
 
     case "BRIDGING_TRANSFER":
       pendingTx = {
