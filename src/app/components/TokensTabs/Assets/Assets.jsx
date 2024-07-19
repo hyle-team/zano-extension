@@ -7,6 +7,7 @@ import zanoIcon from "../../../assets/tokens-svg/zano.svg";
 import { useCensorDigits } from "../../../hooks/useCensorDigits";
 import { Store } from "../../../store/store-reducer";
 import s from "./Assets.module.scss";
+import Decimal from "decimal.js";
 
 const getIconImage = (asset) => {
   switch (asset.name) {
@@ -48,7 +49,7 @@ const Assets = () => {
                   <div className={s.assetInfoLabel}>Balance</div>
                   <div className={s.assetInfoValue}>
                     {[
-                      censorValue(Number(asset.balance).toFixed(2)),
+                      censorValue((new Decimal(asset.balance || '0')).toDecimalPlaces(2)),
                       asset.ticker,
                     ].join(" ")}
                   </div>
