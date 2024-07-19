@@ -281,14 +281,10 @@ function App() {
 
       async function getIonicSwapRequests() {
         function getSwapAmountText(amount, asset) {
-          const zanoId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
-
-          const isZano = asset?.assetId === zanoId;
-
           const result = (
             <>
               <span className={swapModalStyles.swapAmount}>
-                {!isZano ? amount.toFixed().replace(".", "?") : amount.toFixed()}
+                {(!asset) ? amount.toFixed().replace(".", "?") : amount.toFixed()}
               </span>
               {" "}{asset?.ticker || "***"}
             </>
