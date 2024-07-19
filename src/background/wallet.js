@@ -152,7 +152,7 @@ export const getWalletData = async () => {
   const addressParsed = await addressResponse.json();
   const address = addressParsed.result.address;
   const balanceResponse = await fetchData("getbalance");
-  const balanceParsed = await balanceResponse.json();
+  const balanceParsed = JSONbig.parse(await balanceResponse.text());
 
   const assets = balanceParsed.result.balances
     .map((asset) => ({
