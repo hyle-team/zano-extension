@@ -40,10 +40,14 @@
    column-gap: 8px;
    margin-bottom: 11px;
    padding-right: 45px;
-   span {
+   p {
       font-weight: 600;
       font-size: 24px;
       line-height: math.div(29, 24);
+
+      > span {
+         word-break: break-all;
+      }
    }
 }
 

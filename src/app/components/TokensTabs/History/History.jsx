@@ -22,19 +22,22 @@ const HistoryItem = ({ transfer, fee, isInitiator }) => {
       <div className={s.historyIcon}>
         <img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
       </div>
-      <span>
-        {transfer.assetId ===
-            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-            ? !isInitiator
-              ? amount.toFixed()
-              : amount.minus(fixedFee).toFixed()
-            : amount.toFixed()
-        }{" "}
+      <p>
+        <span>
+          {transfer.assetId ===
+              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+              ? !isInitiator
+                ? amount.toFixed()
+                : amount.minus(fixedFee).toFixed()
+              : amount.toFixed()
+          }
+        </span>
+        {" "}
         {
           getAssetById(transfer.assetId)
             ?.ticker || '***'
         }
-      </span>
+      </p>
     </div>
   );
 };
