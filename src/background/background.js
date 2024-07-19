@@ -282,7 +282,7 @@ async function processRequest(request, sender, sendResponse) {
       break;
 
     case "SEND_TRANSFER":
-      transfer(request.assetId, request.destination, request.amount)
+      transfer(request.assetId, request.destination, request.amount, request.decimalPoint)
         .then((data) => {
           sendResponse({ data });
         })

@@ -5,8 +5,8 @@ import incomingIcon from "../../assets/svg/incoming_ico.svg";
 import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
 import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
-import Formatters from "../../utils/formatters";
 import { Store } from "../../store/store-reducer";
+import styles from "./TransactionDetails.module.scss";
 
 const TransactionDetails = (props) => {
   const { state } = useContext(Store);
@@ -44,36 +44,38 @@ const TransactionDetails = (props) => {
 
       <div className="table">
         <TableRow label="Transfers">
-          {props.transfers.map((transfer) => {
-            if (transfer.amount === props.fee) return null;
-            const amount = new Big(transfer.amount);
-            const fixedFee = new Big(props.fee);
-            return (
-              <>
-                <div className="table__value">
-                  {Formatters.historyAmount(
-                    transfer.assetId ===
+          <div className={styles.transaction__transfers}>
+            {props.transfers.map((transfer) => {
+              if (transfer.amount === props.fee) return null;
+              const amount = new Big(transfer.amount);
+              const fixedFee = new Big(props.fee);
+              return (
+                <div className={styles.transaction__transfer}>
+                  <p className="table__value">
+                    {transfer.assetId ===
                       "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-                      ? transfer.incoming
-                        ? transfer.amount
-                        : amount.minus(fixedFee).toString()
-                      : transfer.amount
-                  )}{" "}
-                  {
-                     state.whitelistedAssets.find(
-                      (asset) => asset.asset_id === transfer.assetId
-                    )?.ticker ?? "???"
-                  }
+                      ? !props.isInitiator
+                        ? amount.toFixed()
+                        : amount.minus(fixedFee).toFixed()
+                      : amount.toFixed()
+                    }{" "}
+                    {
+                      state.whitelistedAssets.find(
+                        (asset) => asset.asset_id === transfer.assetId
+                      )?.ticker ?? "***"
+                    }
+                  </p>
+                  <div className="table__icon">
+                    <img
+                      src={transfer.incoming ? incomingIcon : outgoingIcon}
+                      alt="transfer icon"
+                    />
+                  </div>
                 </div>
-                <div className="table__icon">
-                  <img
-                    src={transfer.incoming ? incomingIcon : outgoingIcon}
-                    alt="transfer icon"
-                  />
-                </div>
-              </>
-            );
-          })}
+              );
+            })}
+          </div>
+          
         </TableRow>
         <TableRow label="Fee" value={props.fee + " ZANO"} />
         {props.addresses && (

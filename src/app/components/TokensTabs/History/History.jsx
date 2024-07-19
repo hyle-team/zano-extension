@@ -6,33 +6,33 @@ import sendIcon from "../../../assets/svg/send-colored.svg";
 import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
-import Formatters from "../../../utils/formatters";
 import NavLink from '../../UI/NavLink/NavLink';
+import useGetAsset from "../../../hooks/useGetAsset";
 
 
-const HistoryItem = ({ transfer, fee }) => {
-  const { state } = useContext(Store);
+const HistoryItem = ({ transfer, fee, isInitiator }) => {
+  const {getAssetById} = useGetAsset();
 
   if (transfer.amount === fee) return null;
   const amount = new Big(transfer.amount);
   const fixedFee = new Big(fee);
+
   return (
     <div className={s.historyTop}>
       <div className={s.historyIcon}>
         <img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
       </div>
       <span>
-        {Formatters.historyAmount(
-          transfer.assetId ===
+        {transfer.assetId ===
             "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-            ? transfer.incoming
-              ? transfer.amount
-              : amount.minus(fixedFee).toString()
-            : transfer.amount
-        )}{" "}
+            ? !isInitiator
+              ? amount.toFixed()
+              : amount.minus(fixedFee).toFixed()
+            : amount.toFixed()
+        }{" "}
         {
-          state.whitelistedAssets.find((asset) => asset.asset_id === transfer.assetId)
-            ?.ticker || '???'
+          getAssetById(transfer.assetId)
+            ?.ticker || '***'
         }
       </span>
     </div>
@@ -59,7 +59,7 @@ const History = () => {
             )}
 
             {tx.transfers.map((transfer) => (
-              <HistoryItem transfer={transfer} fee={tx.fee} />
+              <HistoryItem transfer={transfer} fee={tx.fee} isInitiator={tx.isInitiator} />
             ))}
             <span className={s.historyAddress}>{tx.txHash}</span>
           </NavLink>

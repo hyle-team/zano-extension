@@ -193,8 +193,6 @@ export const getWalletData = async () => {
   const txData = txDataResponse.result.transfers;
   let transactions = [];
 
-  // console.log(txData);
-
   if (txData) {
     transactions = txData
       .filter((tx) => !tx.is_service)
@@ -208,6 +206,7 @@ export const getWalletData = async () => {
         comment: tx.comment,
         fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
+        isInitiator: !!tx.employed_entries?.spent?.some?.(e => e?.index === 0),
         transfers: tx.subtransfers.map((transfer) => ({
           amount: removeZeros(transfer.amount, getAssetDecimalPoint(transfer.asset_id) || 12),
           assetId: transfer.asset_id,
@@ -235,13 +234,13 @@ export const ionicSwap = async (swapParams) => {
         to_initiator: [
           {
             asset_id: swapParams.destinationAssetID,
-            amount: swapParams.destinationAssetAmount * 1e12,
+            amount: addZeros(swapParams.destinationAssetAmount, 12),
           },
         ],
         to_finalizer: [
           {
             asset_id: swapParams.currentAssetID,
-            amount: swapParams.currentAssetAmount * 1e12,
+            amount: addZeros(swapParams.currentAssetAmount, 12),
           },
         ],
         mixins: 10,
@@ -259,13 +258,13 @@ export const ionicSwap = async (swapParams) => {
       to_initiator: [
         {
           asset_id: swapParams.destinationAssetID,
-          amount: swapParams.destinationAssetAmount * 1e12,
+          amount: addZeros(swapParams.destinationAssetAmount, 12),
         },
       ],
       to_finalizer: [
         {
           asset_id: swapParams.currentAssetID,
-          amount: swapParams.currentAssetAmount * 1e12,
+          amount: addZeros(swapParams.currentAssetAmount, 12),
         },
       ],
       mixins: 10,
@@ -302,12 +301,13 @@ export const ionicSwapAccept = async (swapParams) => {
 export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
   destination,
-  amount
+  amount,
+  decimalPoint
 ) => {
   const destinations = [
     {
       address: destination,
-      amount: addZeros(amount),
+      amount: addZeros(amount, typeof decimalPoint === "number" ? decimalPoint : 12),
       asset_id: assetId,
     },
   ];
