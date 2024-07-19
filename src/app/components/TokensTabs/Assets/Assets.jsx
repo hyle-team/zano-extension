@@ -48,7 +48,7 @@ const Assets = () => {
                 <div>
                   <div className={s.assetInfoLabel}>Balance</div>
                   <div className={s.assetInfoValue}>
-                    <span>{censorValue(Number(asset.balance).toFixed(2))}</span>
+                    <span>{censorValue(new Decimal(asset.balance).toSignificantDigits(20).toString())}</span>
                     {" "}
                     {asset.ticker}
                   </div>
