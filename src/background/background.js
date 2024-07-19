@@ -14,6 +14,7 @@ import {
   getWhiteList,
   getAssetInfo
 } from "./wallet";
+import JSONbig from "json-bigint";
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -271,7 +272,8 @@ async function processRequest(request, sender, sendResponse) {
 
     case "GET_WALLET_BALANCE":
       fetchData("getbalance")
-        .then((response) => response.json())
+        .then((response) => response.text())
+        .then(response => JSONbig.parse(response))
         .then((data) => {
           sendResponse({ data: data });
         })
