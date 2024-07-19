@@ -2,6 +2,7 @@ import { addZeros, removeZeros } from "../app/utils/utils";
 import { apiCredentials } from "./background";
 import forge from "node-forge";
 import { Buffer } from 'buffer';
+import JSONbig from "json-bigint"
 // window.Buffer = Buffer;
 
 function createJWSToken(payload, secrete_str) {
@@ -77,8 +78,9 @@ const fetchTxData = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
-    return data;
+    const data = await response.text();
+
+    return JSONbig.parse(data);
   } catch (error) {
     console.error("Error fetching data:", error);
     throw error;
