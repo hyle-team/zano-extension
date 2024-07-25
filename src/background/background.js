@@ -399,7 +399,7 @@ async function processRequest(request, sender, sendResponse) {
         "CREATE_ALIAS",
         request,
         sendResponse,
-        async (req) => createAlias({ alias: req.alias, address: (await getWalletData(request.id)).address }),
+        async (req) => createAlias({ alias: req.alias, address: (await getWalletData()).address }),
         {
           console: "Error creating alias",
           response: "An error occurred while creating alias",
@@ -645,6 +645,12 @@ async function processRequest(request, sender, sendResponse) {
 
         if (aliasExists) {
           throw new Error("Alias already exists");
+        }
+
+        const alreadyHaveAlias = (await getWalletData()).alias;
+
+        if (alreadyHaveAlias) {
+          throw new Error("Wallet already have an alias");
         }
 
       } catch {

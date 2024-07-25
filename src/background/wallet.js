@@ -275,7 +275,7 @@ export const ionicSwapAccept = async (swapParams) => {
 };
 
 export const createAlias = async ({alias, address}) => {
-  const response = await fetchData("update_alias", {
+  const response = await fetchData("register_alias", {
     "al": {
       "address": address,
       "alias": alias
