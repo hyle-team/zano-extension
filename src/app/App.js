@@ -32,6 +32,7 @@ import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
+import AliasCreatePage from "./components/AliasCreatePage/AliasCreatePage";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";
@@ -279,6 +280,18 @@ function App() {
         }
       }
 
+      async function getAliasCreationRequests() {
+        const response = await fetchBackground({ method: "GET_ALIAS_CREATE_REQUESTS" });
+        console.log('alias creation requests', response);
+        const createRequests = response.data;
+  
+        if (createRequests && createRequests.length > 0) {
+
+          console.log('open alias create page');
+          goTo(AliasCreatePage, { createRequests });
+        }
+      }
+
       async function getIonicSwapRequests() {
         function getSwapAmountText(amount, asset) {
           const result = (
@@ -397,6 +410,7 @@ function App() {
         }
       }
 
+      await getAliasCreationRequests();
       await getIonicSwapRequests();
       await getSignRequests();
     }

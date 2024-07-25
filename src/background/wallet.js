@@ -54,6 +54,8 @@ export const fetchData = async (method, params = {}) => {
       method,
       params,
     }); 
+
+    console.log('fetchData:', httpBody);
     
   return fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
@@ -271,6 +273,17 @@ export const ionicSwapAccept = async (swapParams) => {
   const data = await response.json();
   return data;
 };
+
+export const createAlias = async ({alias, address}) => {
+  const response = await fetchData("update_alias", {
+    "al": {
+      "address": address,
+      "alias": alias
+    }
+  });
+  const data = await response.json();
+  return data;
+}
 
 export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",

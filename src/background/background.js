@@ -12,7 +12,8 @@ import {
   getAliasDetails,
   getSwapProposalInfo,
   getWhiteList,
-  getAssetInfo
+  getAssetInfo,
+  createAlias
 } from "./wallet";
 import JSONbig from "json-bigint";
 
@@ -51,7 +52,7 @@ class PopupRequestsMethods {
   ) {
     openWindow().then(requestWindow => {
       const reqId = crypto.randomUUID();
-      const req = {windowId: requestWindow.id, finalizer: (data) => sendResponse(data), ...reqParams};
+      const req = { windowId: requestWindow.id, finalizer: (data) => sendResponse(data), ...reqParams };
       allPopupIds.push(requestWindow.id);
       savedRequests[requestType][reqId] = req;
 
@@ -68,8 +69,8 @@ class PopupRequestsMethods {
     requestType,
     sendResponse
   ) {
-    sendResponse({ 
-      data: Object.entries(savedRequests[requestType]).map(([id, req]) => ({ ...req, id, finalize: undefined })) 
+    sendResponse({
+      data: Object.entries(savedRequests[requestType]).map(([id, req]) => ({ ...req, id, finalize: undefined }))
     });
   }
 
@@ -107,7 +108,7 @@ class PopupRequestsMethods {
             sendResponse({ error: errorMessages.response });
           });
       }
-      
+
     } else {
       return sendResponse({ error: errorMessages.reqNotFound });
     }
@@ -154,7 +155,7 @@ async function getUserData() {
 
 async function updateUserData(newData) {
   const currentData = await getUserData();
-  return setUserData({...currentData, ...newData});
+  return setUserData({ ...currentData, ...newData });
 }
 
 async function recoverApiCredentials() {
@@ -162,8 +163,8 @@ async function recoverApiCredentials() {
 }
 
 chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.remove('userData', function() {
-      console.log('State cleared on browser startup');
+  chrome.storage.local.remove('userData', function () {
+    console.log('State cleared on browser startup');
   });
 });
 
@@ -175,6 +176,7 @@ const signReqs = [];
 const savedRequests = {
   "IONIC_SWAP": {},
   "ACCEPT_IONIC_SWAP": {},
+  "CREATE_ALIAS": {}
 };
 
 
@@ -199,15 +201,17 @@ function openWindow() {
 
 // requests that can only be made by the extension frontend
 const SELF_ONLY_REQUESTS = [
-  'SET_API_CREDENTIALS', 
-  'VALIDATE_CONNECT_KEY', 
+  'SET_API_CREDENTIALS',
+  'VALIDATE_CONNECT_KEY',
   'GET_PASSWORD',
   'GET_SIGN_REQUESTS',
   'FINALIZE_MESSAGE_SIGN',
   'GET_IONIC_SWAP_REQUESTS',
+  'GET_ALIAS_CREATE_REQUESTS',
   'FINALIZE_IONIC_SWAP_REQUEST',
   'GET_ACCEPT_IONIC_SWAP_REQUESTS',
   'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
+  'FINALIZE_ALIAS_CREATE',
   'SET_PASSWORD',
   'SEND_TRANSFER',
   'EXECUTE_BRIDGING_TRANSFER',
@@ -322,6 +326,11 @@ async function processRequest(request, sender, sendResponse) {
       PopupRequestsMethods.getRequestsList("IONIC_SWAP", sendResponse);
       break;
 
+    case "GET_ALIAS_CREATE_REQUESTS":
+      PopupRequestsMethods.getRequestsList("CREATE_ALIAS", sendResponse);
+      break;
+
+
     case "FINALIZE_IONIC_SWAP_REQUEST": {
       PopupRequestsMethods.onRequestFinalize(
         "IONIC_SWAP",
@@ -337,7 +346,7 @@ async function processRequest(request, sender, sendResponse) {
 
       break;
     }
-      
+
     case "IONIC_SWAP": {
       try {
         const destinationAsset = await getAsset(request.destinationAssetID);
@@ -358,11 +367,11 @@ async function processRequest(request, sender, sendResponse) {
         "IONIC_SWAP",
         request,
         sendResponse,
-        {swap: request}
+        { swap: request }
       );
       break;
     }
-     
+
 
     case "GET_ACCEPT_IONIC_SWAP_REQUESTS":
       PopupRequestsMethods.getRequestsList("ACCEPT_IONIC_SWAP", sendResponse);
@@ -384,7 +393,23 @@ async function processRequest(request, sender, sendResponse) {
 
       break;
     }
+
+    case "FINALIZE_ALIAS_CREATE": {
+      PopupRequestsMethods.onRequestFinalize(
+        "CREATE_ALIAS",
+        request,
+        sendResponse,
+        async (req) => createAlias({ alias: req.alias, address: (await getWalletData(request.id)).address }),
+        {
+          console: "Error creating alias",
+          response: "An error occurred while creating alias",
+          reqNotFound: "Alias create request not found"
+        }
+      );
       
+      break;
+    }
+
     case "IONIC_SWAP_ACCEPT": {
       try {
         const swapProposalRsp = await getSwapProposalInfo(request.hex_raw_proposal);
@@ -423,7 +448,7 @@ async function processRequest(request, sender, sendResponse) {
       );
       break;
     }
-      
+
 
     case "BRIDGING_TRANSFER":
       pendingTx = {
@@ -476,9 +501,9 @@ async function processRequest(request, sender, sendResponse) {
 
     case "GET_PASSWORD": {
       getUserData()
-      .then((userData) => {
-        sendResponse({ password: userData?.password });
-      });
+        .then((userData) => {
+          sendResponse({ password: userData?.password });
+        });
       break;
     }
 
@@ -506,7 +531,7 @@ async function processRequest(request, sender, sendResponse) {
       const success = request.success;
       const signReq = signReqs.find((req) => req.id === reqId);
 
-      
+
 
       if (signReq && signReqFinalizers[reqId]) {
 
@@ -534,14 +559,14 @@ async function processRequest(request, sender, sendResponse) {
               finalize({
                 error: "An error occurred while signing message",
               });
-              
+
               sendResponse({
                 error: "An error occurred while signing message",
               });
             });
         }
 
-        
+
       } else {
         return sendResponse({ error: "Sign request not found" });
       }
@@ -559,16 +584,16 @@ async function processRequest(request, sender, sendResponse) {
 
         allPopupIds.push(requestWindow.id);
 
-        signReqs.push({id: signReqId, windowId: requestWindow.id, message: request.message});
+        signReqs.push({ id: signReqId, windowId: requestWindow.id, message: request.message });
 
         if (typeof request.timeout === "number") {
           setTimeout(() => {
             const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
-  
+
             if (signReqIndex === -1) {
               return;
             }
-  
+
             signReqs.splice(signReqIndex, 1);
             delete signReqFinalizers[signReqId];
             sendResponse({ error: "Timeout exceeded" });
@@ -576,7 +601,7 @@ async function processRequest(request, sender, sendResponse) {
         }
       })
 
-      
+
 
       break;
     }
@@ -598,13 +623,40 @@ async function processRequest(request, sender, sendResponse) {
 
     case "GET_WHITELIST": {
       getWhiteList()
-      .then((data) => {
-        sendResponse({ data });
-      })
-      .catch((error) => {
-        console.error("Error getting whitelist:", error);
-        sendResponse({ error: "An error occurred while getting whitelist" });
-      });
+        .then((data) => {
+          sendResponse({ data });
+        })
+        .catch((error) => {
+          console.error("Error getting whitelist:", error);
+          sendResponse({ error: "An error occurred while getting whitelist" });
+        });
+      break;
+    }
+
+    case "CREATE_ALIAS": {
+      try {
+
+        if (!request.alias || request.alias.length < 6) {
+          throw new Error("Alias too short");
+
+        }
+
+        const aliasExists = await getAliasDetails(request.alias);
+
+        if (aliasExists) {
+          throw new Error("Alias already exists");
+        }
+
+      } catch {
+        return sendResponse({ error: "Alias already exists or incorrect" });
+      }
+
+      PopupRequestsMethods.onRequestCreate(
+        "CREATE_ALIAS",
+        request,
+        sendResponse,
+        { alias: request.alias }
+      );
       break;
     }
 
