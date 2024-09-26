@@ -7,7 +7,8 @@ import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
 import { fetchBackground } from "../../utils/utils";
 
-const Header = () => {
+// isStatic true value means that wallet cannot be switched
+const Header = ({ isStatic }) => {
   const { dispatch, state } = useContext(Store);
   const { censorValue } = useCensorDigits();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -42,13 +43,13 @@ const Header = () => {
 
   return (
     <header className={s.header}>
-      <button onClick={toggleDropdown} className={s.dropdownButton}>
+      <button onClick={!isStatic ? toggleDropdown : undefined} className={s.dropdownButton}>
         <span>
           {state.wallet.alias
             ? state.wallet.alias
             : Formatters.walletAddress(state.wallet.address)}
         </span>
-        <img src={arrowIcon} alt="arrow icon" />
+        {!isStatic && <img src={arrowIcon} alt="arrow icon" />}
       </button>
 
       <div className={s.headerStatus}>
