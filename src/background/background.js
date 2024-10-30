@@ -4,7 +4,7 @@ import {
   getWalletData,
   getWallets,
   transfer,
-  transferBridge,
+  burnBridge,
   ionicSwap,
   ionicSwapAccept,
   signMessage,
@@ -13,14 +13,15 @@ import {
   getSwapProposalInfo,
   getWhiteList,
   getAssetInfo,
-  createAlias
+  createAlias,
 } from "./wallet";
 import JSONbig from "json-bigint";
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
 
-const ZANO_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
+const ZANO_ID =
+  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
 
 async function getAsset(assetId) {
   if (assetId === ZANO_ID) {
@@ -29,7 +30,7 @@ async function getAsset(assetId) {
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
       ticker: "ZANO",
       full_name: "Zano",
-      decimal_point: 12
+      decimal_point: 12,
     };
   } else {
     const assetRsp = await getAssetInfo(assetId);
@@ -44,15 +45,14 @@ async function getAsset(assetId) {
 }
 
 class PopupRequestsMethods {
-  static onRequestCreate(
-    requestType,
-    request,
-    sendResponse,
-    reqParams
-  ) {
-    openWindow().then(requestWindow => {
+  static onRequestCreate(requestType, request, sendResponse, reqParams) {
+    openWindow().then((requestWindow) => {
       const reqId = crypto.randomUUID();
-      const req = { windowId: requestWindow.id, finalizer: (data) => sendResponse(data), ...reqParams };
+      const req = {
+        windowId: requestWindow.id,
+        finalizer: (data) => sendResponse(data),
+        ...reqParams,
+      };
       allPopupIds.push(requestWindow.id);
       savedRequests[requestType][reqId] = req;
 
@@ -65,12 +65,13 @@ class PopupRequestsMethods {
     });
   }
 
-  static getRequestsList(
-    requestType,
-    sendResponse
-  ) {
+  static getRequestsList(requestType, sendResponse) {
     sendResponse({
-      data: Object.entries(savedRequests[requestType]).map(([id, req]) => ({ ...req, id, finalize: undefined }))
+      data: Object.entries(savedRequests[requestType]).map(([id, req]) => ({
+        ...req,
+        id,
+        finalize: undefined,
+      })),
     });
   }
 
@@ -96,7 +97,6 @@ class PopupRequestsMethods {
         finalize({ error: "Request denied by user" });
         sendResponse({ data: true });
       } else {
-
         apiCallFunc(req)
           .then((data) => {
             finalize({ data });
@@ -108,7 +108,6 @@ class PopupRequestsMethods {
             sendResponse({ error: errorMessages.response });
           });
       }
-
     } else {
       return sendResponse({ error: errorMessages.reqNotFound });
     }
@@ -116,10 +115,14 @@ class PopupRequestsMethods {
 }
 
 chrome.windows.onBoundsChanged.addListener((window) => {
-  if (allPopupIds.includes(window.id) && window.width !== POPUP_WIDTH && window.height !== POPUP_HEIGHT) {
+  if (
+    allPopupIds.includes(window.id) &&
+    window.width !== POPUP_WIDTH &&
+    window.height !== POPUP_HEIGHT
+  ) {
     chrome.windows.update(window.id, {
       width: POPUP_WIDTH,
-      height: POPUP_HEIGHT
+      height: POPUP_HEIGHT,
     });
   }
 });
@@ -163,22 +166,19 @@ async function recoverApiCredentials() {
 }
 
 chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.remove('userData', function () {
-    console.log('State cleared on browser startup');
+  chrome.storage.local.remove("userData", function () {
+    console.log("State cleared on browser startup");
   });
 });
-
-
 
 const signReqFinalizers = {};
 const signReqs = [];
 
 const savedRequests = {
-  "IONIC_SWAP": {},
-  "ACCEPT_IONIC_SWAP": {},
-  "CREATE_ALIAS": {}
+  IONIC_SWAP: {},
+  ACCEPT_IONIC_SWAP: {},
+  CREATE_ALIAS: {},
 };
-
 
 const allPopupIds = [];
 
@@ -198,28 +198,26 @@ function openWindow() {
   });
 }
 
-
 // requests that can only be made by the extension frontend
 const SELF_ONLY_REQUESTS = [
-  'SET_API_CREDENTIALS',
-  'VALIDATE_CONNECT_KEY',
-  'GET_PASSWORD',
-  'GET_SIGN_REQUESTS',
-  'FINALIZE_MESSAGE_SIGN',
-  'GET_IONIC_SWAP_REQUESTS',
-  'GET_ALIAS_CREATE_REQUESTS',
-  'FINALIZE_IONIC_SWAP_REQUEST',
-  'GET_ACCEPT_IONIC_SWAP_REQUESTS',
-  'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
-  'FINALIZE_ALIAS_CREATE',
-  'SET_PASSWORD',
-  'SEND_TRANSFER',
-  'EXECUTE_BRIDGING_TRANSFER',
-  'PING_WALLET',
-  'SET_ACTIVE_WALLET',
-  'GET_WALLETS'
+  "SET_API_CREDENTIALS",
+  "VALIDATE_CONNECT_KEY",
+  "GET_PASSWORD",
+  "GET_SIGN_REQUESTS",
+  "FINALIZE_MESSAGE_SIGN",
+  "GET_IONIC_SWAP_REQUESTS",
+  "GET_ALIAS_CREATE_REQUESTS",
+  "FINALIZE_IONIC_SWAP_REQUEST",
+  "GET_ACCEPT_IONIC_SWAP_REQUESTS",
+  "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST",
+  "FINALIZE_ALIAS_CREATE",
+  "SET_PASSWORD",
+  "SEND_TRANSFER",
+  "EXECUTE_BRIDGING_TRANSFER",
+  "PING_WALLET",
+  "SET_ACTIVE_WALLET",
+  "GET_WALLETS",
 ];
-
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   processRequest(request, sender, sendResponse);
@@ -227,7 +225,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function processRequest(request, sender, sendResponse) {
-  const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+  const isFromExtensionFrontend =
+    sender.url && sender.url.includes(chrome.runtime.getURL("/"));
 
   if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
     console.error("Unauthorized request from", sender.url);
@@ -235,7 +234,7 @@ async function processRequest(request, sender, sendResponse) {
   }
 
   if (!isFromExtensionFrontend) {
-    console.log('Updating API credentials');
+    console.log("Updating API credentials");
     await recoverApiCredentials();
   }
 
@@ -248,7 +247,7 @@ async function processRequest(request, sender, sendResponse) {
       };
       sendResponse({ success: true });
       updateUserData({
-        apiCredentials: apiCredentials
+        apiCredentials: apiCredentials,
       }).then(() => {
         console.log("API credentials set to", apiCredentials);
         sendResponse({ success: true });
@@ -277,7 +276,7 @@ async function processRequest(request, sender, sendResponse) {
     case "GET_WALLET_BALANCE":
       fetchData("getbalance")
         .then((response) => response.text())
-        .then(response => JSONbig.parse(response))
+        .then((response) => JSONbig.parse(response))
         .then((data) => {
           sendResponse({ data: data });
         })
@@ -312,7 +311,12 @@ async function processRequest(request, sender, sendResponse) {
       break;
 
     case "SEND_TRANSFER":
-      transfer(request.assetId, request.destination, request.amount, request.decimalPoint)
+      transfer(
+        request.assetId,
+        request.destination,
+        request.amount,
+        request.decimalPoint
+      )
         .then((data) => {
           sendResponse({ data });
         })
@@ -330,7 +334,6 @@ async function processRequest(request, sender, sendResponse) {
       PopupRequestsMethods.getRequestsList("CREATE_ALIAS", sendResponse);
       break;
 
-
     case "FINALIZE_IONIC_SWAP_REQUEST": {
       PopupRequestsMethods.onRequestFinalize(
         "IONIC_SWAP",
@@ -340,9 +343,9 @@ async function processRequest(request, sender, sendResponse) {
         {
           console: "Error creating ionic swap:",
           response: "An error occurred while creating ionic swap",
-          reqNotFound: "Ionic swap request not found"
+          reqNotFound: "Ionic swap request not found",
         }
-      )
+      );
 
       break;
     }
@@ -358,7 +361,6 @@ async function processRequest(request, sender, sendResponse) {
 
         request.currentAsset = currentAsset;
         request.destinationAsset = destinationAsset;
-
       } catch {
         return sendResponse({ error: "Failed to fetch one or both of assets" });
       }
@@ -371,7 +373,6 @@ async function processRequest(request, sender, sendResponse) {
       );
       break;
     }
-
 
     case "GET_ACCEPT_IONIC_SWAP_REQUESTS":
       PopupRequestsMethods.getRequestsList("ACCEPT_IONIC_SWAP", sendResponse);
@@ -386,10 +387,9 @@ async function processRequest(request, sender, sendResponse) {
         {
           console: "Error accepting ionic swap:",
           response: "An error occurred while accepting ionic swap",
-          reqNotFound: "Ionic swap accept request not found"
+          reqNotFound: "Ionic swap accept request not found",
         }
-      )
-
+      );
 
       break;
     }
@@ -399,20 +399,26 @@ async function processRequest(request, sender, sendResponse) {
         "CREATE_ALIAS",
         request,
         sendResponse,
-        async (req) => createAlias({ alias: req.alias, address: (await getWalletData()).address }),
+        async (req) =>
+          createAlias({
+            alias: req.alias,
+            address: (await getWalletData()).address,
+          }),
         {
           console: "Error creating alias",
           response: "An error occurred while creating alias",
-          reqNotFound: "Alias create request not found"
+          reqNotFound: "Alias create request not found",
         }
       );
-      
+
       break;
     }
 
     case "IONIC_SWAP_ACCEPT": {
       try {
-        const swapProposalRsp = await getSwapProposalInfo(request.hex_raw_proposal);
+        const swapProposalRsp = await getSwapProposalInfo(
+          request.hex_raw_proposal
+        );
         const swapProposal = swapProposalRsp.result.proposal;
 
         if (!swapProposal) {
@@ -438,7 +444,9 @@ async function processRequest(request, sender, sendResponse) {
         request.receivingAsset = receivingAsset;
         request.sendingAsset = sendingAsset;
       } catch {
-        return sendResponse({ error: "Failed to fetch proposal or assets info" });
+        return sendResponse({
+          error: "Failed to fetch proposal or assets info",
+        });
       }
       PopupRequestsMethods.onRequestCreate(
         "ACCEPT_IONIC_SWAP",
@@ -448,7 +456,6 @@ async function processRequest(request, sender, sendResponse) {
       );
       break;
     }
-
 
     case "BRIDGING_TRANSFER":
       pendingTx = {
@@ -467,7 +474,7 @@ async function processRequest(request, sender, sendResponse) {
     case "EXECUTE_BRIDGING_TRANSFER":
       if (pendingTx) {
         console.log("Executing bridging transfer", pendingTx);
-        transferBridge(
+        burnBridge(
           pendingTx.assetId,
           pendingTx.amount,
           pendingTx.destinationAddress,
@@ -500,10 +507,9 @@ async function processRequest(request, sender, sendResponse) {
     }
 
     case "GET_PASSWORD": {
-      getUserData()
-        .then((userData) => {
-          sendResponse({ password: userData?.password });
-        });
+      getUserData().then((userData) => {
+        sendResponse({ password: userData?.password });
+      });
       break;
     }
 
@@ -531,10 +537,7 @@ async function processRequest(request, sender, sendResponse) {
       const success = request.success;
       const signReq = signReqs.find((req) => req.id === reqId);
 
-
-
       if (signReq && signReqFinalizers[reqId]) {
-
         function finalize(data) {
           signReqFinalizers[reqId](data);
           signReqs.splice(signReqs.indexOf(signReq), 1);
@@ -549,7 +552,7 @@ async function processRequest(request, sender, sendResponse) {
           const message = signReq.message;
 
           signMessage(message)
-            .then(data => {
+            .then((data) => {
               finalize({ data });
               sendResponse({ data: true });
             })
@@ -565,8 +568,6 @@ async function processRequest(request, sender, sendResponse) {
               });
             });
         }
-
-
       } else {
         return sendResponse({ error: "Sign request not found" });
       }
@@ -575,7 +576,7 @@ async function processRequest(request, sender, sendResponse) {
     }
 
     case "REQUEST_MESSAGE_SIGN": {
-      openWindow().then(requestWindow => {
+      openWindow().then((requestWindow) => {
         const signReqId = crypto.randomUUID();
 
         signReqFinalizers[signReqId] = (result) => {
@@ -584,11 +585,17 @@ async function processRequest(request, sender, sendResponse) {
 
         allPopupIds.push(requestWindow.id);
 
-        signReqs.push({ id: signReqId, windowId: requestWindow.id, message: request.message });
+        signReqs.push({
+          id: signReqId,
+          windowId: requestWindow.id,
+          message: request.message,
+        });
 
         if (typeof request.timeout === "number") {
           setTimeout(() => {
-            const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
+            const signReqIndex = signReqs.findIndex(
+              (req) => req.id === signReqId
+            );
 
             if (signReqIndex === -1) {
               return;
@@ -599,9 +606,7 @@ async function processRequest(request, sender, sendResponse) {
             sendResponse({ error: "Timeout exceeded" });
           }, request.timeout);
         }
-      })
-
-
+      });
 
       break;
     }
@@ -615,7 +620,9 @@ async function processRequest(request, sender, sendResponse) {
         })
         .catch((error) => {
           console.error("Error getting ionic swap proposal info:", error);
-          sendResponse({ error: "An error occurred while getting ionic swap proposal info" });
+          sendResponse({
+            error: "An error occurred while getting ionic swap proposal info",
+          });
         });
 
       break;
@@ -635,10 +642,8 @@ async function processRequest(request, sender, sendResponse) {
 
     case "CREATE_ALIAS": {
       try {
-
         if (!request.alias || request.alias.length < 6) {
           throw new Error("Alias too short");
-
         }
 
         const aliasExists = await getAliasDetails(request.alias);
@@ -652,7 +657,6 @@ async function processRequest(request, sender, sendResponse) {
         if (alreadyHaveAlias) {
           throw new Error("Wallet already have an alias");
         }
-
       } catch {
         return sendResponse({ error: "Alias already exists or incorrect" });
       }
@@ -670,5 +674,4 @@ async function processRequest(request, sender, sendResponse) {
       console.error("Unknown message method:", request.method);
       sendResponse({ error: `Unknown method: ${request.method}` });
   }
-
 }
