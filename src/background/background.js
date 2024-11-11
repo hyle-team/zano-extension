@@ -23,6 +23,8 @@ const POPUP_WIDTH = 370;
 const ZANO_ID =
   "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
 
+const ZANO_ASSET_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+
 async function getAsset(assetId) {
   if (assetId === ZANO_ID) {
     return {
@@ -178,6 +180,7 @@ const savedRequests = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
+  TRANSFER: {}
 };
 
 const allPopupIds = [];
@@ -216,7 +219,7 @@ const SELF_ONLY_REQUESTS = [
   "EXECUTE_BRIDGING_TRANSFER",
   "PING_WALLET",
   "SET_ACTIVE_WALLET",
-  "GET_WALLETS",
+  "GET_WALLETS"
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -372,6 +375,46 @@ async function processRequest(request, sender, sendResponse) {
         { swap: request }
       );
       break;
+    }
+
+    case "GET_TRANSFER_REQUEST": {
+      PopupRequestsMethods.getRequestsList("TRANSFER", sendResponse);
+      break
+    }
+
+    case "TRANSFER": {
+      try {
+        const asset = await getAsset(request.assetId);
+        const address = await getWalletData().address;
+
+        request.asset = asset || await getAsset(ZANO_ASSET_ID);
+        request.sender = address || 'You';
+        
+      } catch (e) {
+        return sendResponse({error: e.message})
+      }
+
+      PopupRequestsMethods.onRequestCreate(
+        "TRANSFER",
+        request,
+        sendResponse,
+        { transfer: request }
+      );
+      break
+    }
+
+    case "FINALIZE_TRANSFER_REQUEST": {
+      PopupRequestsMethods
+      .onRequestFinalize("TRANSFER",
+      request,
+      sendResponse,
+      (req) => transfer(req),
+      {
+        console: "Error transfer:",
+        response: "An error occurred while sending transfer",
+        reqNotFound: "transfer request not found",
+      })  
+      break
     }
 
     case "GET_ACCEPT_IONIC_SWAP_REQUESTS":
