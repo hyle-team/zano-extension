@@ -270,7 +270,44 @@ function App() {
   const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
 
   useEffect(() => {
+
     async function modalLoad() {
+
+      async function getTransferRequests() {
+        const transferRes = await fetchBackground({ method: "GET_TRANSFER_REQUEST" });
+        const transferRequests = transferRes.data;
+        const tranfserPageReqs = transferRequests.map((e) => {
+          const {transfer} = e;
+          return {
+            id: e.id,
+            method: "FINALIZE_TRANSFER_REQUEST",
+            name: "Transfer",
+            params: [
+              {
+                key: "From",
+                value: transfer.sender ? transfer.sender : "???"
+              },
+              {
+                key: "To",
+                value: transfer.destination || "???"
+              },
+              {
+                key: "Amount",
+                value: transfer.amount || "???"
+              },
+              {
+                key: "Asset",
+                value: transfer?.asset?.ticker || "???"
+              },
+
+            ]
+          }
+        })
+        if (tranfserPageReqs && tranfserPageReqs.length > 0) {
+          goTo(OuterConfirmation, { reqs: tranfserPageReqs });
+        }
+      }
+
       async function getSignRequests() {
         const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
         const signRequests = response.data;
@@ -413,6 +450,7 @@ function App() {
       await getAliasCreationRequests();
       await getIonicSwapRequests();
       await getSignRequests();
+      await getTransferRequests();
     }
 
     if (appConnected && !connectOpened && loggedIn && state.isConnected) {
