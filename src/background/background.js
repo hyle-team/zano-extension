@@ -219,7 +219,8 @@ const SELF_ONLY_REQUESTS = [
   "EXECUTE_BRIDGING_TRANSFER",
   "PING_WALLET",
   "SET_ACTIVE_WALLET",
-  "GET_WALLETS"
+  "GET_WALLETS",
+  "FINALIZE_TRANSFER_REQUEST"
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
