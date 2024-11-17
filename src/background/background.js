@@ -409,7 +409,11 @@ async function processRequest(request, sender, sendResponse) {
       .onRequestFinalize("TRANSFER",
       request,
       sendResponse,
-      (req) => transfer(req),
+      (req) => {
+        const transferData = req.transfer;
+        const {assetId, destination, amount } = transferData;
+        return transfer(assetId, destination, amount, 12);
+      },
       {
         console: "Error transfer:",
         response: "An error occurred while sending transfer",
