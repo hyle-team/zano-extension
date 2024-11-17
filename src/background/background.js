@@ -386,10 +386,10 @@ async function processRequest(request, sender, sendResponse) {
     case "TRANSFER": {
       try {
         const asset = await getAsset(request.assetId);
-        const address = await getWalletData().address;
-
+        const walletData = await getWalletData();
+        const { address } = walletData;
         request.asset = asset || await getAsset(ZANO_ASSET_ID);
-        request.sender = address || 'You';
+        request.sender = address || '';
         
       } catch (e) {
         return sendResponse({error: e.message})
