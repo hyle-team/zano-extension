@@ -59,7 +59,7 @@ export const fetchData = async (method, params = {}) => {
     params,
   });
 
-  console.log("fetchData:", httpBody);
+  // console.log("fetchData:", httpBody);
 
   return fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
@@ -122,7 +122,7 @@ export const getWallets = async () => {
       return [];
     }
 
-    console.log("wallets:", data.result.wallets);
+    // console.log("wallets:", data.result.wallets);
 
     const wallets = await Promise.all(
       data.result.wallets.map(async (wallet) => {
@@ -231,7 +231,7 @@ export const getWalletData = async () => {
       }));
   }
 
-  console.log("get alias:", address);
+  // console.log("get alias:", address);
 
   const alias = await getAlias(address);
   return { address, alias, balance, transactions, assets };

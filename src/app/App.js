@@ -145,8 +145,8 @@ function App() {
       if (!walletData.data) return;
       const { address, alias, balance, transactions, assets } = walletData.data;
 
-      console.log("WALLET DATA:");
-      console.log(walletData.data);
+      // console.log("WALLET DATA:");
+      // console.log(walletData.data);
 
       updateWalletData(dispatch, {
         address,
@@ -285,11 +285,11 @@ function App() {
             params: [
               {
                 key: "From",
-                value: transfer.sender ? transfer.sender : "???"
+                value: transfer.sender ? Formatters.walletAddress(transfer.sender) : "???"
               },
               {
                 key: "To",
-                value: transfer.destination || "???"
+                value: transfer.destination ? Formatters.walletAddress(transfer.destination) : "???"
               },
               {
                 key: "Amount",

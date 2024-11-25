@@ -20,16 +20,12 @@ import JSONbig from "json-bigint";
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
 
-const ZANO_ID =
-  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
-
-const ZANO_ASSET_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+const ZANO_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
 
 async function getAsset(assetId) {
   if (assetId === ZANO_ID) {
     return {
-      asset_id:
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+      asset_id: ZANO_ID,
       ticker: "ZANO",
       full_name: "Zano",
       decimal_point: 12,
@@ -48,6 +44,8 @@ async function getAsset(assetId) {
 
 class PopupRequestsMethods {
   static onRequestCreate(requestType, request, sendResponse, reqParams) {
+    console.log("Creating request", reqParams);
+    
     openWindow().then((requestWindow) => {
       const reqId = crypto.randomUUID();
       const req = {
@@ -388,7 +386,7 @@ async function processRequest(request, sender, sendResponse) {
         const asset = await getAsset(request.assetId);
         const walletData = await getWalletData();
         const { address } = walletData;
-        request.asset = asset || await getAsset(ZANO_ASSET_ID);
+        request.asset = asset || await getAsset(ZANO_ID);
         request.sender = address || '';
         
       } catch (e) {
@@ -411,8 +409,9 @@ async function processRequest(request, sender, sendResponse) {
       sendResponse,
       (req) => {
         const transferData = req.transfer;
-        const {assetId, destination, amount } = transferData;
-        return transfer(assetId, destination, amount, 12);
+        const {assetId, destination, amount, asset } = transferData;
+        
+        return transfer(assetId, destination, amount, asset?.decimal_point || 12);
       },
       {
         console: "Error transfer:",

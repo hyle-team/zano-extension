@@ -1,5 +1,5 @@
 class Zano {
-    async request(method, params, timeoutParam = 30e3) {
+    async request(method, params, timeoutParam) {
         
         function getRandonString(length) {
             let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
