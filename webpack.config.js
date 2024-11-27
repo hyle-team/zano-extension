@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const common = require("./webpack.common.js");
 
 const appConfig = {
-  entry: "./src/index.js",
+  entry: "./src/index.tsx",
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "static/js/app.bundle.js",
@@ -28,7 +28,7 @@ const backgroundConfig = {
 };
 
 const contentConfig = {
-  entry: "./src/content/content.js",
+  entry: "./src/content/content.ts",
   output: {
     path: path.resolve(__dirname, "build/static/js"),
     filename: "content.bundle.js",
@@ -36,7 +36,7 @@ const contentConfig = {
 };
 
 const injectConfig = {
-  entry: "./src/content/inject.js",
+  entry: "./src/content/inject.ts",
   output: {
     path: path.resolve(__dirname, "build/static/js"),
     filename: "inject.bundle.js",

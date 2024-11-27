@@ -3,7 +3,16 @@ import Big from "big.js";
 import Decimal from "decimal.js";
 import sha256 from "sha256";
 
-export async function fetchBackground(data) {
+interface BackgroundResponse {
+  password: string;
+}
+
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+export async function fetchBackground(data: { method: string; password?: string, id?: number, success?:boolean; }): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
       chrome.runtime.sendMessage(data, function (response) {
@@ -16,45 +25,43 @@ export async function fetchBackground(data) {
   });
 }
 
-
-export const removeZeros = (amount, decimal_point = 12) => {
+export const removeZeros = (amount: string | number, decimal_point: number = 12): string => {
   const multiplier = new Big(10).pow(decimal_point);
   const bigAmount = new Big(amount);
   const fixedAmount = bigAmount.div(multiplier).toString();
   return fixedAmount;
 };
 
-export const addZeros = (amount, decimal_point = 12) => {
+export const addZeros = (amount: string | number, decimal_point: number = 12): Big => {
   const multiplier = new Big(10).pow(decimal_point);
   const bigAmount = new Big(amount);
   const fixedAmount = bigAmount.times(multiplier);
   return fixedAmount;
 };
 
-export const setPassword = (password) => {
+export const setPassword = (password: string): void => {
   localStorage.setItem("hash", sha256(password));
-}
+};
 
-export const comparePasswords = (password) => {
+export const comparePasswords = (password: string): boolean => {
   const hash = localStorage.getItem("hash");
   return hash === sha256(password);
-}
+};
 
-export const passwordExists = () => {
+export const passwordExists = (): boolean => {
   return !!localStorage.getItem("hash");
-}
+};
 
-export const getSessionPassword = async () => {
-  const sessionPass = (await fetchBackground({ method: "GET_PASSWORD" })).password;
-  return sessionPass;
-}
+export const getSessionPassword = async (): Promise<string> => {
+  const sessionPass = (await fetchBackground({ method: "GET_PASSWORD" })) as BackgroundResponse;
+  return sessionPass.password;
+};
 
-export const setSessionPassword = async (password) => {
-  await fetchBackground({ method: "SET_PASSWORD", password })
-}
+export const setSessionPassword = async (password: string): Promise<void> => {
+  await fetchBackground({ method: "SET_PASSWORD", password });
+};
 
-export function validateTokensInput(input, decimal_point) {
-
+export function validateTokensInput(input: string | number, decimal_point: number): ValidationResult {
   if (typeof input === 'number') {
     input = input.toString();
   }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export const useCheckbox = (initialState) => {
+export const useCheckbox = (initialState: boolean) => {
   const [isChecked, setIsChecked] = useState(initialState);
 
   const onChange = () => {

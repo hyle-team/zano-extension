@@ -1,5 +1,5 @@
 export default class Formatters {
-  static walletAddress(str) {
+  static walletAddress(str: string): string {
     if (str.length > 20) {
       if (window.innerWidth > 768) {
         return (
@@ -18,7 +18,7 @@ export default class Formatters {
     return str;
   }
 
-  static historyAmount(amount) {
+  static historyAmount(amount: number): string {
     let str = amount.toString();
     if (str.length > 10) {
       return (

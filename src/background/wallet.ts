@@ -5,7 +5,14 @@ import { Buffer } from "buffer";
 import JSONbig from "json-bigint";
 // window.Buffer = Buffer;
 
-function createJWSToken(payload, secrete_str) {
+interface JWTPayload {
+  body_hash: string,
+  user: string,
+  salt: string,
+  exp: number
+}
+
+function createJWSToken(payload: JWTPayload, secretStr: string): string {
   const header = { alg: "HS256", typ: "JWT" };
   const encodedHeader = Buffer.from(JSON.stringify(header))
     .toString("base64")
@@ -15,7 +22,7 @@ function createJWSToken(payload, secrete_str) {
     .replace(/=/g, "");
 
   const signature = forge.hmac.create();
-  signature.start("sha256", secrete_str);
+  signature.start("sha256", secretStr);
   signature.update(`${encodedHeader}.${encodedPayload}`);
   const encodedSignature = forge.util
     .encode64(signature.digest().getBytes())
@@ -24,13 +31,13 @@ function createJWSToken(payload, secrete_str) {
   return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
 }
 
-function generateRandomString(length) {
+function generateRandomString(length: number) {
   const bytes = forge.random.getBytesSync(Math.ceil(length / 2));
   const hexString = forge.util.bytesToHex(bytes);
   return hexString.substring(0, length);
 }
 
-function generateAccessToken(httpBody) {
+function generateAccessToken(httpBody: string) {
   if (!apiCredentials?.token) {
     throw new Error("No API credentials found, extension is not connected");
   }
@@ -51,16 +58,23 @@ function generateAccessToken(httpBody) {
   return createJWSToken(payload, apiCredentials?.token);
 }
 
-export const fetchData = async (method, params = {}) => {
-  const httpBody = JSON.stringify({
+interface fetchDataProps {
+    offset: number,
+    update_provision_info: boolean,
+    exclude_mining_txs: boolean,
+    count: number,
+    order: string,
+    exclude_unconfirmed: boolean,
+}
+
+export const fetchData = async (method: string, params: fetchDataProps | {} = {}): Promise<Response> => {
+  const httpBody: string = JSON.stringify({
     jsonrpc: "2.0",
     id: "0",
     method,
     params,
   });
-
-  // console.log("fetchData:", httpBody);
-
+  
   return fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
     headers: {
@@ -93,7 +107,7 @@ const fetchTxData = async () => {
   }
 };
 
-export const getAlias = async (address) => {
+export const getAlias = async (address:string) => {
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
   if (data.result?.status === "OK") {
@@ -103,7 +117,7 @@ export const getAlias = async (address) => {
   }
 };
 
-export const getAliasDetails = async (alias) => {
+export const getAliasDetails = async (alias: string) => {
   const response = await fetchData("get_alias_details", { alias });
   const data = await response.json();
   if (data.result.status === "OK") {
@@ -125,10 +139,10 @@ export const getWallets = async () => {
     // console.log("wallets:", data.result.wallets);
 
     const wallets = await Promise.all(
-      data.result.wallets.map(async (wallet) => {
+      data.result.wallets.map(async (wallet: any) => {
         const alias = await getAlias(wallet.wi.address);
         const balance = wallet.wi.balances.find(
-          (asset) =>
+          (asset: any) =>
             asset.asset_info.asset_id ===
             "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
         ).total;
@@ -163,7 +177,7 @@ export const getWalletData = async () => {
   const balanceParsed = JSONbig.parse(await balanceResponse.text());
 
   const assets = balanceParsed.result.balances
-    .map((asset) => ({
+    .map((asset: any) => ({
       name: asset.asset_info.full_name,
       ticker: asset.asset_info.ticker,
       assetId: asset.asset_info.asset_id,
@@ -174,7 +188,7 @@ export const getWalletData = async () => {
         asset.asset_info.decimal_point
       ),
     }))
-    .sort((a, b) => {
+    .sort((a: any, b:any) => {
       if (
         a.assetId ===
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
@@ -189,13 +203,13 @@ export const getWalletData = async () => {
       return 0;
     });
 
-  function getAssetDecimalPoint(assetId) {
-    return assets.find((asset) => asset.assetId === assetId)?.decimalPoint;
+  function getAssetDecimalPoint(assetId: any) {
+    return assets.find((asset:any) => asset.assetId === assetId)?.decimalPoint;
   }
 
   const balance = removeZeros(
     balanceParsed.result.balances.find(
-      (asset) =>
+      (asset: any) =>
         asset.asset_info.asset_id ===
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
     ).total
@@ -206,8 +220,8 @@ export const getWalletData = async () => {
 
   if (txData) {
     transactions = txData
-      .filter((tx) => !tx.is_service)
-      .map((tx) => ({
+      .filter((tx:any) => !tx.is_service)
+      .map((tx:any) => ({
         isConfirmed: tx.height === 0 ? false : true,
         txHash: tx.tx_hash,
         blobSize: tx.tx_blob_size,
@@ -218,9 +232,9 @@ export const getWalletData = async () => {
         fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
         isInitiator: !!tx.employed_entries?.spent?.some?.(
-          (e) => e?.index === 0
+          (e:any) => e?.index === 0
         ),
-        transfers: tx.subtransfers.map((transfer) => ({
+        transfers: tx.subtransfers.map((transfer:any) => ({
           amount: removeZeros(
             transfer.amount,
             getAssetDecimalPoint(transfer.asset_id) || 12
@@ -237,7 +251,7 @@ export const getWalletData = async () => {
   return { address, alias, balance, transactions, assets };
 };
 
-export const ionicSwap = async (swapParams) => {
+export const ionicSwap = async (swapParams:any) => {
   const response = await fetchData("ionic_swap_generate_proposal", {
     proposal: {
       to_initiator: [
@@ -273,7 +287,7 @@ export const ionicSwap = async (swapParams) => {
   return data;
 };
 
-export const ionicSwapAccept = async (swapParams) => {
+export const ionicSwapAccept = async (swapParams:any) => {
   console.log(swapParams.hex_raw_proposal);
 
   const response = await fetchData("ionic_swap_accept_proposal", {
@@ -288,7 +302,7 @@ export const ionicSwapAccept = async (swapParams) => {
   return data;
 };
 
-export const createAlias = async ({ alias, address }) => {
+export const createAlias = async ({ alias, address }: any) => {
   const response = await fetchData("register_alias", {
     al: {
       address: address,
@@ -301,9 +315,9 @@ export const createAlias = async ({ alias, address }) => {
 
 export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
-  destination,
-  amount,
-  decimalPoint
+  destination: any,
+  amount: any,
+  decimalPoint: any
 ) => {
   const destinations = [
     {
@@ -333,9 +347,9 @@ export const transfer = async (
 // TODO: move bridge address to the config
 export const burnBridge = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
-  amount,
-  destinationAddress,
-  destinationChainId
+  amount: any,
+  destinationAddress: any,
+  destinationChainId: any
 ) => {
   const bodyData = {
     service_id: "B",
@@ -381,7 +395,7 @@ export const burnBridge = async (
   return data;
 };
 
-export const signMessage = async (message) => {
+export const signMessage = async (message: any) => {
   const base64 = Buffer.from(message).toString("base64");
 
   const signRequest = {
@@ -409,7 +423,7 @@ export const createConnectKey = async () => {
   ).then((r) => r.json());
 };
 
-export const validateConnectKey = async (key) => {
+export const validateConnectKey = async (key: any) => {
   return await fetch(
     `http://localhost:${apiCredentials.port}/validate-connection-key`,
     {
@@ -422,7 +436,7 @@ export const validateConnectKey = async (key) => {
   ).then((r) => r.json());
 };
 
-export const getSwapProposalInfo = async (hex) => {
+export const getSwapProposalInfo = async (hex: any) => {
   const response = await fetchData("ionic_swap_get_proposal_info", {
     hex_raw_proposal: hex,
   });
@@ -445,7 +459,7 @@ export async function getWhiteList() {
 
   if (
     fetchedWhiteList.every(
-      (e) =>
+      (e:any) =>
         e.asset_id !==
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
     )
@@ -462,7 +476,7 @@ export async function getWhiteList() {
   return fetchedWhiteList;
 }
 
-export async function getAssetInfo(assetId) {
+export async function getAssetInfo(assetId: any) {
   const response = await fetchData("get_asset_info", { asset_id: assetId });
 
   if (!response.ok) {

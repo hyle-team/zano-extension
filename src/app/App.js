@@ -25,14 +25,14 @@ import {
   updateConfirmationModal,
   updateTransactionStatus,
   setConnectData,
-  setWhiteList
+  setWhiteList,
 } from "./store/actions";
 import { Store } from "./store/store-reducer";
 import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
-import AliasCreatePage from "./components/AliasCreatePage/AliasCreatePage";
+import AliasCreatePage from "./components/AliasCreatePage/AliasCreatePaget.jsx";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";
@@ -45,7 +45,7 @@ import useGetAsset from "./hooks/useGetAsset";
 function App() {
   const { state, dispatch } = useContext(Store);
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
-  const {getAssetById} = useGetAsset();
+  const { getAssetById } = useGetAsset();
 
   const [incorrectPassword, setIncorrectPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
@@ -61,7 +61,7 @@ function App() {
 
   useEffect(() => {
     async function loadLogin() {
-      const password = (await getSessionPassword());
+      const password = await getSessionPassword();
       setLoggedIn(!!password);
       if (password) {
         const connectData = ConnectKeyUtils.getConnectData(password);
@@ -266,18 +266,19 @@ function App() {
     });
   }, [dispatch]);
 
-
-  const appConnected = !!(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted());
+  const appConnected = !!(
+    state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
+  );
 
   useEffect(() => {
-
     async function modalLoad() {
-
       async function getTransferRequests() {
-        const transferRes = await fetchBackground({ method: "GET_TRANSFER_REQUEST" });
+        const transferRes = await fetchBackground({
+          method: "GET_TRANSFER_REQUEST",
+        });
         const transferRequests = transferRes.data;
         const tranfserPageReqs = transferRequests.map((e) => {
-          const {transfer} = e;
+          const { transfer } = e;
           return {
             id: e.id,
             method: "FINALIZE_TRANSFER_REQUEST",
@@ -285,24 +286,27 @@ function App() {
             params: [
               {
                 key: "From",
-                value: transfer.sender ? Formatters.walletAddress(transfer.sender) : "???"
+                value: transfer.sender
+                  ? Formatters.walletAddress(transfer.sender)
+                  : "???",
               },
               {
                 key: "To",
-                value: transfer.destination ? Formatters.walletAddress(transfer.destination) : "???"
+                value: transfer.destination
+                  ? Formatters.walletAddress(transfer.destination)
+                  : "???",
               },
               {
                 key: "Amount",
-                value: transfer.amount || "???"
+                value: transfer.amount || "???",
               },
               {
                 key: "Asset",
-                value: transfer?.asset?.ticker || "???"
+                value: transfer?.asset?.ticker || "???",
               },
-
-            ]
-          }
-        })
+            ],
+          };
+        });
         if (tranfserPageReqs && tranfserPageReqs.length > 0) {
           goTo(OuterConfirmation, { reqs: tranfserPageReqs });
         }
@@ -311,20 +315,21 @@ function App() {
       async function getSignRequests() {
         const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });
         const signRequests = response.data;
-  
+
         if (signRequests && signRequests.length > 0) {
           goTo(MessageSignPage, { signRequests });
         }
       }
 
       async function getAliasCreationRequests() {
-        const response = await fetchBackground({ method: "GET_ALIAS_CREATE_REQUESTS" });
-        console.log('alias creation requests', response);
+        const response = await fetchBackground({
+          method: "GET_ALIAS_CREATE_REQUESTS",
+        });
+        console.log("alias creation requests", response);
         const createRequests = response.data;
-  
-        if (createRequests && createRequests.length > 0) {
 
-          console.log('open alias create page');
+        if (createRequests && createRequests.length > 0) {
+          console.log("open alias create page");
           goTo(AliasCreatePage, { createRequests });
         }
       }
@@ -335,19 +340,21 @@ function App() {
             <>
               <span className={swapModalStyles.swapAmount}>
                 {amount.toFixed()}
-              </span>
-              {" "}{asset.ticker}
+              </span>{" "}
+              {asset.ticker}
             </>
           );
 
           return result;
         }
 
-        const ionicSwapRes = await fetchBackground({ method: "GET_IONIC_SWAP_REQUESTS" });
+        const ionicSwapRes = await fetchBackground({
+          method: "GET_IONIC_SWAP_REQUESTS",
+        });
         const swapRequests = ionicSwapRes.data;
 
-        const swapPageReqs = swapRequests.map(e => {
-          const {swap} = e;
+        const swapPageReqs = swapRequests.map((e) => {
+          const { swap } = e;
 
           const swapParams = {};
 
@@ -356,13 +363,16 @@ function App() {
           const receivingAsset = swap.destinationAsset;
           const receivingAmount = new Big(swap.destinationAssetAmount);
 
-          swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
+          swapParams.receiving = getSwapAmountText(
+            receivingAmount,
+            receivingAsset
+          );
 
           const sendingAsset = swap.currentAsset;
           const sendingAmount = new Big(swap.currentAssetAmount);
 
           swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
-          
+
           return {
             id: e.id,
             method: "FINALIZE_IONIC_SWAP_REQUEST",
@@ -370,78 +380,95 @@ function App() {
             params: [
               {
                 key: "Address",
-                value: swapParams.address ? Formatters.walletAddress(swapParams.address) : "???"
+                value: swapParams.address
+                  ? Formatters.walletAddress(swapParams.address)
+                  : "???",
               },
               {
                 key: "Sending",
-                value: swapParams.sending || "???"
+                value: swapParams.sending || "???",
               },
               {
                 key: "Receiving",
-                value: swapParams.receiving || "???"
-              }
-            ]
-          }
-        }); 
+                value: swapParams.receiving || "???",
+              },
+            ],
+          };
+        });
 
-        const ionicSwapAcceptRes = await fetchBackground({ method: "GET_ACCEPT_IONIC_SWAP_REQUESTS" });
+        const ionicSwapAcceptRes = await fetchBackground({
+          method: "GET_ACCEPT_IONIC_SWAP_REQUESTS",
+        });
         const acceptSwapReqs = ionicSwapAcceptRes.data;
 
         console.log("ACCEPT SWAP", acceptSwapReqs);
 
-        const acceptPageReqs = await Promise.all(acceptSwapReqs.map(async e => {
-          const hex_raw_proposal = e?.hex_raw_proposal;
+        const acceptPageReqs = await Promise.all(
+          acceptSwapReqs.map(async (e) => {
+            const hex_raw_proposal = e?.hex_raw_proposal;
 
-          const swap = e?.swapProposal;
+            const swap = e?.swapProposal;
 
-          const swapParams = {};
+            const swapParams = {};
 
-          function toBigWithDecimal(amount, decimalPoint) {
-            if (amount) {
-              return new Big(amount).div(new Big(10).pow(decimalPoint));
-            }
-          }
-
-          if (swap) {
-            const receivingAsset = e?.receivingAsset;
-            const receivingAmount = toBigWithDecimal(swap.to_finalizer[0]?.amount, receivingAsset.decimal_point);
-            
-            if (receivingAmount !== undefined) {
-              swapParams.receiving = getSwapAmountText(receivingAmount, receivingAsset);
+            function toBigWithDecimal(amount, decimalPoint) {
+              if (amount) {
+                return new Big(amount).div(new Big(10).pow(decimalPoint));
+              }
             }
 
-            const sendingAsset = e?.sendingAsset;
-            const sendingAmount = toBigWithDecimal(swap.to_initiator[0]?.amount, sendingAsset.decimal_point);
+            if (swap) {
+              const receivingAsset = e?.receivingAsset;
+              const receivingAmount = toBigWithDecimal(
+                swap.to_finalizer[0]?.amount,
+                receivingAsset.decimal_point
+              );
 
-            if (sendingAmount !== undefined) {
-              swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
+              if (receivingAmount !== undefined) {
+                swapParams.receiving = getSwapAmountText(
+                  receivingAmount,
+                  receivingAsset
+                );
+              }
+
+              const sendingAsset = e?.sendingAsset;
+              const sendingAmount = toBigWithDecimal(
+                swap.to_initiator[0]?.amount,
+                sendingAsset.decimal_point
+              );
+
+              if (sendingAmount !== undefined) {
+                swapParams.sending = getSwapAmountText(
+                  sendingAmount,
+                  sendingAsset
+                );
+              }
             }
-          }
 
-
-          return {
-            id: e.id,
-            method: "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST",
-            name: "Accept Ionic Swap",
-            params: [
-              {
-                key: "Hex Proposal",
-                value: Formatters.walletAddress(hex_raw_proposal)
-              },
-              {
-                key: "Sending",
-                value: swapParams.sending || "???"
-              },
-              {
-                key: "Receiving",
-                value: swapParams.receiving || "???"
-              },
-            ]
-          }
-        }));
+            return {
+              id: e.id,
+              method: "FINALIZE_ACCEPT_IONIC_SWAP_REQUEST",
+              name: "Accept Ionic Swap",
+              params: [
+                {
+                  key: "Hex Proposal",
+                  value: Formatters.walletAddress(hex_raw_proposal),
+                },
+                {
+                  key: "Sending",
+                  value: swapParams.sending || "???",
+                },
+                {
+                  key: "Receiving",
+                  value: swapParams.receiving || "???",
+                },
+              ],
+            };
+          })
+        );
 
         const pageReqs = [...swapPageReqs, ...acceptPageReqs];
-  
+
         if (pageReqs && pageReqs.length > 0) {
           goTo(OuterConfirmation, { reqs: pageReqs });
         }
@@ -456,7 +483,13 @@ function App() {
     if (appConnected && !connectOpened && loggedIn && state.isConnected) {
       modalLoad();
     }
-  }, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
+  }, [
+    appConnected,
+    connectOpened,
+    loggedIn,
+    state.isConnected,
+    state.wallet?.assets,
+  ]);
 
   useEffect(() => {
     console.log("connectCredentials", state.connectCredentials);

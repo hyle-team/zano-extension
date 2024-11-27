@@ -4,8 +4,15 @@ import logo from "../../../assets/svg/logo.svg";
 import { Store } from "../../../store/store-reducer";
 import s from "./AppLoader.module.scss";
 
-const AppLoader = ({ isSmall, firstWalletLoaded, loggedIn }) => {
+interface AppLoaderProps {
+  isSmall?: boolean;
+  firstWalletLoaded: boolean;
+  loggedIn: boolean;
+}
+
+const AppLoader: React.FC<AppLoaderProps> = ({ isSmall, firstWalletLoaded, loggedIn }) => {
   const { state } = useContext(Store);
+
   const loaderClasses = isSmall ? [s.loader, s.small].join(" ") : s.loader;
 
   return (

@@ -1,8 +1,12 @@
-import React from "react";
+import React, { InputHTMLAttributes } from "react";
 import nextId from "react-id-generator";
 import s from "./MyCheckbox.module.scss";
 
-const MyCheckbox = ({ label, ...props }) => {
+interface MyCheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+}
+
+const MyCheckbox: React.FC<MyCheckboxProps> = ({ label, ...props }) => {
   const id = nextId();
 
   return (

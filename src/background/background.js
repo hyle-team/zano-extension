@@ -20,7 +20,8 @@ import JSONbig from "json-bigint";
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
 
-const ZANO_ID = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
+const ZANO_ID =
+  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
 
 async function getAsset(assetId) {
   if (assetId === ZANO_ID) {
@@ -45,7 +46,7 @@ async function getAsset(assetId) {
 class PopupRequestsMethods {
   static onRequestCreate(requestType, request, sendResponse, reqParams) {
     console.log("Creating request", reqParams);
-    
+
     openWindow().then((requestWindow) => {
       const reqId = crypto.randomUUID();
       const req = {
@@ -178,7 +179,7 @@ const savedRequests = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
-  TRANSFER: {}
+  TRANSFER: {},
 };
 
 const allPopupIds = [];
@@ -218,7 +219,7 @@ const SELF_ONLY_REQUESTS = [
   "PING_WALLET",
   "SET_ACTIVE_WALLET",
   "GET_WALLETS",
-  "FINALIZE_TRANSFER_REQUEST"
+  "FINALIZE_TRANSFER_REQUEST",
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -378,7 +379,7 @@ async function processRequest(request, sender, sendResponse) {
 
     case "GET_TRANSFER_REQUEST": {
       PopupRequestsMethods.getRequestsList("TRANSFER", sendResponse);
-      break
+      break;
     }
 
     case "TRANSFER": {
@@ -386,39 +387,41 @@ async function processRequest(request, sender, sendResponse) {
         const asset = await getAsset(request.assetId);
         const walletData = await getWalletData();
         const { address } = walletData;
-        request.asset = asset || await getAsset(ZANO_ID);
-        request.sender = address || '';
-        
+        request.asset = asset || (await getAsset(ZANO_ID));
+        request.sender = address || "";
       } catch (e) {
-        return sendResponse({error: e.message})
+        return sendResponse({ error: e.message });
       }
 
-      PopupRequestsMethods.onRequestCreate(
-        "TRANSFER",
-        request,
-        sendResponse,
-        { transfer: request }
-      );
-      break
+      PopupRequestsMethods.onRequestCreate("TRANSFER", request, sendResponse, {
+        transfer: request,
+      });
+      break;
     }
 
     case "FINALIZE_TRANSFER_REQUEST": {
-      PopupRequestsMethods
-      .onRequestFinalize("TRANSFER",
-      request,
-      sendResponse,
-      (req) => {
-        const transferData = req.transfer;
-        const {assetId, destination, amount, asset } = transferData;
-        
-        return transfer(assetId, destination, amount, asset?.decimal_point || 12);
-      },
-      {
-        console: "Error transfer:",
-        response: "An error occurred while sending transfer",
-        reqNotFound: "transfer request not found",
-      })  
-      break
+      PopupRequestsMethods.onRequestFinalize(
+        "TRANSFER",
+        request,
+        sendResponse,
+        (req) => {
+          const transferData = req.transfer;
+          const { assetId, destination, amount, asset } = transferData;
+
+          return transfer(
+            assetId,
+            destination,
+            amount,
+            asset?.decimal_point || 12
+          );
+        },
+        {
+          console: "Error transfer:",
+          response: "An error occurred while sending transfer",
+          reqNotFound: "transfer request not found",
+        }
+      );
+      break;
     }
 
     case "GET_ACCEPT_IONIC_SWAP_REQUESTS":

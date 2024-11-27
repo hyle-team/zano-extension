@@ -5,11 +5,17 @@ import questionIcon from "../../assets/svg/question.svg";
 import { Store } from "../../store/store-reducer";
 import s from "./AppPlug.module.scss";
 
-const AppPlug = (props) => {
+// Define the type for props
+interface AppPlugProps {
+  setConnectOpened: (isOpened: boolean) => void;
+}
+
+const AppPlug: React.FC<AppPlugProps> = (props) => {
   const { state } = useContext(Store);
 
   const { setConnectOpened } = props;
 
+  // Type of btnClasses is inferred as string
   const btnClasses = state.isLoading
     ? [s.plugButton, s.hidden].join(" ")
     : s.plugButton;

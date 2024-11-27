@@ -4,7 +4,7 @@ import { useState } from "react";
 export const useCopy = () => {
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text: string) => {
     copy(text);
     if (!copied) {
       setCopied(true);

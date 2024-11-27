@@ -6,10 +6,10 @@ export function useCensorDigits() {
   const { state, dispatch } = useContext(Store);
 
   const changeCensor = () => {
-    updateBalancesHidden(dispatch, (prevState) => !prevState);
+    updateBalancesHidden(dispatch, (prevState: boolean) => !prevState); 
   };
 
-  const censorValue = (number) => {
+  const censorValue = (number: number | string): string | number => {
     if (state.isBalancesHidden) {
       return number.toString().replace(/\d/g, "*");
     } else {
@@ -19,3 +19,4 @@ export function useCensorDigits() {
 
   return { changeCensor, censorValue };
 }
+

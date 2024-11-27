@@ -1,6 +1,68 @@
-import { createContext, useReducer } from "react";
+import React, { createContext, useReducer, ReactNode, useContext } from "react";
 
-const initialState = {
+// Define the types for the state
+interface Asset {
+  name: string;
+  ticker: string;
+  balance: number;
+  lockedBalance?: number;
+  value: number;
+}
+
+interface Transaction {
+  isConfirmed: boolean;
+  incoming: boolean;
+  amount?: number;
+  value?: number;
+  ticker: string;
+  address: string;
+}
+
+interface Wallet {
+  address: string;
+  alias: string;
+  balance: number;
+  lockedBalance?: number;
+  assets: Asset[];
+  transactions: Transaction[];
+}
+
+interface TransactionStatus {
+  visible: boolean;
+  type: string;
+  code: number;
+  message: string;
+}
+
+interface ConnectCredentials {
+  token: string | null;
+  port: string | null;
+}
+
+interface PriceData {
+  price: number;
+  change: number;
+}
+
+interface State {
+  walletsList: { address: string; alias: string; balance: number }[];
+  activeWalletId: number;
+  wallet: Wallet;
+  displayUsd: boolean;
+  isLoading: boolean;
+  isConnected: boolean | undefined;
+  isBalancesHidden: boolean;
+  priceData: PriceData;
+  confirmationModal: string | null;
+  transactionStatus: TransactionStatus;
+  connectCredentials: ConnectCredentials;
+  whitelistedAssets: string[];
+  walletAddress?: string;
+  walletBalance?: number;
+}
+
+// Initial state
+const initialState: State = {
   walletsList: [
     {
       address:
@@ -87,7 +149,24 @@ const initialState = {
   whitelistedAssets: [],
 };
 
-const reducer = (state, action) => {
+type Action =
+  | { type: "WALLET_ADDRESS_UPDATED"; payload: string }
+  | { type: "WALLET_BALANCE_UPDATED"; payload: number }
+  | { type: "WALLET_CONNECTED_UPDATED"; payload: boolean | undefined }
+  | { type: "WALLETS_LIST_UPDATED"; payload: { address: string; alias: string; balance: number }[] }
+  | { type: "ACTIVE_WALLET_ID_UPDATED"; payload: number }
+  | { type: "WALLET_DATA_UPDATED"; payload: Wallet }
+  | { type: "PRICE_DATA_UPDATED"; payload: PriceData }
+  | { type: "DISPLAY_CURRENCY_UPDATED"; payload: boolean }
+  | { type: "LOADING_UPDATED"; payload: boolean }
+  | { type: "BALANCES_HIDDEN_UPDATED"; payload: boolean }
+  | { type: "CONFIRMATION_MODAL_UPDATED"; payload: string | null }
+  | { type: "TRANSACTION_STATUS_UPDATED"; payload: TransactionStatus }
+  | { type: "SET_CONNECT_DATA"; payload: ConnectCredentials }
+  | { type: "SET_WHITE_LIST"; payload: string[] }
+  | { type: "SET_BALANCES_HIDDEN"; payload: boolean };
+
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "WALLET_ADDRESS_UPDATED":
       return { ...state, walletAddress: action.payload };
@@ -114,19 +193,48 @@ const reducer = (state, action) => {
     case "TRANSACTION_STATUS_UPDATED":
       return { ...state, transactionStatus: action.payload };
     case "SET_CONNECT_DATA":
-      return { ...state, connectCredentials: action.payload }
+      return { ...state, connectCredentials: action.payload };
     case "SET_WHITE_LIST":
-      return { ...state, whitelistedAssets: action.payload }
+      return { ...state, whitelistedAssets: action.payload };
     default:
       return state;
   }
 };
 
-export const Store = createContext(initialState);
+export const Store = createContext<{ state: State; dispatch: React.Dispatch<Action> }>({
+  state: initialState,
+  dispatch: () => { },
+});
 
-export const StoreProvider = ({ children }) => {
+interface StoreProviderProps {
+  children: ReactNode;
+}
+
+export const StoreProvider = ({ children }: StoreProviderProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  return <Store.Provider value={{ state, dispatch }}>{children}</Store.Provider>;
+};
+
+export const useStore = () => useContext(Store);
+
+const updateWhiteList = (dispatch: React.Dispatch<Action>, whiteList: string[]) => {
+  dispatch({
+    type: "SET_WHITE_LIST",
+    payload: whiteList,
+  });
+};
+
+// Usage in a component:
+const ExampleComponent = () => {
+  const { state, dispatch } = useStore();
+
+  const handleUpdateWhiteList = () => {
+    updateWhiteList(dispatch, ["asset1", "asset2"]);
+  };
+
   return (
-    <Store.Provider value={{ state, dispatch }}>{children}</Store.Provider>
+    <div>
+      <button onClick={handleUpdateWhiteList}>Update WhiteList</button>
+    </div>
   );
 };

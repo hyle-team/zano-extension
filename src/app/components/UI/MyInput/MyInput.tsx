@@ -1,9 +1,27 @@
-import React, { memo } from "react";
+import React, { memo, ChangeEvent, InputHTMLAttributes } from "react";
 import nextId from "react-id-generator";
 import cls from "./MyInput.module.scss";
 import { classNames } from "../../../utils/classNames";
 
-const MyInput = memo((props) => {
+interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  inputData: {
+    value: string;
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    onInput: (value: string) => void;
+    inputValid: boolean;
+    onBlur: () => void;
+    isDirty: boolean;
+    isFilled: boolean;
+  };
+  isValid?: boolean;
+  noActiveBorder?: boolean;
+  isError?: boolean;
+  noValidation?: boolean;
+  type: string;
+}
+
+const MyInput: React.FC<MyInputProps> = memo((props) => {
   const id = nextId();
   const {
     label,
@@ -15,10 +33,10 @@ const MyInput = memo((props) => {
     noValidation,
     ...otherProps
   } = props;
-  const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } =
-    inputData;
 
-  const onInputHandler = (e) => {
+  const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } = inputData;
+
+  const onInputHandler = (e: ChangeEvent<HTMLInputElement>) => {
     if (type === "number" && !noValidation) {
       const newValue = e.target.value
         .replace(/[^0-9.]/g, "")
@@ -40,7 +58,7 @@ const MyInput = memo((props) => {
       <div className={cls.myInput}>
         <input
           onBlur={onBlur}
-          onChange={(e) => onInputHandler(e)}
+          onChange={onInputHandler}
           type={type}
           id={id}
           value={value}

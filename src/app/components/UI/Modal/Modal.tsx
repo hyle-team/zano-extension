@@ -1,9 +1,17 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { MouseEvent, ReactNode, useCallback, useEffect, useState } from "react";
 import cls from "./Modal.module.scss";
 import { createPortal } from "react-dom";
 import { classNames } from '../../../utils/classNames';
 
-const Modal = (props) => {
+interface ModalProps {
+  className?: string;
+  children: ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  width?: string | number;
+}
+
+const Modal = (props: ModalProps) => {
   const { className, children, isOpen, onClose, width } = props;
 
   const [isMounted, setIsMounted] = useState(false);
@@ -21,7 +29,7 @@ const Modal = (props) => {
   }, [onClose]);
 
   const onKeyDown = useCallback(
-    (e) => {
+    (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         closeHandler();
       }
@@ -39,7 +47,7 @@ const Modal = (props) => {
     };
   }, [isOpen, onKeyDown]);
 
-  const onContentClick = (e) => {
+  const onContentClick = (e: MouseEvent) => {
     e.stopPropagation();
   };
 
@@ -54,7 +62,7 @@ const Modal = (props) => {
   return createPortal(
     <div className={classNames(cls.Modal, mods, [className])}>
       <div onClick={closeHandler} className={cls.wrapper}>
-        <div onClick={onContentClick} style={{width}} className={cls.content}>
+        <div onClick={onContentClick} style={{ width }} className={cls.content}>
           {children}
         </div>
       </div>

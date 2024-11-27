@@ -1,9 +1,9 @@
 class Zano {
-    async request(method, params, timeoutParam) {
+    async request(method: string, params: Record<string, any>, timeoutParam?: number): Promise<any> {
         
-        function getRandonString(length) {
-            let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-            let charLength = chars.length;
+        function getRandonString(length: number): string {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            const charLength = chars.length;
             let result = '';
 
             for (let i = 0; i < length; i++) {
@@ -13,28 +13,27 @@ class Zano {
             return result;
         }
 
-
         const listenerID = getRandonString(16);
-        const timeoutMs = typeof timeoutParam === "number" ? timeoutParam : null;
+        const timeoutMs: number | null = typeof timeoutParam === "number" ? timeoutParam : null;
 
         return new Promise((resolve, reject) => {
 
             const timeout = timeoutMs !== null ? (
                 setTimeout(() => {
                     reject('Request timeout exceeded');
-                    document.removeEventListener(`zano_response_${listenerID}`, handleResponse);
+                    document.removeEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
                 }, timeoutMs)
             ) : undefined;
 
-            function handleResponse(e) {                
-                document.removeEventListener(`zano_response_${listenerID}`, handleResponse);
+            function handleResponse(e: CustomEvent) {                
+                document.removeEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
                 if (timeout) {
                     clearTimeout(timeout);  
                 }
                 resolve(e.detail);
             }
 
-            document.addEventListener(`zano_response_${listenerID}`, handleResponse);
+            document.addEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
 
             document.dispatchEvent(new CustomEvent('zano_request', { 
                 detail: {
