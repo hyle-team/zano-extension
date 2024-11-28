@@ -8,23 +8,54 @@ import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import { Store } from "../../store/store-reducer";
 import styles from "./TransactionDetails.module.scss";
 
-const TransactionDetails = (props) => {
+type Transfer = {
+  amount: string;
+  assetId: string;
+  incoming: boolean;
+};
+
+type TransactionDetailsProps = {
+  transfers?: Transfer[];
+  fee: string;
+  addresses?: string[];
+  txHash: string;
+  blobSize: number;
+  timestamp: string;
+  height: number;
+  paymentId?: string | null;
+  comment: string;
+  isInitiator?: boolean;
+};
+
+type TableRowProps = {
+  label: string;
+  value?: string | number;
+  copyButton?: boolean;
+  children?: React.ReactNode;
+};
+
+type WhitelistedAssetType = {
+  asset_id: string;
+  ticker: string;
+};
+
+const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
   const { state } = useContext(Store);
-  const { copyToClipboard, SuccessCopyModal } = useCopy();
+  const { copyToClipboard } = useCopy(); // removed: SuccessCopyModal
 
   useEffect(() => {
     document.body.scrollTo(0, 0);
   }, []);
 
-  const TableRow = ({ label, value, copyButton, children }) => {
+  const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children }) => {
     return (
       <div className={`${copyButton && "table__row_button"} table__row`}>
         <div className="table__label">
           {label}:
-          {copyButton && (
+          {copyButton && value && (
             <button
               className="round-button"
-              onClick={() => copyToClipboard(value)}
+              onClick={() => copyToClipboard(value.toString())}
             >
               <img src={copyIcon} alt="copy icon" />
             </button>
@@ -38,30 +69,29 @@ const TransactionDetails = (props) => {
 
   return (
     <div>
-      {SuccessCopyModal}
+      {/* {SuccessCopyModal} */}
 
       <RoutersNav title="Transaction details" />
 
       <div className="table">
         <TableRow label="Transfers">
           <div className={styles.transaction__transfers}>
-            {props?.transfers?.map((transfer) => {
+            {props?.transfers?.map((transfer, index) => {
               if (transfer.amount === props.fee) return null;
               const amount = new Big(transfer.amount);
               const fixedFee = new Big(props.fee);
               return (
-                <div className={styles.transaction__transfer}>
+                <div key={index} className={styles.transaction__transfer}>
                   <p className="table__value">
                     {transfer.assetId ===
                       "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
                       ? !props.isInitiator
                         ? amount.toFixed()
                         : amount.minus(fixedFee).toFixed()
-                      : amount.toFixed()
-                    }{" "}
+                      : amount.toFixed()}{" "}
                     {
-                      state.whitelistedAssets.find(
-                        (asset) => asset.asset_id === transfer.assetId
+                      (state.whitelistedAssets as any).find(
+                        (asset: WhitelistedAssetType) => asset.asset_id === transfer.assetId
                       )?.ticker ?? "***"
                     }
                   </p>
@@ -75,7 +105,6 @@ const TransactionDetails = (props) => {
               );
             })}
           </div>
-          
         </TableRow>
         <TableRow label="Fee" value={props.fee + " ZANO"} />
         {props.addresses && (
@@ -92,7 +121,7 @@ const TransactionDetails = (props) => {
         {props.paymentId ? (
           <TableRow label="Payment Id" value={props.paymentId} copyButton />
         ) : (
-          <TableRow label="Payment Id" value={props.paymentId} />
+          <TableRow label="Payment Id" value={props.paymentId ?? "N/A"} />
         )}
         <TableRow label="Comment" value={props.comment} />
       </div>
