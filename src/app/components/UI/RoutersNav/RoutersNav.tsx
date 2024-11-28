@@ -3,9 +3,14 @@ import { goBack } from "react-chrome-extension-router";
 import backIcon from "../../../assets/svg/arrow-back.svg";
 import s from "./RoutersNav.module.scss";
 
-const RoutersNav = ({ title, onClick }) => {
+interface RoutersNavProps {
+  title: string;
+  onClick?: "none" | (() => void | undefined);
+}
+
+const RoutersNav = ({ title, onClick }: RoutersNavProps) => {
   const clickHandler = () => {
-    if (onClick) {
+    if (typeof onClick === "function") {
       onClick();
     } else {
       goBack();

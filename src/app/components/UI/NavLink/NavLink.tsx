@@ -2,7 +2,13 @@ import React from "react";
 import { Link } from "react-chrome-extension-router";
 import { classNames } from "../../../utils/classNames";
 
-const NavLink = ({ component, children, className, ...props }) => {
+interface NavLinkProps {
+  component: React.ComponentType<any>;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const NavLink = ({ component, children, className, ...props }: NavLinkProps) => {
   const scrollHandler = () => {
     document.body.scrollTop = 0;
   };

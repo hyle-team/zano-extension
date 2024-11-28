@@ -2,13 +2,27 @@ import React, { memo } from "react";
 import cls from "./Button.module.scss";
 import { classNames } from "../../../utils/classNames";
 
-export const ButtonThemes = {
+interface ButtonProps {
+  className?: string;
+  children: React.ReactNode;
+  theme?: ThemeProps;
+  href?: string;
+  fullWidth?: boolean;
+}
+
+interface ThemeProps {
+  Primary: "primary";
+  Outline: "outline";
+  Clear: "clear";
+}
+
+export const ButtonThemes: ThemeProps = {
   Primary: "primary",
   Outline: "outline",
   Clear: "clear",
 };
 
-export const Button = memo((props) => {
+export const Button = memo((props: ButtonProps) => {
   const {
     className,
     children,
@@ -22,7 +36,7 @@ export const Button = memo((props) => {
     return (
       <a
         href={href}
-        className={classNames(cls.Button, {}, [className, cls[theme]])}
+        className={classNames(cls.Button, {}, [className, cls[theme as string]])}
         {...otherProps}
       >
         {children}
@@ -32,7 +46,7 @@ export const Button = memo((props) => {
 
   return (
     <button
-      className={classNames(cls.Button, {}, [className, cls[theme]])}
+      className={classNames(cls.Button, {}, [className, cls[theme as string]])}
       type="button"
       {...otherProps}
     >
