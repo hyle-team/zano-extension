@@ -3,17 +3,19 @@ import nextId from "react-id-generator";
 import cls from "./MyInput.module.scss";
 import { classNames } from "../../../utils/classNames";
 
+interface inputDataProps {
+  value?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onInput?: (value: string) => void;
+  inputValid?: boolean;
+  onBlur?: () => void;
+  isDirty?: boolean;
+  isFilled?: boolean;
+}
+
 interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  inputData: {
-    value?: string;
-    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-    onInput?: (value: string) => void;
-    inputValid?: boolean;
-    onBlur?: () => void;
-    isDirty?: boolean;
-    isFilled?: boolean;
-  }
+  inputData?: inputDataProps;
   isValid?: boolean;
   noActiveBorder?: boolean;
   isError?: boolean;
@@ -34,7 +36,7 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
     ...otherProps
   } = props;
 
-  const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } = inputData;
+  const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } = inputData || {};
 
   const onInputHandler = (e: ChangeEvent<HTMLInputElement>) => {
     if (type === "number" && !noValidation) {

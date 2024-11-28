@@ -9,13 +9,22 @@ import mainStyles from "../../WalletSend.module.scss";
 import s from "./AssetsSelect.module.scss";
 import { classNames } from "../../../../utils/classNames";
 
-const AssetsSelect = ({ value, setValue }) => {
+interface Asset {
+  name: string;
+}
+
+interface AssetsSelectProps {
+  value: Asset;
+  setValue: (asset: Asset) => void;
+}
+
+const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
   const { state } = useContext(Store);
   const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = React.useState(null);
-  const selectRef = useRef(null);
+  const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
+  const selectRef = useRef<HTMLDivElement>(null);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (
@@ -24,21 +33,24 @@ const AssetsSelect = ({ value, setValue }) => {
       ) {
         setFocusedIndex(0);
       } else {
-        setFocusedIndex((prevIndex) => prevIndex + 1);
+        setFocusedIndex((prevIndex) => Number(prevIndex) + 1);
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       if (focusedIndex === null || focusedIndex === 0) {
         setFocusedIndex(state.wallet.assets.length - 1);
       } else {
-        setFocusedIndex((prevIndex) => prevIndex - 1);
+        setFocusedIndex((prevIndex) => Number(prevIndex) - 1);
       }
     }
   };
 
   useEffect(() => {
     if (focusedIndex !== null && selectRef.current) {
-      selectRef.current.childNodes[focusedIndex].focus();
+      const childNodes = selectRef.current.childNodes;
+      if (childNodes && childNodes[focusedIndex as number]) {
+        (childNodes[focusedIndex as number] as HTMLElement).focus();
+      }
     }
   }, [focusedIndex]);
 
@@ -46,12 +58,12 @@ const AssetsSelect = ({ value, setValue }) => {
     setIsOpen(!isOpen);
   }
 
-  function setValueHandler(asset) {
+  function setValueHandler(asset: Asset) {
     setValue(asset);
     setIsOpen(false);
   }
 
-  const getAssetImage = (name) => {
+  const getAssetImage = (name: string) => {
     switch (name) {
       case "Zano":
         return zanoIcon;

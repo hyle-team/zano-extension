@@ -7,7 +7,7 @@ import s from "./WalletSettings.module.scss";
 
 const WalletSettings = () => {
   const [isBtnDisabled, setIsBtnDisabled] = useState(true);
-  const localNodePort = useInput("11112");
+  const localNodePort = useInput("11112", {});
 
   return (
     <div>

@@ -5,7 +5,13 @@ import s from "./AdditionalDetails.module.scss";
 import { classNames } from "../../../../utils/classNames";
 import arrowIcon from "../../../../assets/svg/arrow-select.svg";
 
-const AdditionalDetails = ({ fee, mixin, isSenderInfo, isReceiverInfo }) => {
+interface AdditionalDetailsProps {
+  fee: string | number;
+  mixin: string | number;
+  isSenderInfo: { isChecked: boolean; onChange: () => void };
+  isReceiverInfo: { isChecked: boolean; onChange: () => void };
+}
+const AdditionalDetails = ({ fee, mixin, isSenderInfo, isReceiverInfo }: AdditionalDetailsProps) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
 
   const toggleDetails = () => {
@@ -27,8 +33,8 @@ const AdditionalDetails = ({ fee, mixin, isSenderInfo, isReceiverInfo }) => {
       {detailsVisible && (
         <div className={s.detailsSelectContent}>
           <div className={s.detailsSelectInputs}>
-            <MyInput label="Mixin:" inputData={mixin} disabled />
-            <MyInput label="Fee:" inputData={fee} disabled />
+            <MyInput label="Mixin:" inputData={mixin as any} disabled />
+            <MyInput label="Fee:" inputData={fee as any} disabled />
           </div>
           <div className={s.detailsSelectCheckboxes}>
             <MyCheckbox
