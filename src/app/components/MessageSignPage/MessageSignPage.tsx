@@ -1,3 +1,4 @@
+import React from "react";
 import { getCurrent, goBack } from "react-chrome-extension-router";
 import Button, { ButtonThemes } from "../UI/Button/Button";
 import styles from "./MessageSignPage.module.scss";
@@ -21,7 +22,7 @@ export default function MessageSignPage() {
     }, [signRequests]);
 
     function nextRequest() {
-        if (reqIndex < signRequests.length - 1) {   
+        if (reqIndex < signRequests.length - 1) {
             setReqIndex(reqIndex + 1);
         } else {
             goBack();
@@ -41,7 +42,7 @@ export default function MessageSignPage() {
         setDenying(false);
         nextRequest();
     }
-    
+
     return (
         <div className={styles.signContainer}>
             <h3 className={styles.title}>Sign Request</h3>

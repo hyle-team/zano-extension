@@ -1,3 +1,4 @@
+import React, { MouseEvent } from "react";
 import { useState } from "react";
 import Assets from "./Assets/Assets";
 import History from "./History/History";
@@ -11,9 +12,9 @@ const TokensTabs = () => {
     { label: "history", content: <History /> },
   ];
 
-  const toggleTabs = (e) => {
-    if (activeTab !== e.target.value) {
-      setActiveTab(Number(e.target.value));
+  const toggleTabs = (e: MouseEvent<HTMLButtonElement>) => {
+    if (activeTab !== Number(e.currentTarget.value)) {
+      setActiveTab(Number(e.currentTarget.value));
     }
   };
 

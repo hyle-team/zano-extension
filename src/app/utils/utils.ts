@@ -12,7 +12,13 @@ interface ValidationResult {
   error?: string;
 }
 
-export async function fetchBackground(data: { method: string; password?: string, id?: number, success?:boolean; }): Promise<any> {
+export async function fetchBackground(data: { 
+  method: string; 
+  password?: string; 
+  id?: number; 
+  success?: boolean; 
+  credentials?: { port: string }; 
+}): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
       chrome.runtime.sendMessage(data, function (response) {

@@ -1,6 +1,6 @@
 import React, { useCallback, useContext } from "react";
 import cls from "./ModalTransactionStatus.module.scss";
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from "../UI/Modal/Modal";
 import { Store } from "../../store/store-reducer";
 import errorImage from "../../assets/svg/plus.svg";
 import { updateTransactionStatus } from "../../store/actions";
@@ -13,7 +13,7 @@ const ModalTransactionStatus = () => {
   const { visible, type, code, message } = state?.transactionStatus;
 
   const closeHandler = useCallback(() => {
-    updateTransactionStatus(dispatch, (prevState) => ({
+    updateTransactionStatus(dispatch as () => void, (prevState: object) => ({
       ...prevState,
       isVisible: false,
     }));
@@ -34,7 +34,7 @@ const ModalTransactionStatus = () => {
     if (type === "error") {
       return (
         <div className={cls.error}>
-          <div className={classNames(cls.icon, {}, [[cls.redColor]])}>
+          <div className={classNames(cls.icon, {}, [cls.redColor])}>
             <img src={errorImage} alt="error" />
           </div>
 
@@ -69,7 +69,7 @@ const ModalTransactionStatus = () => {
     <Modal
       width={296}
       isOpen={visible}
-      onClose={type !== "loading" && closeHandler}
+      onClose={type !== "loading" ? closeHandler : () => { }}
     >
       <div className={cls.ModalTransactionStatus}>
         <Loading />

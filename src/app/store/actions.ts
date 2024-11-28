@@ -15,7 +15,6 @@ interface WalletState {
 }
 
 type DispatchFunction = (action: { type: string; payload: WalletState[keyof WalletState] }) => void;
-type DispatchBalance = { type: string; payload: string | boolean | object | string[]; };
 
 export const updateWalletsList = (dispatch: DispatchFunction, state: WalletState['wallets']): void => {
   return dispatch({
@@ -80,14 +79,20 @@ export const updateConfirmationModal = (dispatch: DispatchFunction, state: Walle
   });
 };
 
-export const updateTransactionStatus = (dispatch: DispatchFunction, state: WalletState['transactionStatus']): void => {
+export const updateTransactionStatus = (dispatch: DispatchFunction, state: WalletState['transactionStatus'] | any): void => {
   return dispatch({
     type: "TRANSACTION_STATUS_UPDATED",
     payload: state,
   });
 };
 
-export const setConnectData = (dispatch: DispatchFunction, state: WalletState['connectData']): void => {
+interface ConnectCredentials {
+  token: string;
+  port: string;
+}
+
+
+export const setConnectData = (dispatch: DispatchFunction, state: ConnectCredentials): void => {
   return dispatch({
     type: "SET_CONNECT_DATA",
     payload: state

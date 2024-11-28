@@ -1,8 +1,14 @@
+import React from "react";
 import { getCurrent, goBack } from "react-chrome-extension-router";
 import Button, { ButtonThemes } from "../UI/Button/Button";
 import styles from "./OuterConfirmation.module.scss";
 import { useState, useEffect } from "react";
 import { fetchBackground } from "../../utils/utils";
+
+interface ParamsType {
+	key: number;
+	value: string;
+}
 
 const OuterConfirmation = () => {
 	const { props } = getCurrent();
@@ -27,7 +33,7 @@ const OuterConfirmation = () => {
 		}
 	}
 
-	
+
 	async function acceptClick() {
 		setAccepting(true);
 		await fetchBackground({ method, id, success: true });
@@ -50,7 +56,7 @@ const OuterConfirmation = () => {
 			<h5>{name}</h5>
 			<div className={styles.table}>
 				{
-					params.map((param) => {
+					params.map((param: ParamsType) => {
 
 						return (
 							<div className={styles.row} key={param.key}>

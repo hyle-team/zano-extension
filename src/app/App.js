@@ -32,7 +32,7 @@ import { getZanoPrice } from "./api/coingecko";
 import "./styles/App.scss";
 import PasswordPage from "./components/PasswordPage/PasswordPage";
 import MessageSignPage from "./components/MessageSignPage/MessageSignPage";
-import AliasCreatePage from "./components/AliasCreatePage/AliasCreatePaget.jsx";
+import AliasCreatePage from "./components/AliasCreatePage/AliasCreatePaget";
 import ConnectPage from "./components/ConnectPage/ConnectPage";
 import ConnectKeyUtils from "./utils/ConnectKeyUtils";
 import { defaultPort } from "./config/config";

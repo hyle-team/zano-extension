@@ -1,3 +1,4 @@
+import React from "react";
 import { useContext, useState } from "react";
 import arrowIcon from "../../assets/svg/arrow-shevron.svg";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
@@ -22,11 +23,11 @@ const Header = () => {
     }
   };
 
-  const switchWallet = (id) => {
+  const switchWallet = (id: number | undefined) => {
     // eslint-disable-next-line no-undef
     chrome.storage.local.set({ key: id }, function () {
-      updateLoading(dispatch, true);
-      updateActiveWalletId(dispatch, id);
+      updateLoading(dispatch as () => void, true);
+      updateActiveWalletId(dispatch as () => void, String(id));
 
       fetchBackground({
         method: "SET_ACTIVE_WALLET",
@@ -34,7 +35,7 @@ const Header = () => {
       });
 
       console.log("Active wallet set to", id);
-      setTimeout(() => updateLoading(dispatch, false), 1000);
+      setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
     });
 
     toggleDropdown();

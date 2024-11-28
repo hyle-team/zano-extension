@@ -1,3 +1,4 @@
+import React from "react";
 import { useContext } from "react";
 import crossIcon from "../../../assets/svg/cross.svg";
 import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
@@ -9,7 +10,15 @@ import { Store } from "../../../store/store-reducer";
 import s from "./Assets.module.scss";
 import Decimal from "decimal.js";
 
-const getIconImage = (asset) => {
+interface Asset {
+  name: string;
+  ticker: string;
+  balance: number;
+  lockedBalance?: number;
+  value: number;
+}
+
+const getIconImage = (asset: Asset) => {
   switch (asset.name) {
     case "Zano":
       return <img src={zanoIcon} alt="ZanoIcon" />;
@@ -30,7 +39,7 @@ const Assets = () => {
 
   return (
     <div>
-      {state.wallet.assets.map((asset) => {
+      {(state.wallet.assets).map((asset) => {
         const fiatBalance = (
           Number(asset.balance) * state.priceData.price
         ).toFixed(2);

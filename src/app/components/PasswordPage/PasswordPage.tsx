@@ -1,10 +1,17 @@
+import React, { ChangeEvent } from "react";
 import s from "./PasswordPage.module.scss";
 import logo from "../../assets/svg/logo.svg";
 import MyInput from "../UI/MyInput/MyInput";
 import Button from "../UI/Button/Button";
 import { useState } from "react";
 
-function PasswordPage(props) {
+interface PasswordPageProps {
+	onConfirm: (password: string) => void;
+	incorrectPassword: boolean;
+	setIncorrectPassword: (value: boolean) => void;
+}
+
+function PasswordPage(props: PasswordPageProps) {
 	const {
 		onConfirm,
 		incorrectPassword,
@@ -13,7 +20,7 @@ function PasswordPage(props) {
 
 	const [password, setPassword] = useState("");
 
-	function onInputChange(event) {
+	function onInputChange(event: ChangeEvent<HTMLInputElement>) {
 		setIncorrectPassword(false);
 		setPassword(event.currentTarget.value);
 	}
@@ -24,11 +31,11 @@ function PasswordPage(props) {
 
 	return (
 		<div className={s.passwordPage}>
-	
-			<img 
+
+			<img
 				className={s.logoImage}
-				src={logo} 
-				alt="Zano" 
+				src={logo}
+				alt="Zano"
 			/>
 			<p>Enter your password</p>
 			<div className={s.inputPanel}>

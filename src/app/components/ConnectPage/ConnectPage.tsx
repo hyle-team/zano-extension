@@ -1,7 +1,8 @@
+import React from "react";
 import Button from "../UI/Button/Button";
 import s from "./ConnectPage.module.scss";
 import logo from "../../assets/svg/logo.svg";
-import { useContext, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import MyInput from "../UI/MyInput/MyInput";
 import { fetchBackground, getSessionPassword } from "../../utils/utils";
 import { setConnectData } from "../../store/actions";
@@ -9,13 +10,22 @@ import { Store } from "../../store/store-reducer";
 import ConnectKeyUtils from "../../utils/ConnectKeyUtils";
 import { defaultPort } from "../../config/config";
 
+interface ConnectPageProps {
+  incorrectPassword: boolean;
+  setIncorrectPassword: Dispatch<SetStateAction<boolean>>;
+  onConfirm?: (password?: string, keyValue?: string, walletPort?: string) => void;
+  passwordExists: boolean;
+  setConnectOpened: Dispatch<SetStateAction<boolean>>;
+
+}
+
 export default function ConnectPage({
   incorrectPassword,
   setIncorrectPassword,
   onConfirm,
   passwordExists,
   setConnectOpened,
-}) {
+}: ConnectPageProps) {
   const updateSettings = !!passwordExists;
 
   const { dispatch } = useContext(Store);
@@ -42,7 +52,7 @@ export default function ConnectPage({
     getExistingPort();
   }, [passwordExists]);
 
-  function onPasswordInput(event, repeat) {
+  function onPasswordInput(event: React.ChangeEvent<HTMLInputElement>, repeat: boolean) {
     const { value } = event.currentTarget;
     setIncorrectPassword(false);
     setInvalidPassword(false);
@@ -70,7 +80,7 @@ export default function ConnectPage({
       credentials: { port: walletPort },
     });
 
-    setConnectData(dispatch, {
+    setConnectData(dispatch as () => void, {
       token: keyValue,
       port: walletPort,
     });
@@ -89,7 +99,7 @@ export default function ConnectPage({
     }
   }
 
-  function onKeyInput(event) {
+  function onKeyInput(event: React.ChangeEvent<HTMLInputElement>) {
     setKeyValue(event.currentTarget.value);
     setKeyIncorrect(false);
   }

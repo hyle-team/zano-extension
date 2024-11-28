@@ -1,10 +1,16 @@
 import React, { useCallback, useContext } from "react";
 import cls from "../../components/ModalConfirmation/ModalConfirmation.module.scss";
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from "../UI/Modal/Modal";
 import Button, { ButtonThemes } from "../UI/Button/Button";
 import { Store } from "../../store/store-reducer";
 
-const ModalConfirmation = ({ isOpen, onClose, onConfirm }) => {
+interface ModalConfirmationProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const ModalConfirmation = ({ isOpen, onClose, onConfirm }: ModalConfirmationProps) => {
   const { state } = useContext(Store);
   const { method, params } = state.confirmationModal || {};
 
@@ -30,7 +36,7 @@ const ModalConfirmation = ({ isOpen, onClose, onConfirm }) => {
             <div className={cls.label}>params:</div>
             <div className={cls.value}>
               {params &&
-                params.map((param) => <span key={param}>{param}</span>)}
+                params.map((param: string) => <span key={param}>{param}</span>)}
             </div>
           </div>
         </div>

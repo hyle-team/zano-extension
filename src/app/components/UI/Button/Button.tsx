@@ -1,12 +1,11 @@
-import React, { memo } from "react";
+import React, { memo, ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
 import cls from "./Button.module.scss";
 import { classNames } from "../../../utils/classNames";
 
-interface ButtonProps {
+interface ButtonBaseProps {
   className?: string;
   children: React.ReactNode;
-  theme?: ThemeProps;
-  href?: string;
+  theme?: keyof ThemeProps | string;
   fullWidth?: boolean;
 }
 
@@ -22,6 +21,12 @@ export const ButtonThemes: ThemeProps = {
   Clear: "clear",
 };
 
+type ButtonProps = ButtonBaseProps &
+  (
+    | (ButtonHTMLAttributes<HTMLButtonElement> & { href?: never })
+    | (AnchorHTMLAttributes<HTMLAnchorElement> & { href: string })
+  );
+
 export const Button = memo((props: ButtonProps) => {
   const {
     className,
@@ -36,8 +41,8 @@ export const Button = memo((props: ButtonProps) => {
     return (
       <a
         href={href}
-        className={classNames(cls.Button, {}, [className, cls[theme as string]])}
-        {...otherProps}
+        className={classNames(cls.Button, {}, [className, cls[theme]])}
+        {...(otherProps as AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {children}
       </a>
@@ -46,9 +51,9 @@ export const Button = memo((props: ButtonProps) => {
 
   return (
     <button
-      className={classNames(cls.Button, {}, [className, cls[theme as string]])}
+      className={classNames(cls.Button, {}, [className, cls[theme]])}
       type="button"
-      {...otherProps}
+      {...(otherProps as ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {children}
     </button>

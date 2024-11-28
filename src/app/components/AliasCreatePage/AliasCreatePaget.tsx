@@ -22,7 +22,7 @@ export default function AliasCreatePage() {
     }, [createRequests]);
 
     function nextRequest() {
-        if (reqIndex < createRequests.length - 1) {   
+        if (reqIndex < createRequests.length - 1) {
             setReqIndex(reqIndex + 1);
         } else {
             goBack();
@@ -42,7 +42,7 @@ export default function AliasCreatePage() {
         setDenying(false);
         nextRequest();
     }
-    
+
     return (
         <div className={styles.signContainer}>
             <h3 className={styles.title}>Create alias request</h3>

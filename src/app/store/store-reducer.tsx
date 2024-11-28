@@ -9,13 +9,22 @@ interface Asset {
   value: number;
 }
 
+interface Transfer {
+  assetId?: string;
+  amount?: number;
+}
+
 interface Transaction {
+  txHash?: string;
   isConfirmed: boolean;
   incoming: boolean;
   amount?: number;
   value?: number;
   ticker: string;
   address: string;
+  transfers?: Transfer[];
+  isInitiator?: boolean;
+  fee?: number | string;
 }
 
 interface Wallet {
@@ -45,7 +54,7 @@ interface PriceData {
 }
 
 interface State {
-  walletsList: { address: string; alias: string; balance: number }[];
+  walletsList: { address: string; alias: string; balance: number, wallet_id?: number; }[];
   activeWalletId: number;
   wallet: Wallet;
   displayUsd: boolean;
@@ -53,7 +62,7 @@ interface State {
   isConnected: boolean | undefined;
   isBalancesHidden: boolean;
   priceData: PriceData;
-  confirmationModal: string | null;
+  confirmationModal: string | null | any;
   transactionStatus: TransactionStatus;
   connectCredentials: ConnectCredentials;
   whitelistedAssets: string[];

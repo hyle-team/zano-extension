@@ -6,19 +6,19 @@ import { classNames } from "../../../utils/classNames";
 interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   inputData: {
-    value: string;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-    onInput: (value: string) => void;
-    inputValid: boolean;
-    onBlur: () => void;
-    isDirty: boolean;
-    isFilled: boolean;
-  };
+    value?: string;
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+    onInput?: (value: string) => void;
+    inputValid?: boolean;
+    onBlur?: () => void;
+    isDirty?: boolean;
+    isFilled?: boolean;
+  }
   isValid?: boolean;
   noActiveBorder?: boolean;
   isError?: boolean;
   noValidation?: boolean;
-  type: string;
+  type?: string;
 }
 
 const MyInput: React.FC<MyInputProps> = memo((props) => {
@@ -42,9 +42,9 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
         .replace(/[^0-9.]/g, "")
         .replace(/(\..*?)\..*/g, "$1")
         .replace(/^0[^.]/, "0");
-      onInput(newValue);
+      if (onInput) onInput(newValue);
     } else {
-      onChange(e);
+      if (onChange) onChange(e);
     }
   };
 
