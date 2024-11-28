@@ -6,6 +6,7 @@ interface Asset {
   ticker: string;
   balance: number;
   lockedBalance?: number;
+  unlockedBalance?: number;
   value: number;
   decimalPoint?: number;
   assetId?: string;

@@ -1,3 +1,4 @@
+import React, { Dispatch, SetStateAction } from "react";
 import { useContext, useRef, useState } from "react";
 import copyIcon from "../../assets/svg/copy.svg";
 import dotsIcon from "../../assets/svg/dots.svg";
@@ -12,14 +13,14 @@ import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
 import { Store } from "../../store/store-reducer";
 import { updateBalancesHidden, updateDisplay } from "../../store/actions";
-import ModalTransactionStatus from "../../components/ModalTransactionStatus/ModalTransactionStatus";
+import ModalTransactionStatus from "../ModalTransactionStatus/ModalTransactionStatus";
 import WalletSend from "../WalletSend/WalletSend";
 import WalletSettings from "../WalletSettings/WalletSettings";
 import s from "./Wallet.module.scss";
 import NavLink from "../UI/NavLink/NavLink";
 import { classNames } from "../../utils/classNames";
 
-const Wallet = ({ setConnectOpened }) => {
+const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
   const { state, dispatch } = useContext(Store);
   const { copied, copyToClipboard } = useCopy();
   const { censorValue } = useCensorDigits();
@@ -59,7 +60,7 @@ const Wallet = ({ setConnectOpened }) => {
     )?.unlockedBalance;
 
   const flipDisplay = () => {
-    updateDisplay(dispatch, !state.displayUsd);
+    updateDisplay(dispatch as any, !state.displayUsd as any);
   };
 
   const flipMenu = () => {
@@ -121,7 +122,7 @@ const Wallet = ({ setConnectOpened }) => {
           {getUnlockedBalance() !== state.wallet.balance && (
             <span className={s.tooltipText}>
               Locked balance:{" "}
-              {(Number(state.wallet.balance) - getUnlockedBalance()).toFixed(2)}{" "}
+              {(Number(state.wallet.balance) - Number(getUnlockedBalance())).toFixed(2)}{" "}
               ZANO
             </span>
           )}
