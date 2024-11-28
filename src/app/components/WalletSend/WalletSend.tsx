@@ -14,6 +14,31 @@ import { fetchBackground, validateTokensInput } from "../../utils/utils";
 import AssetsSelect from "./ui/AssetsSelect/AssetsSelect";
 import AdditionalDetails from "./ui/AdditionalDetails/AdditionalDetails";
 
+interface ResponseData {
+  data?: any;
+  error?: string;
+}
+
+interface FetchBackgroundParams {
+  method: string;
+  assetId: string;
+  destination: string;
+  amount: string | number;
+  comment: string;
+  decimalPoint: number;
+  password?: string;
+  id?: number;
+  success?: boolean;
+  credentials?: {
+    port: string;
+  };
+}
+
+interface AssetProps {
+  unlockedBalance: number;
+  balance: number;
+}
+
 const WalletSend = () => {
   const { state } = useContext(Store);
   const [activeStep, setActiveStep] = useState(0);
@@ -36,19 +61,25 @@ const WalletSend = () => {
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
-  const sendTransfer = (destination, amount, comment, assetId, decimalPoint) => {
+  const sendTransfer = (
+    destination: string,
+    amount: string | number,
+    comment: string,
+    assetId: string,
+    decimalPoint: number
+  ): Promise<any> => {
     return new Promise(async (resolve, reject) => {
       // eslint-disable-next-line no-undef
-      if (chrome.runtime.sendMessage) {
+      if (chrome.runtime.sendMessage as any) {
         // eslint-disable-next-line no-undef
-        const response = await fetchBackground({
+        const response: ResponseData = await fetchBackground({
           method: "SEND_TRANSFER",
           assetId,
           destination,
           amount,
           comment,
           decimalPoint,
-        });
+        } as FetchBackgroundParams);
 
         if (response.data) {
           resolve(response.data);
@@ -63,7 +94,7 @@ const WalletSend = () => {
     });
   };
 
-  const openExplorer = (txId) => {
+  const openExplorer = (txId: string) => {
     // eslint-disable-next-line no-undef
     chrome.tabs.create({
       url: `https://testnet-explorer.zano.org/block/${txId}`,
@@ -72,8 +103,8 @@ const WalletSend = () => {
 
   useEffect(() => {
     (async () => {
-      if (address.value.startsWith("@")) {
-        const alias = address.value.slice(1);
+      if (String(address.value).startsWith("@")) {
+        const alias = String(address.value).slice(1);
         const resolvedAddress = await fetchAddress(alias);
         if (resolvedAddress) {
           setSubmitAddress(resolvedAddress);
@@ -81,8 +112,8 @@ const WalletSend = () => {
           setSubmitAddress("");
         }
       } else {
-        if (address.value.length === 97) {
-          setSubmitAddress(address.value);
+        if (String(address.value).length === 97) {
+          setSubmitAddress(String(address.value));
         } else {
           setSubmitAddress("");
         }
@@ -91,20 +122,20 @@ const WalletSend = () => {
   }, [address.value]);
 
   useEffect(() => {
-    const isValid = validateTokensInput(amount.value, asset.decimalPoint);
+    const isValid = !!validateTokensInput(amount.value, Number(asset.decimalPoint));
     setAmountValid(isValid);
   }, [amount.value, asset]);
 
-  const fetchAddress = async (alias) => await fetchBackground({ method: "GET_ALIAS_DETAILS", alias });
+  const fetchAddress = async (alias: string) => await fetchBackground({ method: "GET_ALIAS_DETAILS", alias });
 
-  const checkAvailableBalance = (amount, asset) =>
+  const checkAvailableBalance = (amount: string | number, asset: AssetProps) =>
     asset.unlockedBalance !== asset.balance
-      ? +amount <= asset.unlockedBalance - fee.value
+      ? +amount <= asset.unlockedBalance - Number(fee.value)
       : true;
 
   //-------------------------------------------------------------------------------------------------------------------
   // Subcomponents
-  const TableRow = ({ label, value }) => {
+  const TableRow = ({ label, value }: { label: string; value: string }) => {
     return (
       <div className="table__row">
         <div className="table__label">{label}:</div>
@@ -113,7 +144,7 @@ const WalletSend = () => {
     );
   };
 
-  
+
   return (
     <>
       {(() => {
@@ -131,25 +162,25 @@ const WalletSend = () => {
                   <MyInput
                     placeholder="Address or alias"
                     label="Address"
-                    inputData={address}
+                    inputData={address as any}
                     isValid={!!submitAddress}
                   />
-                  <AssetsSelect value={asset} setValue={setAsset} />
+                  <AssetsSelect value={asset} setValue={setAsset as React.Dispatch<React.SetStateAction<any>>} />
                   <MyInput
                     type="number"
                     placeholder="Amount to transfer"
                     label="Amount:"
-                    inputData={amount}
-                    isError={amount.value && !amountValid}
+                    inputData={amount as any}
+                    isError={amount.value ? !amountValid : false}
                   />
                   <MyInput
                     placeholder="Enter the comment"
                     label="Comment:"
-                    inputData={comment}
+                    inputData={comment as any}
                   />
                   <AdditionalDetails
-                    mixin={mixin}
-                    fee={fee}
+                    mixin={Number(mixin)}
+                    fee={Number(fee)}
                     isSenderInfo={isSenderInfo}
                     isReceiverInfo={isReceiverInfo}
                   />
@@ -159,7 +190,7 @@ const WalletSend = () => {
                       !submitAddress ||
                       !amount.value ||
                       !amountValid ||
-                      !checkAvailableBalance(amount.value, asset)
+                      !checkAvailableBalance(amount.value, asset as any)
                     }
                   >
                     Send
@@ -179,9 +210,9 @@ const WalletSend = () => {
                     value={amount?.value + " " + asset?.ticker}
                   />
                   <TableRow label="From" value={state?.wallet?.address} />
-                  <TableRow label="To" value={address.value} />
-                  <TableRow label="Comment" value={comment?.value} />
-                  <TableRow label="Fee" value={fee?.value} />
+                  <TableRow label="To" value={String(address.value)} />
+                  <TableRow label="Comment" value={String(comment?.value)} />
+                  <TableRow label="Fee" value={String(fee?.value)} />
                 </div>
 
                 <Button
@@ -189,9 +220,9 @@ const WalletSend = () => {
                     const transferStatus = await sendTransfer(
                       submitAddress,
                       amount.value,
-                      comment.value,
-                      asset.assetId,
-                      asset.decimalPoint
+                      String(comment.value),
+                      String(asset.assetId),
+                      Number(asset.decimalPoint)
                     );
                     console.log("transfer status", transferStatus);
                     if (transferStatus.result) {

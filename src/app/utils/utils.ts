@@ -18,6 +18,7 @@ export async function fetchBackground(data: {
   id?: number; 
   success?: boolean; 
   credentials?: { port: string }; 
+  alias?: string;
 }): Promise<any> {
   return new Promise((resolve, reject) => {
     try {

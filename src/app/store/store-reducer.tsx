@@ -7,6 +7,8 @@ interface Asset {
   balance: number;
   lockedBalance?: number;
   value: number;
+  decimalPoint?: number;
+  assetId?: string;
 }
 
 interface Transfer {
