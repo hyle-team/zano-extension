@@ -179,8 +179,8 @@ const WalletSend = () => {
                     inputData={comment as any}
                   />
                   <AdditionalDetails
-                    mixin={Number(mixin)}
-                    fee={Number(fee)}
+                    mixin={mixin}
+                    fee={fee}
                     isSenderInfo={isSenderInfo}
                     isReceiverInfo={isReceiverInfo}
                   />

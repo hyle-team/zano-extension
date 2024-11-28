@@ -5,9 +5,35 @@ import s from "./AdditionalDetails.module.scss";
 import { classNames } from "../../../../utils/classNames";
 import arrowIcon from "../../../../assets/svg/arrow-select.svg";
 
+interface mixinType {
+  isEmpty: boolean;
+  minLengthError: boolean;
+  amountCorrectError: boolean;
+  inputValid: boolean;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInput: (newValue: string | number) => void;
+  onBlur: () => void;
+  isFilled: boolean;
+  isDirty: boolean;
+}
+
+interface feeType {
+  isEmpty: boolean;
+  minLengthError: boolean;
+  amountCorrectError: boolean;
+  inputValid: boolean;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInput: (newValue: string | number) => void;
+  onBlur: () => void;
+  isFilled: boolean;
+  isDirty: boolean;
+}
+
 interface AdditionalDetailsProps {
-  fee: string | number;
-  mixin: string | number;
+  fee: string | number | feeType;
+  mixin: string | number | mixinType;
   isSenderInfo: { isChecked: boolean; onChange: () => void };
   isReceiverInfo: { isChecked: boolean; onChange: () => void };
 }

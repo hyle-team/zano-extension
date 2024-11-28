@@ -6,6 +6,7 @@ interface NavLinkProps {
   component: React.ComponentType<any>;
   children: React.ReactNode;
   className?: string;
+  props?: any;
 }
 
 const NavLink = ({ component, children, className, ...props }: NavLinkProps) => {

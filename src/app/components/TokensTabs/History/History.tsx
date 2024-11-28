@@ -1,3 +1,4 @@
+import React from "react";
 import { useContext } from "react";
 import Big from "big.js";
 import LoadingIcon from "../../../assets/svg/loading.svg";
@@ -9,9 +10,18 @@ import s from "./History.module.scss";
 import NavLink from '../../UI/NavLink/NavLink';
 import useGetAsset from "../../../hooks/useGetAsset";
 
+interface HistoryItemProps {
+  transfer: {
+    assetId: string;
+    amount: string;
+    incoming: boolean;
+  };
+  fee: string;
+  isInitiator: boolean;
+}
 
-const HistoryItem = ({ transfer, fee, isInitiator }) => {
-  const {getAssetById} = useGetAsset();
+const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
+  const { getAssetById } = useGetAsset();
 
   if (transfer.amount === fee) return null;
   const amount = new Big(transfer.amount);
@@ -25,11 +35,11 @@ const HistoryItem = ({ transfer, fee, isInitiator }) => {
       <p>
         <span>
           {transfer.assetId ===
-              "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
-              ? !isInitiator
-                ? amount.toFixed()
-                : amount.minus(fixedFee).toFixed()
-              : amount.toFixed()
+            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+            ? !isInitiator
+              ? amount.toFixed()
+              : amount.minus(fixedFee).toFixed()
+            : amount.toFixed()
           }
         </span>
         {" "}
@@ -61,8 +71,8 @@ const History = () => {
               </div>
             )}
 
-            {tx.transfers.map((transfer) => (
-              <HistoryItem transfer={transfer} fee={tx.fee} isInitiator={tx.isInitiator} />
+            {tx.transfers?.map((transfer) => (
+              <HistoryItem transfer={transfer as any} fee={String(tx.fee)} isInitiator={Boolean(tx.isInitiator)} />
             ))}
             <span className={s.historyAddress}>{tx.txHash}</span>
           </NavLink>

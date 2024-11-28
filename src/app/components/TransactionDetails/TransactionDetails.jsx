@@ -45,7 +45,7 @@ const TransactionDetails = (props) => {
       <div className="table">
         <TableRow label="Transfers">
           <div className={styles.transaction__transfers}>
-            {props.transfers.map((transfer) => {
+            {props?.transfers?.map((transfer) => {
               if (transfer.amount === props.fee) return null;
               const amount = new Big(transfer.amount);
               const fixedFee = new Big(props.fee);
