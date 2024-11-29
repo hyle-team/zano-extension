@@ -23,7 +23,14 @@ const POPUP_WIDTH = 370;
 const ZANO_ID =
   "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
 
-async function getAsset(assetId) {
+interface Asset {
+  asset_id: string;
+  ticker: string;
+  full_name: string;
+  decimal_point: number;
+}
+
+async function getAsset(assetId: string): Promise<Asset | undefined> {
   if (assetId === ZANO_ID) {
     return {
       asset_id: ZANO_ID,
@@ -43,19 +50,42 @@ async function getAsset(assetId) {
   }
 }
 
+interface PopupRequest {
+  windowId: number;
+  finalizer: (data: unknown) => void;
+  [key: string]: unknown;
+}
+
+interface RequestResponse {
+  error?: string;
+  data?: unknown;
+}
+
+interface ErrorMessages {
+  console: string;
+  response: string;
+  reqNotFound: string;
+}
+
 class PopupRequestsMethods {
-  static onRequestCreate(requestType, request, sendResponse, reqParams) {
+  static onRequestCreate(
+    requestType: keyof typeof savedRequests,
+    request: { timeout?: number },
+    sendResponse: (response: RequestResponse) => void,
+    reqParams: PopupRequest
+  ): void {
     console.log("Creating request", reqParams);
 
     openWindow().then((requestWindow) => {
       const reqId = crypto.randomUUID();
       const req = {
-        windowId: requestWindow.id,
-        finalizer: (data) => sendResponse(data),
         ...reqParams,
+        windowId: requestWindow.id,
+        finalizer: (data: unknown) => sendResponse(data as any),  
       };
-      allPopupIds.push(requestWindow.id);
-      savedRequests[requestType][reqId] = req;
+      
+      allPopupIds.push(requestWindow.id as number);
+      (savedRequests[requestType][reqId] as any) = req;
 
       if (typeof request.timeout === "number") {
         setTimeout(() => {
@@ -66,7 +96,10 @@ class PopupRequestsMethods {
     });
   }
 
-  static getRequestsList(requestType, sendResponse) {
+  static getRequestsList(
+    requestType: keyof typeof savedRequests,
+    sendResponse: (response: { data: PopupRequest[] }) => void
+  ): void {
     sendResponse({
       data: Object.entries(savedRequests[requestType]).map(([id, req]) => ({
         ...req,
@@ -77,18 +110,18 @@ class PopupRequestsMethods {
   }
 
   static onRequestFinalize(
-    requestType,
-    request,
-    sendResponse,
-    apiCallFunc,
-    errorMessages
-  ) {
+    requestType: keyof typeof savedRequests,
+    request: { id: string; success: boolean },
+    sendResponse: (response: RequestResponse) => void,
+    apiCallFunc: (req: PopupRequest) => Promise<unknown>,
+    errorMessages: ErrorMessages
+  ): void {
     const reqId = request.id;
     const success = request.success;
     const req = savedRequests[requestType][reqId];
 
     if (req) {
-      function finalize(data) {
+      function finalize(data: unknown) {
         req.finalizer(data);
         delete savedRequests[requestType][reqId];
         chrome.windows.remove(req.windowId);
@@ -110,18 +143,18 @@ class PopupRequestsMethods {
           });
       }
     } else {
-      return sendResponse({ error: errorMessages.reqNotFound });
+      sendResponse({ error: errorMessages.reqNotFound });
     }
   }
 }
 
 chrome.windows.onBoundsChanged.addListener((window) => {
   if (
-    allPopupIds.includes(window.id) &&
+    allPopupIds.includes(window.id as number) &&
     window.width !== POPUP_WIDTH &&
     window.height !== POPUP_HEIGHT
   ) {
-    chrome.windows.update(window.id, {
+    chrome.windows.update(window.id as number, {
       width: POPUP_WIDTH,
       height: POPUP_HEIGHT,
     });
@@ -133,23 +166,40 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
-const defaultCredentials = {
+interface Credentials {
+  port: number;
+  token?: string;
+}
+
+const defaultCredentials: Credentials = {
   port: 11211,
 };
 
-export let apiCredentials = JSON.parse(JSON.stringify(defaultCredentials));
+export let apiCredentials: Credentials = { ...defaultCredentials };
 
-let pendingTx = null;
+interface pendingTxTypes {
+  assetId: string,
+  amount: string,
+  destinationAddress: string | undefined,
+  destinationChainId: string | undefined,
+}
 
-const defaultUserData = { password: undefined };
+let pendingTx: pendingTxTypes | null = null;
 
-async function setUserData(state) {
+interface UserData {
+  password?: string;
+  apiCredentials?: Credentials;
+}
+
+const defaultUserData: UserData = { password: undefined };
+
+async function setUserData(state: UserData): Promise<void> {
   await new Promise((resolve) => {
-    chrome.storage.local.set({ userData: state }, resolve);
+    chrome.storage.local.set({ userData: state }, resolve as (() => void));
   });
 }
 
-async function getUserData() {
+async function getUserData(): Promise<UserData> {
   return new Promise((resolve) => {
     chrome.storage.local.get("userData", (result) => {
       resolve(result.userData || defaultUserData);
@@ -157,41 +207,47 @@ async function getUserData() {
   });
 }
 
-async function updateUserData(newData) {
+async function updateUserData(newData: Partial<UserData>): Promise<void> {
   const currentData = await getUserData();
   return setUserData({ ...currentData, ...newData });
 }
 
-async function recoverApiCredentials() {
+async function recoverApiCredentials(): Promise<void> {
   apiCredentials = (await getUserData()).apiCredentials || defaultCredentials;
 }
 
 chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.remove("userData", function () {
+  chrome.storage.local.remove("userData", () => {
     console.log("State cleared on browser startup");
   });
 });
 
-const signReqFinalizers = {};
-const signReqs = [];
+interface SignReqFinalizer {
+  [key: string]: (data: unknown) => void;
+}
 
-const savedRequests = {
+const signReqFinalizers: SignReqFinalizer = {};
+const signReqs: unknown[] = [];
+
+const savedRequests: Record<
+  "IONIC_SWAP" | "ACCEPT_IONIC_SWAP" | "CREATE_ALIAS" | "TRANSFER",
+  Record<string, PopupRequest>
+> = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
   TRANSFER: {},
 };
 
-const allPopupIds = [];
+const allPopupIds: number[] = [];
 
-// eslint-disable-next-line no-undef
 chrome.storage.local.get("pendingTx", (result) => {
   if (result.pendingTx) {
     pendingTx = result.pendingTx;
   }
 });
 
-function openWindow() {
+function openWindow(): Promise<chrome.windows.Window> {
   return chrome.windows.create({
     url: chrome.runtime.getURL("index.html"),
     type: "popup",
@@ -223,11 +279,56 @@ const SELF_ONLY_REQUESTS = [
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  processRequest(request, sender, sendResponse);
+  processRequest(request, sender as any, sendResponse);
   return true;
 });
 
-async function processRequest(request, sender, sendResponse) {
+interface RequestType {
+  method: string;
+  credentials: Object;
+  id: string;
+  assetId: string;
+  destination: string;
+  amount: string;
+  decimalPoint: string;
+  success: boolean;
+  destinationAssetID: string;
+  currentAssetID: string;
+  currentAsset: Asset;
+  destinationAsset: Asset;
+  hex_raw_proposal?: string;
+  alias?: string;
+  sender?: string;
+  transfer?: any;
+  swapProposal?: any;
+  password?: string;
+  key?: string;
+  aliasDetails?: any;
+  signReqs?: any[];
+  windowId?: number;
+  message?: string;
+  timeout?: number;
+  destinationChainId?: string;
+  destinationAddress?: string;
+  receivingAsset?: any;
+  sendingAsset?: any;
+  asset?: Asset;
+}
+
+interface Sender {
+  id: string;
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  [key: string]: any; 
+}
+
+interface SendResponse {
+  (response: any): void;
+}
+
+async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
   const isFromExtensionFrontend =
     sender.url && sender.url.includes(chrome.runtime.getURL("/"));
 
@@ -301,7 +402,7 @@ async function processRequest(request, sender, sendResponse) {
       break;
 
     case "GET_WALLET_DATA":
-      getWalletData(request.id)
+      getWalletData() // removed request.id
         .then((data) => {
           sendResponse({ data });
         })
@@ -372,7 +473,7 @@ async function processRequest(request, sender, sendResponse) {
         "IONIC_SWAP",
         request,
         sendResponse,
-        { swap: request }
+        { swap: request } as any
       );
       break;
     }
@@ -389,13 +490,17 @@ async function processRequest(request, sender, sendResponse) {
         const { address } = walletData;
         request.asset = asset || (await getAsset(ZANO_ID));
         request.sender = address || "";
-      } catch (e) {
-        return sendResponse({ error: e.message });
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          return sendResponse({ error: e.message });
+        } else {
+          return sendResponse({ error: 'Unknown error occurred' });
+        }
       }
 
       PopupRequestsMethods.onRequestCreate("TRANSFER", request, sendResponse, {
         transfer: request,
-      });
+      } as any);
       break;
     }
 
@@ -405,7 +510,7 @@ async function processRequest(request, sender, sendResponse) {
         request,
         sendResponse,
         (req) => {
-          const transferData = req.transfer;
+          const transferData: any = req.transfer;
           const { assetId, destination, amount, asset } = transferData;
 
           return transfer(
@@ -502,7 +607,7 @@ async function processRequest(request, sender, sendResponse) {
         "ACCEPT_IONIC_SWAP",
         request,
         sendResponse,
-        request
+        request as any
       );
       break;
     }
@@ -571,7 +676,7 @@ async function processRequest(request, sender, sendResponse) {
     }
 
     case "GET_ALIAS_DETAILS": {
-      getAliasDetails(request.alias)
+      getAliasDetails(String(request.alias))
         .then((res) => sendResponse(res))
         .catch(() => sendResponse({ error: "Internal error" }));
       break;
@@ -585,10 +690,10 @@ async function processRequest(request, sender, sendResponse) {
     case "FINALIZE_MESSAGE_SIGN": {
       const reqId = request.id;
       const success = request.success;
-      const signReq = signReqs.find((req) => req.id === reqId);
+      const signReq: any = signReqs.find((req: any) => req.id === reqId);
 
       if (signReq && signReqFinalizers[reqId]) {
-        function finalize(data) {
+        function finalize(data: any) {
           signReqFinalizers[reqId](data);
           signReqs.splice(signReqs.indexOf(signReq), 1);
           delete signReqFinalizers[reqId];
@@ -633,7 +738,7 @@ async function processRequest(request, sender, sendResponse) {
           sendResponse(result);
         };
 
-        allPopupIds.push(requestWindow.id);
+        allPopupIds.push(Number(requestWindow.id));
 
         signReqs.push({
           id: signReqId,
@@ -644,7 +749,7 @@ async function processRequest(request, sender, sendResponse) {
         if (typeof request.timeout === "number") {
           setTimeout(() => {
             const signReqIndex = signReqs.findIndex(
-              (req) => req.id === signReqId
+              (req: any) => req.id === signReqId
             );
 
             if (signReqIndex === -1) {
@@ -715,7 +820,7 @@ async function processRequest(request, sender, sendResponse) {
         "CREATE_ALIAS",
         request,
         sendResponse,
-        { alias: request.alias }
+        ({ alias: request.alias } as any)
       );
       break;
     }

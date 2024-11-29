@@ -20,7 +20,7 @@ const appConfig = {
 };
 
 const backgroundConfig = {
-  entry: "./src/background/background.js",
+  entry: "./src/background/background.ts",
   output: {
     path: path.resolve(__dirname, "build/static/js"),
     filename: "background.bundle.js",
