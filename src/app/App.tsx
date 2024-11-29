@@ -1,4 +1,5 @@
 /*global chrome*/
+import React from "react";
 import { useContext, useEffect, useState, useCallback } from "react";
 import { Router, goTo } from "react-chrome-extension-router";
 import AppPlug from "./components/AppPlug/AppPlug";
@@ -42,6 +43,36 @@ import Big from "big.js";
 import swapModalStyles from "./styles/SwapModal.module.scss";
 import useGetAsset from "./hooks/useGetAsset";
 
+// Types
+type dispatchType = () => void;
+type transferType = { transfer: { sender: string, destination: string, amount: string, asset: { ticker: string } }, id: number };
+type RequestType = { method: string; assetId: string, amount: string, destinationAddress: string, destinationChainId: string };
+type SwapRequest = {
+  id: string;
+  swap: {
+    destinationAddress: string;
+    destinationAsset: string;
+    destinationAssetAmount: string;
+    currentAsset: string;
+    currentAssetAmount: string;
+  };
+};
+type SwapProposal = {
+  to_finalizer: { amount: Big }[];
+  to_initiator: { amount: Big }[];
+};
+type Asset = {
+  decimal_point: number;
+  [key: string]: any;
+};
+type AcceptSwapReq = {
+  id: string;
+  hex_raw_proposal: string;
+  swapProposal: SwapProposal;
+  receivingAsset: Asset;
+  sendingAsset: Asset;
+};
+
 function App() {
   const { state, dispatch } = useContext(Store);
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
@@ -66,9 +97,9 @@ function App() {
       if (password) {
         const connectData = ConnectKeyUtils.getConnectData(password);
 
-        setConnectData(dispatch, {
-          token: connectData.token,
-          port: connectData.port,
+        setConnectData(dispatch as dispatchType, {
+          token: String(connectData?.token),
+          port: String(connectData?.port),
         });
       }
     }
@@ -92,7 +123,7 @@ function App() {
 
   const closeModal = () => {
     setConfirmationModalOpen(false);
-    updateConfirmationModal(dispatch, null);
+    updateConfirmationModal(dispatch as dispatchType, null);
     chrome.storage?.local?.remove?.(["pendingTx"]);
     chrome.action.setBadgeText({ text: "" });
   };
@@ -105,7 +136,7 @@ function App() {
       } else {
         closeModal();
         console.log(response.status);
-        updateTransactionStatus(dispatch, {
+        updateTransactionStatus(dispatch as dispatchType, {
           visible: true,
           type: "error",
           code: response.status.code || 0,
@@ -128,8 +159,8 @@ function App() {
       const walletActive = await fetchBackground({
         method: "GET_WALLET_DATA",
       });
-      updateWalletConnected(dispatch, !walletActive.error);
-      updateLoading(dispatch, false);
+      updateWalletConnected(dispatch as dispatchType, !walletActive.error);
+      updateLoading(dispatch as dispatchType, false);
     };
 
     const getWalletData = async () => {
@@ -137,7 +168,7 @@ function App() {
 
       const walletsList = await fetchBackground({ method: "GET_WALLETS" });
       if (!walletsList.data) return;
-      updateWalletsList(dispatch, walletsList.data);
+      updateWalletsList(dispatch as dispatchType, walletsList.data);
 
       const walletData = await fetchBackground({
         method: "GET_WALLET_DATA",
@@ -148,7 +179,7 @@ function App() {
       // console.log("WALLET DATA:");
       // console.log(walletData.data);
 
-      updateWalletData(dispatch, {
+      updateWalletData(dispatch as dispatchType, {
         address,
         alias,
         balance,
@@ -157,7 +188,7 @@ function App() {
       });
 
       console.log("wallet data updated");
-      updateLoading(dispatch, false);
+      updateLoading(dispatch as dispatchType, false);
       setFirstWalletLoaded(true);
     };
 
@@ -176,7 +207,7 @@ function App() {
     async function updateWhiteList() {
       const whiteList = await fetchBackground({ method: "GET_WHITELIST" });
       if (whiteList.data) {
-        setWhiteList(dispatch, whiteList.data);
+        setWhiteList(dispatch as dispatchType, whiteList.data);
       }
     }
     updateWhiteList();
@@ -185,12 +216,12 @@ function App() {
   useEffect(() => {
     getZanoPrice().then((priceData) => {
       console.log("price data", priceData);
-      updatePriceData(dispatch, priceData);
+      updatePriceData(dispatch as dispatchType, priceData);
     });
   }, [dispatch]);
 
   useEffect(() => {
-    const listener = (request, sender, sendResponse) => {
+    const listener = (request: RequestType, sender: chrome.runtime.MessageSender, sendResponse: (response: { status: string }) => void) => {
       if (
         !(
           "assetId" in request &&
@@ -204,7 +235,7 @@ function App() {
       }
 
       if (request.method === "BRIDGING_TRANSFER") {
-        updateConfirmationModal(dispatch, {
+        updateConfirmationModal(dispatch as dispatchType, {
           method: "SEND_TRANSFER",
           params: [
             request.assetId,
@@ -234,7 +265,7 @@ function App() {
   useEffect(() => {
     chrome.storage?.local?.get?.(["pendingTx"], function (result) {
       if (result.pendingTx) {
-        updateConfirmationModal(dispatch, {
+        updateConfirmationModal(dispatch as dispatchType, {
           method: "SEND_TRANSFER",
           params: [
             result.pendingTx.assetId,
@@ -262,7 +293,7 @@ function App() {
         method: "SET_ACTIVE_WALLET",
         id: walletId,
       });
-      updateActiveWalletId(dispatch, walletId);
+      updateActiveWalletId(dispatch as dispatchType, walletId);
     });
   }, [dispatch]);
 
@@ -277,7 +308,7 @@ function App() {
           method: "GET_TRANSFER_REQUEST",
         });
         const transferRequests = transferRes.data;
-        const tranfserPageReqs = transferRequests.map((e) => {
+        const tranfserPageReqs = transferRequests.map((e: transferType) => {
           const { transfer } = e;
           return {
             id: e.id,
@@ -335,7 +366,7 @@ function App() {
       }
 
       async function getIonicSwapRequests() {
-        function getSwapAmountText(amount, asset) {
+        function getSwapAmountText(amount: number | Big, asset: { ticker: string }) {
           const result = (
             <>
               <span className={swapModalStyles.swapAmount}>
@@ -353,10 +384,10 @@ function App() {
         });
         const swapRequests = ionicSwapRes.data;
 
-        const swapPageReqs = swapRequests.map((e) => {
+        const swapPageReqs = swapRequests.map((e: SwapRequest) => {
           const { swap } = e;
 
-          const swapParams = {};
+          const swapParams: ({ address: string } | any) = {};
 
           swapParams.address = swap.destinationAddress;
 
@@ -365,13 +396,13 @@ function App() {
 
           swapParams.receiving = getSwapAmountText(
             receivingAmount,
-            receivingAsset
+            receivingAsset as any
           );
 
           const sendingAsset = swap.currentAsset;
           const sendingAmount = new Big(swap.currentAssetAmount);
 
-          swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset);
+          swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset as any);
 
           return {
             id: e.id,
@@ -404,14 +435,14 @@ function App() {
         console.log("ACCEPT SWAP", acceptSwapReqs);
 
         const acceptPageReqs = await Promise.all(
-          acceptSwapReqs.map(async (e) => {
+          acceptSwapReqs.map(async (e: AcceptSwapReq) => {
             const hex_raw_proposal = e?.hex_raw_proposal;
 
             const swap = e?.swapProposal;
 
-            const swapParams = {};
+            const swapParams: ({ receiving: string } | any) = {};
 
-            function toBigWithDecimal(amount, decimalPoint) {
+            function toBigWithDecimal(amount: Big, decimalPoint: number) {
               if (amount) {
                 return new Big(amount).div(new Big(10).pow(decimalPoint));
               }
@@ -427,7 +458,7 @@ function App() {
               if (receivingAmount !== undefined) {
                 swapParams.receiving = getSwapAmountText(
                   receivingAmount,
-                  receivingAsset
+                  receivingAsset as any
                 );
               }
 
@@ -440,7 +471,7 @@ function App() {
               if (sendingAmount !== undefined) {
                 swapParams.sending = getSwapAmountText(
                   sendingAmount,
-                  sendingAsset
+                  sendingAsset as any
                 );
               }
             }
@@ -499,7 +530,7 @@ function App() {
         credentials: {
           token: state.connectCredentials.token,
           port: state?.connectCredentials?.port || defaultPort,
-        },
+        } as any,
       });
     }
   }, [state.connectCredentials]);
@@ -512,10 +543,10 @@ function App() {
         onConfirm={(password) => {
           console.log(password, comparePasswords(password));
           if (comparePasswords(password)) {
-            updateLoading(dispatch, true);
+            updateLoading(dispatch as dispatchType, true);
 
             setTimeout(() => {
-              updateLoading(dispatch, false);
+              updateLoading(dispatch as dispatchType, false);
             }, 2000);
 
             setLoggedIn(true);
@@ -523,7 +554,7 @@ function App() {
             const connectData = ConnectKeyUtils.getConnectData(password);
             console.log("connectData", connectData);
             if (connectData?.token) {
-              setConnectData(dispatch, {
+              setConnectData(dispatch as dispatchType, {
                 token: connectData.token,
                 port: connectData.port,
               });
@@ -577,7 +608,7 @@ function App() {
               if (connectKey)
                 ConnectKeyUtils.setConnectData(
                   connectKey,
-                  walletPort,
+                  String(walletPort),
                   password
                 );
               setLoggedIn(true);

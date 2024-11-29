@@ -3,12 +3,12 @@ interface WalletState {
   wallets: string[];
   walletData: object;
   isConnected: boolean;
-  activeWalletId: string;
+  activeWalletId: string | number;
   priceData: object;
   displayCurrency: string;
   isLoading: boolean;
   balancesHidden: boolean;
-  confirmationModalOpen: boolean;
+  confirmationModalOpen: boolean | null | {method: string; params: string[]};
   transactionStatus: string;
   connectData: object;
   whiteList: string[]; 
