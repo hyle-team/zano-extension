@@ -54,9 +54,14 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: "ts-loader",
+      },
     ],
   },
   resolve: {
-    extensions: ["*", ".js", ".jsx"],
+    extensions: ["*", ".js", ".jsx", ".ts", ".tsx"],
   },
 };
