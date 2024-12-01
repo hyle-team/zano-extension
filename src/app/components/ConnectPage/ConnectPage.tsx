@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "../UI/Button/Button";
 import s from "./ConnectPage.module.scss";
-import logo from "../../assets/svg/logo.svg";
+import Logo from "../../assets/svg/logo.svg";
 import { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import MyInput from "../UI/MyInput/MyInput";
 import { fetchBackground, getSessionPassword } from "../../utils/utils";
@@ -106,7 +106,7 @@ export default function ConnectPage({
 
   return (
     <div className={s.connect}>
-      <img className={s.logoImage} src={logo} alt="Zano" />
+      <Logo className={s.logoImage} />
       <div className={s.connectCodeContent}>
         <div className={s.input}>
           <MyInput

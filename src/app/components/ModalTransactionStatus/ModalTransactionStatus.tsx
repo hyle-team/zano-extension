@@ -2,7 +2,7 @@ import React, { useCallback, useContext } from "react";
 import cls from "./ModalTransactionStatus.module.scss";
 import Modal from "../UI/Modal/Modal";
 import { Store } from "../../store/store-reducer";
-import errorImage from "../../assets/svg/plus.svg";
+import ErrorImage from "../../assets/svg/plus.svg";
 import { updateTransactionStatus } from "../../store/actions";
 import Loader from "../UI/Loader/Loader";
 import { classNames } from "../../utils/classNames";
@@ -20,49 +20,49 @@ const ModalTransactionStatus = () => {
   }, [dispatch]);
 
   const Loading = () => {
-    if (type === "loading") {
-      return (
-        <div className={cls.loading}>
-          <Loader />
-          <div className={cls.title}>Sending...</div>
-        </div>
-      );
-    }
+    if (type !== "loading") return <></>;
+    
+    return (
+      <div className={cls.loading}>
+        <Loader />
+        <div className={cls.title}>Sending...</div>
+      </div>
+    );
   };
 
   const Error = () => {
-    if (type === "error") {
-      return (
-        <div className={cls.error}>
-          <div className={classNames(cls.icon, {}, [cls.redColor])}>
-            <img src={errorImage} alt="error" />
-          </div>
-
-          <div className={cls.title}>Error!</div>
-          <div className={cls.statusMessage}>{message && message}</div>
-          <div className={cls.table}>
-            <div className={cls.tableRow}>
-              <div className={cls.label}>code:</div>
-              <div className={cls.value}>{code}</div>
-            </div>
-            {/* <div className={cls.tableRow}>
-              <div className={cls.label}>params:</div>
-              <div className={cls.value}>
-                <span>Value</span>
-                <span>Value2</span>
-              </div>
-            </div> */}
-          </div>
-          <Button
-            className={cls.button}
-            theme={ButtonThemes.Outline}
-            onClick={closeHandler}
-          >
-            Close
-          </Button>
+    if (type !== "error") return <></>;
+    
+    return (
+      <div className={cls.error}>
+        <div className={classNames(cls.icon, {}, [cls.redColor])}>
+          <ErrorImage />
         </div>
-      );
-    }
+
+        <div className={cls.title}>Error!</div>
+        <div className={cls.statusMessage}>{message && message}</div>
+        <div className={cls.table}>
+          <div className={cls.tableRow}>
+            <div className={cls.label}>code:</div>
+            <div className={cls.value}>{code}</div>
+          </div>
+          {/* <div className={cls.tableRow}>
+            <div className={cls.label}>params:</div>
+            <div className={cls.value}>
+              <span>Value</span>
+              <span>Value2</span>
+            </div>
+          </div> */}
+        </div>
+        <Button
+          className={cls.button}
+          theme={ButtonThemes.Outline}
+          onClick={closeHandler}
+        >
+          Close
+        </Button>
+      </div>
+    );
   };
 
   return (
