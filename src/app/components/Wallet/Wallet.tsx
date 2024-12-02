@@ -1,13 +1,13 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { useContext, useRef, useState } from "react";
-import copyIcon from "../../assets/svg/copy.svg";
-import dotsIcon from "../../assets/svg/dots.svg";
-import sendIcon from "../../assets/svg/send.svg";
-import settingsIcon from "../../assets/svg/settings.svg";
-import showIcon from "../../assets/svg/show.svg";
-import hideIcon from "../../assets/svg/hide.svg";
-import lockedIcon from "../../assets/svg/lockedIcon.svg";
-import checkIcon from "../../assets/svg/check-icon.svg";
+import CopyIcon from "../../assets/svg/copy.svg";
+import DotsIcon from "../../assets/svg/dots.svg";
+import SendIcon from "../../assets/svg/send.svg";
+import SettingsIcon from "../../assets/svg/settings.svg";
+import ShowIcon from "../../assets/svg/show.svg";
+import HideIcon from "../../assets/svg/hide.svg";
+import LockedIcon from "../../assets/svg/lockedIcon.svg";
+import CheckIcon from "../../assets/svg/check-icon.svg";
 import useAwayClick from "../../hooks/useAwayClick";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { useCopy } from "../../hooks/useCopy";
@@ -114,7 +114,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
             {state.displayUsd ||
               getUnlockedBalance() === state.wallet.balance || (
                 <>
-                  <img src={lockedIcon} alt="locked icon" />
+                  <LockedIcon />
                 </>
               )}
             {renderBalance()}
@@ -136,7 +136,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
       <div className={s.actionsWallet}>
         <div ref={menuRef} className={s.actionsSettings}>
           <button onClick={flipMenu} className="round-button">
-            <img src={dotsIcon} alt="dots icon" />
+            <DotsIcon />
             {/* Tooltip */}
             <span>options</span>
           </button>
@@ -144,17 +144,14 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
           {menuVisible && (
             <div className={s.settings}>
               <div className={s.settingsBtn} onClick={() => setConnectOpened(true)}>
-                <img src={settingsIcon} alt="settings icon" />
+                <SettingsIcon />
                 Settings
               </div>
               <button
                 onClick={flipBalancesVisibility}
                 className={s.settingsBtn}
               >
-                <img
-                  src={state.isBalancesHidden ? showIcon : hideIcon}
-                  alt="show or hide icon"
-                />
+                { state.isBalancesHidden ? <ShowIcon /> : <HideIcon />}
                 {state.isBalancesHidden ? "Show values" : "Hide values"}
               </button>
             </div>
@@ -162,7 +159,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
         </div>
 
         <NavLink component={WalletSend} className="round-button">
-          <img src={sendIcon} alt="send icon" />
+          <SendIcon />
           {/* Tooltip */}
           <span>send</span>
         </NavLink>
@@ -172,8 +169,8 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
           className="round-button"
         >
           {copied
-            ? <img src={checkIcon} alt="copy icon" />
-            : <img src={copyIcon} alt="copy icon" />
+            ? <CheckIcon />
+            : <CopyIcon />
           }
           {/* Tooltip */}
           {copied

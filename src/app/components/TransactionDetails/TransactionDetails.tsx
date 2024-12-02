@@ -1,8 +1,8 @@
 import React, { useEffect, useContext } from "react";
 import Big from "big.js";
-import copyIcon from "../../assets/svg/copy-blue.svg";
-import incomingIcon from "../../assets/svg/incoming_ico.svg";
-import outgoingIcon from "../../assets/svg/outgoing_ico.svg";
+import CopyIcon from "../../assets/svg/copy-blue.svg";
+import IncomingIcon from "../../assets/svg/incoming_ico.svg";
+import OutgoingIcon from "../../assets/svg/outgoing_ico.svg";
 import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import { Store } from "../../store/store-reducer";
@@ -57,7 +57,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
               className="round-button"
               onClick={() => copyToClipboard(value.toString())}
             >
-              <img src={copyIcon} alt="copy icon" />
+              <CopyIcon />
             </button>
           )}
         </div>
@@ -96,10 +96,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
                     }
                   </p>
                   <div className="table__icon">
-                    <img
-                      src={transfer.incoming ? incomingIcon : outgoingIcon}
-                      alt="transfer icon"
-                    />
+                     {transfer.incoming ? <IncomingIcon /> : <OutgoingIcon /> }
                   </div>
                 </div>
               );

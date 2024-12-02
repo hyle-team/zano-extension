@@ -1,6 +1,6 @@
 import React from "react";
 import { goBack } from "react-chrome-extension-router";
-import backIcon from "../../../assets/svg/arrow-back.svg";
+import BackIcon from "../../../assets/svg/arrow-back.svg";
 import s from "./RoutersNav.module.scss";
 
 interface RoutersNavProps {
@@ -22,7 +22,7 @@ const RoutersNav = ({ title, onClick }: RoutersNavProps) => {
     <div className={s.navHeader}>
       {onClick !== "none" && (
         <button onClick={clickHandler} className={s.backBtn}>
-          <img src={backIcon} alt="back button icon" />
+          <BackIcon />
         </button>
       )}
       <div className={s.title}>{title}</div>

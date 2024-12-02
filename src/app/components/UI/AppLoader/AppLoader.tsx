@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import loader from "../../../assets/svg/loader.svg";
-import logo from "../../../assets/svg/logo.svg";
+import Loader from "../../../assets/svg/loader.svg";
+import Logo from "../../../assets/svg/logo.svg";
 import { Store } from "../../../store/store-reducer";
 import s from "./AppLoader.module.scss";
 
@@ -21,10 +21,10 @@ const AppLoader: React.FC<AppLoaderProps> = ({ isSmall, firstWalletLoaded, logge
         <div className={s.loaderWrapper}>
           <div className={s.loaderContent}>
             <div className={s.logo}>
-              <img src={logo} alt="logo" />
+              <Logo />
             </div>
             <div className={loaderClasses}>
-              <img src={loader} alt="loader" />
+              <Loader />
             </div>
           </div>
         </div>
