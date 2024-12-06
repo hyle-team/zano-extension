@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import BitcoinIcon from "../../../../assets/tokens-svg/bitcoin.svg";
-import CustomTokenIcon from "../../../../assets/tokens-svg/custom-token.svg";
-import EthIcon from "../../../../assets/tokens-svg/eth.svg";
-import ZanoIcon from "../../../../assets/tokens-svg/zano.svg";
-import ArrowIcon from "../../../../assets/svg/arrow-select.svg";
+import bitcoinIcon from "../../../../assets/tokens-svg/bitcoin.svg";
+import customTokenIcon from "../../../../assets/tokens-svg/custom-token.svg";
+import ethIcon from "../../../../assets/tokens-svg/eth.svg";
+import zanoIcon from "../../../../assets/tokens-svg/zano.svg";
+import arrowIcon from "../../../../assets/svg/arrow-select.svg";
 import { Store } from "../../../../store/store-reducer";
 import mainStyles from "../../WalletSend.module.scss";
 import s from "./AssetsSelect.module.scss";
@@ -66,13 +66,13 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
   const getAssetImage = (name: string) => {
     switch (name) {
       case "Zano":
-        return <ZanoIcon />;
+        return zanoIcon;
       case "Wrapped Bitcoin":
-        return <BitcoinIcon />;
+        return bitcoinIcon;
       case "Wrapped Ethereum":
-        return <EthIcon />;
+        return ethIcon;
       default:
-        return <CustomTokenIcon />;
+        return customTokenIcon;
     }
   };
 
@@ -85,11 +85,11 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
           className={isOpen ? s.selectValue + " " + s.active : s.selectValue}
         >
           <span>
-            { getAssetImage(value.name) }
+            <img src={getAssetImage(value.name)} alt={value.name + " icon"} />
             {value.name}
           </span>
           <span className={s.valueArrow}>
-            <ArrowIcon />
+            <img src={arrowIcon} alt="arrow" />
           </span>
         </button>
 
@@ -104,7 +104,7 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
               key={asset.name}
               onClick={() => setValueHandler(asset)}
             >
-              { getAssetImage(value.name) }
+              <img src={getAssetImage(asset.name)} alt={value.name + " icon"} />
               {asset.name}
               <span className={s.selectPoint} />
             </button>

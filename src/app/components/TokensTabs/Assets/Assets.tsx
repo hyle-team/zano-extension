@@ -1,10 +1,10 @@
 import React from "react";
 import { useContext } from "react";
-import CrossIcon from "../../../assets/svg/cross.svg";
-import BitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
-import CustomTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
-import EthIcon from "../../../assets/tokens-svg/eth.svg";
-import ZanoIcon from "../../../assets/tokens-svg/zano.svg";
+import crossIcon from "../../../assets/svg/cross.svg";
+import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
+import customTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
+import ethIcon from "../../../assets/tokens-svg/eth.svg";
+import zanoIcon from "../../../assets/tokens-svg/zano.svg";
 import { useCensorDigits } from "../../../hooks/useCensorDigits";
 import { Store } from "../../../store/store-reducer";
 import s from "./Assets.module.scss";
@@ -21,13 +21,13 @@ interface Asset {
 const getIconImage = (asset: Asset) => {
   switch (asset.name) {
     case "Zano":
-      return <ZanoIcon />;
+      return <img src={zanoIcon} alt="ZanoIcon" />;
     case "Wrapped Bitcoin":
-      return <BitcoinIcon />;
+      return <img src={bitcoinIcon} alt="bitcoin icon" />;
     case "Wrapped Ethereum":
-      return <EthIcon />;
+      return <img src={ethIcon} alt="EthIcon" />;
     default:
-      return <CustomTokenIcon />;
+      return <img src={customTokenIcon} alt="CustomTokenIcon" />;
   }
 };
 

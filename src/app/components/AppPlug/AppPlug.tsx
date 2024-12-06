@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
-import DisplayImage from "../../assets/images/display.svg";
-import Logo from "../../assets/svg/logo.svg";
-import QuestionIcon from "../../assets/svg/question.svg";
+import displayImage from "../../assets/images/display.svg";
+import logo from "../../assets/svg/logo.svg";
+import questionIcon from "../../assets/svg/question.svg";
 import { Store } from "../../store/store-reducer";
 import s from "./AppPlug.module.scss";
 
@@ -30,12 +30,12 @@ const AppPlug: React.FC<AppPlugProps> = (props) => {
         <div className={s.plug}>
           <div className={`${s.plugBody} container`}>
             <div className={s.plugLogo}>
-              <Logo />
+              <img src={logo} alt="zano logo" />
             </div>
 
             <div className={s.plugContent}>
               <div className={s.plugImage}>
-                <DisplayImage />
+                <img src={displayImage} alt="display" />
               </div>
 
               <strong>Wallet offline</strong>
@@ -52,7 +52,7 @@ const AppPlug: React.FC<AppPlugProps> = (props) => {
               </button>
             </div>
             <button className={btnClasses} onClick={openDocs}>
-              <QuestionIcon />
+              <img src={questionIcon} alt="question icon" />
               How to connect to the wallet?
             </button>
           </div>

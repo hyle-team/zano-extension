@@ -2,8 +2,8 @@ import React from "react";
 import { useContext } from "react";
 import Big from "big.js";
 import LoadingIcon from "../../../assets/svg/loading.svg";
-import ReceiveIcon from "../../../assets/svg/receive-colored.svg";
-import SendIcon from "../../../assets/svg/send-colored.svg";
+import receiveIcon from "../../../assets/svg/receive-colored.svg";
+import sendIcon from "../../../assets/svg/send-colored.svg";
 import { Store } from "../../../store/store-reducer";
 import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
@@ -30,7 +30,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
   return (
     <div className={s.historyTop}>
       <div className={s.historyIcon}>
-        { transfer.incoming ? <ReceiveIcon /> : <SendIcon /> }
+        <img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
       </div>
       <p>
         <span>
@@ -67,7 +67,7 @@ const History = () => {
           >
             {!tx.isConfirmed && (
               <div className={s.historyLoading}>
-                <LoadingIcon />
+                <img src={LoadingIcon} alt="LoadingIcon" />
               </div>
             )}
 

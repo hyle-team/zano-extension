@@ -3,7 +3,7 @@ import MyCheckbox from "../../../UI/MyCheckbox/MyCheckbox";
 import MyInput from "../../../UI/MyInput/MyInput";
 import s from "./AdditionalDetails.module.scss";
 import { classNames } from "../../../../utils/classNames";
-import ArrowIcon from "../../../../assets/svg/arrow-select.svg";
+import arrowIcon from "../../../../assets/svg/arrow-select.svg";
 
 interface mixinType {
   isEmpty: boolean;
@@ -53,7 +53,7 @@ const AdditionalDetails = ({ fee, mixin, isSenderInfo, isReceiverInfo }: Additio
         })}
       >
         Additional details
-        <ArrowIcon />
+        <img src={arrowIcon} alt="arrow" />
       </button>
 
       {detailsVisible && (

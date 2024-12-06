@@ -2,7 +2,7 @@ import React, { useCallback, useContext } from "react";
 import cls from "./ModalTransactionStatus.module.scss";
 import Modal from "../UI/Modal/Modal";
 import { Store } from "../../store/store-reducer";
-import ErrorImage from "../../assets/svg/plus.svg";
+import errorImage from "../../assets/svg/plus.svg";
 import { updateTransactionStatus } from "../../store/actions";
 import Loader from "../UI/Loader/Loader";
 import { classNames } from "../../utils/classNames";
@@ -36,7 +36,7 @@ const ModalTransactionStatus = () => {
     return (
       <div className={cls.error}>
         <div className={classNames(cls.icon, {}, [cls.redColor])}>
-          <ErrorImage />
+          <img src={errorImage} alt="error" />
         </div>
 
         <div className={cls.title}>Error!</div>

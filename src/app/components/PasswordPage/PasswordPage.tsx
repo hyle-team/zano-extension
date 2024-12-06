@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from "react";
 import s from "./PasswordPage.module.scss";
-import Logo from "../../assets/svg/logo.svg";
+import logo from "../../assets/svg/logo.svg";
 import MyInput from "../UI/MyInput/MyInput";
 import Button from "../UI/Button/Button";
 import { useState } from "react";
@@ -32,7 +32,11 @@ function PasswordPage(props: PasswordPageProps) {
 	return (
 		<div className={s.passwordPage}>
 
-			<Logo className={s.logoImage} />
+			<img
+				className={s.logoImage}
+				src={logo}
+				alt="Zano"
+			/>
 			<p>Enter your password</p>
 			<div className={s.inputPanel}>
 				<MyInput

@@ -1,6 +1,6 @@
 import React from "react";
 import { useContext, useState } from "react";
-import ArrowIcon from "../../assets/svg/arrow-shevron.svg";
+import arrowIcon from "../../assets/svg/arrow-shevron.svg";
 import { useCensorDigits } from "../../hooks/useCensorDigits";
 import { Store } from "../../store/store-reducer";
 import { updateActiveWalletId, updateLoading } from "../../store/actions";
@@ -49,7 +49,7 @@ const Header = () => {
             ? state.wallet.alias
             : Formatters.walletAddress(state.wallet.address)}
         </span>
-        <ArrowIcon />
+        <img src={arrowIcon} alt="arrow icon" />
       </button>
 
       <div className={s.headerStatus}>
