@@ -410,9 +410,39 @@ function App() {
         }
       }
 
+      async function getAssetWhitelistAddRequests() {
+        try {
+          const response = await fetchBackground({ method: "GET_ASSETS_WHITELIST_ADD_REQUESTS" });
+          const assetWhitelistAddRequests = response.data?.map((request) => {
+            return {
+              id: request.id,
+              method: "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS",
+              name: "Confirm add asset to whitelist",
+              params : [
+                {
+                  key: "Asset id",
+                  value: request.asset_id,
+                },
+                {
+                  key: "Asset name",
+                  value: request.asset_name,
+                }
+              ]
+  
+            }
+          })
+          if (assetWhitelistAddRequests && assetWhitelistAddRequests.length > 0) {
+            goTo(OuterConfirmation, { reqs: assetWhitelistAddRequests });
+          }
+        } catch (e) {
+           console.error(e);
+        }
+      }
+
       await getAliasCreationRequests();
       await getIonicSwapRequests();
       await getSignRequests();
+      await getAssetWhitelistAddRequests();
     }
 
     if (appConnected && !connectOpened && loggedIn && state.isConnected) {

@@ -288,6 +288,17 @@ export const ionicSwapAccept = async (swapParams) => {
   return data;
 };
 
+export const addAssetToWhitelist = async (assetId) => {
+  const response = await fetchData("assets_whitelist_add", {
+    asset_id: assetId,
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data = await response.json();
+  return data;
+}
+
 export const createAlias = async ({ alias, address }) => {
   const response = await fetchData("register_alias", {
     al: {

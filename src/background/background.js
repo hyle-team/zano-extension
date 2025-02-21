@@ -14,6 +14,7 @@ import {
   getWhiteList,
   getAssetInfo,
   createAlias,
+  addAssetToWhitelist,
 } from "./wallet";
 import JSONbig from "json-bigint";
 
@@ -178,6 +179,7 @@ const savedRequests = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
+  ASSETS_WHITELIST_ADD: {}
 };
 
 const allPopupIds = [];
@@ -217,6 +219,7 @@ const SELF_ONLY_REQUESTS = [
   "PING_WALLET",
   "SET_ACTIVE_WALLET",
   "GET_WALLETS",
+  "GET_ASSETS_WHITELIST_ADD_REQUESTS"
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -372,6 +375,44 @@ async function processRequest(request, sender, sendResponse) {
         { swap: request }
       );
       break;
+    }
+
+    case "GET_ASSETS_WHITELIST_ADD_REQUESTS": {
+      PopupRequestsMethods.getRequestsList("ASSETS_WHITELIST_ADD", sendResponse);
+      break
+    }
+
+    case "ASSETS_WHITELIST_ADD": {
+      try {
+        const assetToAdd = await getAsset(request.asset_id);
+        if (!assetToAdd) throw new Error("Failed to fetch asset");
+        request.asset_name = assetToAdd.full_name;
+      } catch (error) {
+          return sendResponse({ error });
+      } 
+        PopupRequestsMethods.onRequestCreate(
+            "ASSETS_WHITELIST_ADD",
+            request,
+            sendResponse,
+            request
+          );
+          break;
+      
+  }
+
+    case "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS": {
+      PopupRequestsMethods.onRequestFinalize(
+        'ASSETS_WHITELIST_ADD',
+        request,
+        sendResponse,
+        (req) => addAssetToWhitelist(req.asset_id),
+        {
+          console: "Error accepting finalize add asset to whitelist:",
+          response: "An error occurred while finalize add asset to whitelist",
+          reqNotFound: "finalize add asset to whitelist accept request not found",
+        } 
+      )
+      break
     }
 
     case "GET_ACCEPT_IONIC_SWAP_REQUESTS":
