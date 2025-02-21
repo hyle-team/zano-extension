@@ -318,7 +318,8 @@ async function processRequest(request, sender, sendResponse) {
         request.assetId,
         request.destination,
         request.amount,
-        request.decimalPoint
+        request.decimalPoint,
+        request.comment
       )
         .then((data) => {
           sendResponse({ data });

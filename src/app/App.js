@@ -210,7 +210,7 @@ function App() {
             request.assetId,
             request.amount,
             request.destinationAddress,
-            request.destinationChainId,
+            request.destinationChainId
           ],
         });
         chrome.storage?.local?.set?.({ pendingTx: request });
@@ -240,7 +240,7 @@ function App() {
             result.pendingTx.assetId,
             result.pendingTx.amount,
             result.pendingTx.destinationAddress,
-            result.pendingTx.destinationChainId,
+            result.pendingTx.destinationChainId
           ],
         });
         setConfirmationModalOpen(true);
