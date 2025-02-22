@@ -487,3 +487,15 @@ export async function getAssetInfo(assetId: any) {
 
   return data;
 }
+
+export async function addAssetToWhitelist(assetId : string) {
+  const response = await fetchData("assets_whitelist_add", {
+    asset_id: assetId,
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data = await response.json();
+  return data;
+
+}

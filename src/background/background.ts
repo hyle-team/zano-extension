@@ -14,6 +14,7 @@ import {
   getWhiteList,
   getAssetInfo,
   createAlias,
+  addAssetToWhitelist
 } from "./wallet";
 import JSONbig from "json-bigint";
 
@@ -230,13 +231,14 @@ const signReqFinalizers: SignReqFinalizer = {};
 const signReqs: unknown[] = [];
 
 const savedRequests: Record<
-  "IONIC_SWAP" | "ACCEPT_IONIC_SWAP" | "CREATE_ALIAS" | "TRANSFER",
+  "IONIC_SWAP" | "ACCEPT_IONIC_SWAP" | "CREATE_ALIAS" | "TRANSFER" | "ASSETS_WHITELIST_ADD",
   Record<string, PopupRequest>
 > = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
   TRANSFER: {},
+  ASSETS_WHITELIST_ADD: {}
 };
 
 const allPopupIds: number[] = [];
@@ -276,6 +278,8 @@ const SELF_ONLY_REQUESTS = [
   "SET_ACTIVE_WALLET",
   "GET_WALLETS",
   "FINALIZE_TRANSFER_REQUEST",
+  "GET_ASSETS_WHITELIST_ADD_REQUESTS",
+  "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS"
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -313,6 +317,8 @@ interface RequestType {
   receivingAsset?: any;
   sendingAsset?: any;
   asset?: Asset;
+  asset_id?: string;
+  asset_name?: string;
 }
 
 interface Sender {
@@ -824,6 +830,45 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
       );
       break;
     }
+
+    case "GET_ASSETS_WHITELIST_ADD_REQUESTS": {
+      PopupRequestsMethods.getRequestsList("ASSETS_WHITELIST_ADD", sendResponse);
+      break
+    }
+
+    case "ASSETS_WHITELIST_ADD": {
+      try {
+        const assetToAdd = await getAsset(request.asset_id || "");
+        if (!assetToAdd) throw new Error("Failed to fetch asset");
+        request.asset_name = assetToAdd.full_name;
+      } catch (error) {
+          return sendResponse({ error });
+      } 
+        PopupRequestsMethods.onRequestCreate(
+            "ASSETS_WHITELIST_ADD",
+            request,
+            sendResponse,
+            request as any
+          );
+          break;
+
+  }
+
+    case "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS": {
+      PopupRequestsMethods.onRequestFinalize(
+        'ASSETS_WHITELIST_ADD',
+        request,
+        sendResponse,
+        (req) => addAssetToWhitelist(req?.asset_id as string),
+        {
+          console: "Error accepting finalize add asset to whitelist:",
+          response: "An error occurred while finalize add asset to whitelist",
+          reqNotFound: "finalize add asset to whitelist accept request not found",
+        } 
+      )
+      break
+    }
+
 
     default:
       console.error("Unknown message method:", request.method);
