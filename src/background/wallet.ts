@@ -317,7 +317,8 @@ export const transfer = async (
   assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
   destination: any,
   amount: any,
-  decimalPoint: any
+  decimalPoint: any,
+  comment: string
 ) => {
   const destinations = [
     {
@@ -334,6 +335,7 @@ export const transfer = async (
     destinations,
     fee: 10000000000,
     mixin: 10,
+    comment
   });
 
   if (!response.ok) {

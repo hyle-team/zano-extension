@@ -319,6 +319,7 @@ interface RequestType {
   asset?: Asset;
   asset_id?: string;
   asset_name?: string;
+  comment: string;
 }
 
 interface Sender {
@@ -425,7 +426,8 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         request.assetId,
         request.destination,
         request.amount,
-        request.decimalPoint
+        request.decimalPoint,
+        request.comment
       )
         .then((data) => {
           sendResponse({ data });
@@ -517,13 +519,14 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         sendResponse,
         (req) => {
           const transferData: any = req.transfer;
-          const { assetId, destination, amount, asset } = transferData;
+          const { assetId, destination, amount, asset, comment } = transferData;
 
           return transfer(
             assetId,
             destination,
             amount,
-            asset?.decimal_point || 12
+            asset?.decimal_point || 12,
+            comment
           );
         },
         {
