@@ -427,7 +427,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         request.destination,
         request.amount,
         request.decimalPoint,
-        request.comment
+        request.comment ?? undefined
       )
         .then((data) => {
           sendResponse({ data });
@@ -526,7 +526,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
             destination,
             amount,
             asset?.decimal_point || 12,
-            comment
+            comment ?? undefined
           );
         },
         {
