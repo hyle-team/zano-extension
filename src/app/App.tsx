@@ -518,11 +518,11 @@ function App() {
             return {
               id: request.id,
               method: "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS",
-              name: "Confirm add asset to whitelist",
+              name: "Confirm adding asset to whitelist",
               params : [
                 {
                   key: "Asset id",
-                  value: request.asset_id,
+                  value: Formatters.walletAddress(request.asset_id),
                 },
                 {
                   key: "Asset name",
