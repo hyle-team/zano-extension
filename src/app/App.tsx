@@ -45,7 +45,7 @@ import useGetAsset from "./hooks/useGetAsset";
 
 // Types
 type dispatchType = () => void;
-type transferType = { transfer: { sender: string, destination: string, amount: string, asset: { ticker: string } }, id: number };
+type transferType = { transfer: { sender: string, destination: string, amount: string, asset: { ticker: string }, comment?: string }, id: number };
 type RequestType = { method: string; assetId: string, amount: string, destinationAddress: string, destinationChainId: string };
 type SwapRequest = {
   id: string;
@@ -316,33 +316,41 @@ function App() {
         const transferRequests = transferRes.data;
         const tranfserPageReqs = transferRequests.map((e: transferType) => {
           const { transfer } = e;
-          return {
+          const transferParams = [
+            {
+              key: "From",
+              value: transfer.sender
+                ? Formatters.walletAddress(transfer.sender)
+                : "???",
+            },
+            {
+              key: "To",
+              value: transfer.destination
+                ? Formatters.walletAddress(transfer.destination)
+                : "???",
+            },
+            {
+              key: "Amount",
+              value: transfer.amount || "???",
+            },
+            {
+              key: "Asset",
+              value: transfer?.asset?.ticker || "???",
+            } 
+             ]
+
+
+          return transfer.comment ? {
             id: e.id,
             method: "FINALIZE_TRANSFER_REQUEST",
             name: "Transfer",
-            params: [
-              {
-                key: "From",
-                value: transfer.sender
-                  ? Formatters.walletAddress(transfer.sender)
-                  : "???",
-              },
-              {
-                key: "To",
-                value: transfer.destination
-                  ? Formatters.walletAddress(transfer.destination)
-                  : "???",
-              },
-              {
-                key: "Amount",
-                value: transfer.amount || "???",
-              },
-              {
-                key: "Asset",
-                value: transfer?.asset?.ticker || "???",
-              },
-            ],
-          };
+            params: [...transferParams, {key: "Comment", value: transfer.comment}]
+          } : {
+            id: e.id,
+            method: "FINALIZE_TRANSFER_REQUEST",
+            name: "Transfer",
+            params: transferParams
+          }
         });
         if (tranfserPageReqs && tranfserPageReqs.length > 0) {
           goTo(OuterConfirmation, { reqs: tranfserPageReqs });

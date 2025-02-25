@@ -318,7 +318,7 @@ export const transfer = async (
   destination: any,
   amount: any,
   decimalPoint: any,
-  comment: string
+  comment?: string
 ) => {
   const destinations = [
     {
@@ -331,12 +331,15 @@ export const transfer = async (
     },
   ];
 
-  const response = await fetchData("transfer", {
+  const options : {[key: string]: typeof destinations | number | string } = {
     destinations,
     fee: 10000000000,
     mixin: 10,
-    comment
-  });
+  };
+
+  if (comment) options.comment = comment;
+
+  const response = await fetchData("transfer", options);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
