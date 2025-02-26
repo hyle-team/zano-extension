@@ -496,6 +496,8 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         const asset = await getAsset(request.assetId);
         const walletData = await getWalletData();
         const { address } = walletData;
+        console.log('asset to transfer:', asset);
+        
         request.asset = asset || (await getAsset(ZANO_ID));
         request.sender = address || "";
       } catch (e: unknown) {
@@ -521,11 +523,14 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
           const transferData: any = req.transfer;
           const { assetId, destination, amount, asset, comment } = transferData;
 
+          console.log('transferData:', transferData);
+          
+
           return transfer(
             assetId,
             destination,
             amount,
-            asset?.decimal_point || 12,
+            asset?.decimal_point ?? 12,
             comment ?? undefined
           );
         },
