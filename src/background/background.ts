@@ -1,4 +1,5 @@
 /*global chrome*/
+import { ZANO_ASSET_ID } from "../constants";
 import {
   fetchData,
   getWalletData,
@@ -22,7 +23,7 @@ const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
 
 const ZANO_ID =
-  "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a";
+  ZANO_ASSET_ID;
 
 interface Asset {
   asset_id: string;
@@ -82,9 +83,9 @@ class PopupRequestsMethods {
       const req = {
         ...reqParams,
         windowId: requestWindow.id,
-        finalizer: (data: unknown) => sendResponse(data as any),  
+        finalizer: (data: unknown) => sendResponse(data as any),
       };
-      
+
       allPopupIds.push(requestWindow.id as number);
       (savedRequests[requestType][reqId] as any) = req;
 
@@ -328,7 +329,7 @@ interface Sender {
   email?: string;
   phoneNumber?: string;
   address?: string;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 interface SendResponse {
@@ -497,7 +498,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         const walletData = await getWalletData();
         const { address } = walletData;
         console.log('asset to transfer:', asset);
-        
+
         request.asset = asset || (await getAsset(ZANO_ID));
         request.sender = address || "";
       } catch (e: unknown) {
@@ -522,16 +523,12 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         (req) => {
           const transferData: any = req.transfer;
           const { assetId, destination, amount, asset, comment } = transferData;
-
-          console.log('transferData:', transferData);
-          
-
           return transfer(
             assetId,
             destination,
             amount,
             asset?.decimal_point ?? 12,
-            comment ?? undefined
+            comment ?? undefined,
           );
         },
         {
@@ -850,17 +847,17 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         if (!assetToAdd) throw new Error("Failed to fetch asset");
         request.asset_name = assetToAdd.full_name;
       } catch (error) {
-          return sendResponse({ error });
-      } 
-        PopupRequestsMethods.onRequestCreate(
-            "ASSETS_WHITELIST_ADD",
-            request,
-            sendResponse,
-            request as any
-          );
-          break;
+        return sendResponse({ error });
+      }
+      PopupRequestsMethods.onRequestCreate(
+        "ASSETS_WHITELIST_ADD",
+        request,
+        sendResponse,
+        request as any
+      );
+      break;
 
-  }
+    }
 
     case "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS": {
       PopupRequestsMethods.onRequestFinalize(
@@ -872,7 +869,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
           console: "Error accepting finalize add asset to whitelist:",
           response: "An error occurred while finalize add asset to whitelist",
           reqNotFound: "finalize add asset to whitelist accept request not found",
-        } 
+        }
       )
       break
     }

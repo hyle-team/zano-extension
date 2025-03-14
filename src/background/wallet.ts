@@ -59,12 +59,12 @@ function generateAccessToken(httpBody: string) {
 }
 
 interface fetchDataProps {
-    offset: number,
-    update_provision_info: boolean,
-    exclude_mining_txs: boolean,
-    count: number,
-    order: string,
-    exclude_unconfirmed: boolean,
+  offset: number,
+  update_provision_info: boolean,
+  exclude_mining_txs: boolean,
+  count: number,
+  order: string,
+  exclude_unconfirmed: boolean,
 }
 
 export const fetchData = async (method: string, params: fetchDataProps | {} = {}): Promise<Response> => {
@@ -74,7 +74,7 @@ export const fetchData = async (method: string, params: fetchDataProps | {} = {}
     method,
     params,
   });
-  
+
   return fetch(`http://localhost:${apiCredentials.port}/json_rpc`, {
     method: "POST",
     headers: {
@@ -107,7 +107,7 @@ const fetchTxData = async () => {
   }
 };
 
-export const getAlias = async (address:string) => {
+export const getAlias = async (address: string) => {
   const response = await fetchData("get_alias_by_address", address);
   const data = await response.json();
   if (data.result?.status === "OK") {
@@ -188,7 +188,7 @@ export const getWalletData = async () => {
         asset.asset_info.decimal_point
       ),
     }))
-    .sort((a: any, b:any) => {
+    .sort((a: any, b: any) => {
       if (
         a.assetId ===
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
@@ -204,7 +204,7 @@ export const getWalletData = async () => {
     });
 
   function getAssetDecimalPoint(assetId: any) {
-    return assets.find((asset:any) => asset.assetId === assetId)?.decimalPoint;
+    return assets.find((asset: any) => asset.assetId === assetId)?.decimalPoint;
   }
 
   const balance = removeZeros(
@@ -220,8 +220,8 @@ export const getWalletData = async () => {
 
   if (txData) {
     transactions = txData
-      .filter((tx:any) => !tx.is_service)
-      .map((tx:any) => ({
+      .filter((tx: any) => !tx.is_service)
+      .map((tx: any) => ({
         isConfirmed: tx.height === 0 ? false : true,
         txHash: tx.tx_hash,
         blobSize: tx.tx_blob_size,
@@ -232,9 +232,9 @@ export const getWalletData = async () => {
         fee: removeZeros(tx.fee),
         addresses: tx.remote_addresses,
         isInitiator: !!tx.employed_entries?.spent?.some?.(
-          (e:any) => e?.index === 0
+          (e: any) => e?.index === 0
         ),
-        transfers: tx.subtransfers.map((transfer:any) => ({
+        transfers: tx.subtransfers.map((transfer: any) => ({
           amount: removeZeros(
             transfer.amount,
             getAssetDecimalPoint(transfer.asset_id) || 12
@@ -251,7 +251,7 @@ export const getWalletData = async () => {
   return { address, alias, balance, transactions, assets };
 };
 
-export const ionicSwap = async (swapParams:any) => {
+export const ionicSwap = async (swapParams: any) => {
   const response = await fetchData("ionic_swap_generate_proposal", {
     proposal: {
       to_initiator: [
@@ -287,7 +287,7 @@ export const ionicSwap = async (swapParams:any) => {
   return data;
 };
 
-export const ionicSwapAccept = async (swapParams:any) => {
+export const ionicSwapAccept = async (swapParams: any) => {
   console.log(swapParams.hex_raw_proposal);
 
   const response = await fetchData("ionic_swap_accept_proposal", {
@@ -318,7 +318,7 @@ export const transfer = async (
   destination: any,
   amount: any,
   decimalPoint: any,
-  comment?: string
+  comment?: string,
 ) => {
   const destinations = [
     {
@@ -331,7 +331,7 @@ export const transfer = async (
     },
   ];
 
-  const options : {[key: string]: typeof destinations | number | string } = {
+  const options: { [key: string]: typeof destinations | number | string } = {
     destinations,
     fee: 10000000000,
     mixin: 10,
@@ -464,7 +464,7 @@ export async function getWhiteList() {
 
   if (
     fetchedWhiteList.every(
-      (e:any) =>
+      (e: any) =>
         e.asset_id !==
         "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
     )
@@ -493,7 +493,7 @@ export async function getAssetInfo(assetId: any) {
   return data;
 }
 
-export async function addAssetToWhitelist(assetId : string) {
+export async function addAssetToWhitelist(assetId: string) {
   const response = await fetchData("assets_whitelist_add", {
     asset_id: assetId,
   });

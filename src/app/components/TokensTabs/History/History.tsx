@@ -9,6 +9,7 @@ import TransactionDetails from "../../TransactionDetails/TransactionDetails";
 import s from "./History.module.scss";
 import NavLink from '../../UI/NavLink/NavLink';
 import useGetAsset from "../../../hooks/useGetAsset";
+import { ZANO_ASSET_ID } from "../../../../constants";
 
 interface HistoryItemProps {
   transfer: {
@@ -35,7 +36,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
       <p>
         <span>
           {transfer.assetId ===
-            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+            ZANO_ASSET_ID
             ? !isInitiator
               ? amount.toFixed()
               : amount.minus(fixedFee).toFixed()

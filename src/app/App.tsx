@@ -341,12 +341,13 @@ function App() {
 
 					return {
 						id: e.id,
+						fee: transfer.destination,
 						method: "FINALIZE_TRANSFER_REQUEST",
 						name: "Transfer",
 						params: transfer.comment ? [...transferParams, { key: "Comment", value: transfer.comment }] : transferParams
 					}
 				});
-				
+
 				if (tranfserPageReqs && tranfserPageReqs.length > 0) {
 					goTo(OuterConfirmation, { reqs: tranfserPageReqs });
 				}

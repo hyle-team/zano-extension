@@ -2,6 +2,7 @@ import React from "react";
 import { useContext } from "react";
 import crossIcon from "../../../assets/svg/cross.svg";
 import bitcoinIcon from "../../../assets/tokens-svg/bitcoin.svg";
+import banditIcon from "../../../assets/tokens-svg/bandit-icon.svg";
 import customTokenIcon from "../../../assets/tokens-svg/custom-token.svg";
 import ethIcon from "../../../assets/tokens-svg/eth.svg";
 import zanoIcon from "../../../assets/tokens-svg/zano.svg";
@@ -26,6 +27,8 @@ const getIconImage = (asset: Asset) => {
       return <img src={bitcoinIcon} alt="bitcoin icon" />;
     case "Wrapped Ethereum":
       return <img src={ethIcon} alt="EthIcon" />;
+    case "BANDIT":
+      return <img src={banditIcon} alt="bandit icon" />
     default:
       return <img src={customTokenIcon} alt="CustomTokenIcon" />;
   }

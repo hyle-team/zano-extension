@@ -7,6 +7,7 @@ import { useCopy } from "../../hooks/useCopy";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import { Store } from "../../store/store-reducer";
 import styles from "./TransactionDetails.module.scss";
+import { ZANO_ASSET_ID } from "../../../constants";
 
 type Transfer = {
   amount: string;
@@ -84,7 +85,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
                 <div key={index} className={styles.transaction__transfer}>
                   <p className="table__value">
                     {transfer.assetId ===
-                      "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+                      ZANO_ASSET_ID
                       ? !props.isInitiator
                         ? amount.toFixed()
                         : amount.minus(fixedFee).toFixed()

@@ -19,6 +19,7 @@ import WalletSettings from "../WalletSettings/WalletSettings";
 import s from "./Wallet.module.scss";
 import NavLink from "../UI/NavLink/NavLink";
 import { classNames } from "../../utils/classNames";
+import { ZANO_ASSET_ID } from "../../../constants";
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
   const { state, dispatch } = useContext(Store);
@@ -56,7 +57,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
     state.wallet.assets.find(
       (asset) =>
         asset.assetId ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ZANO_ASSET_ID
     )?.unlockedBalance;
 
   const flipDisplay = () => {
