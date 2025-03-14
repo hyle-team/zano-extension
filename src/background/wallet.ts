@@ -3,6 +3,7 @@ import { apiCredentials } from "./background";
 import forge from "node-forge";
 import { Buffer } from "buffer";
 import JSONbig from "json-bigint";
+import { ZANO_ASSET_ID } from "../constants";
 // window.Buffer = Buffer;
 
 interface JWTPayload {
@@ -144,7 +145,7 @@ export const getWallets = async () => {
         const balance = wallet.wi.balances.find(
           (asset: any) =>
             asset.asset_info.asset_id ===
-            "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+            ZANO_ASSET_ID
         ).total;
 
         return {
@@ -191,12 +192,12 @@ export const getWalletData = async () => {
     .sort((a: any, b: any) => {
       if (
         a.assetId ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ZANO_ASSET_ID
       ) {
         return -1;
       } else if (
         b.assetId ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ZANO_ASSET_ID
       ) {
         return 1;
       }
@@ -211,7 +212,7 @@ export const getWalletData = async () => {
     balanceParsed.result.balances.find(
       (asset: any) =>
         asset.asset_info.asset_id ===
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ZANO_ASSET_ID
     ).total
   );
   const txDataResponse = await fetchTxData();
@@ -314,25 +315,23 @@ export const createAlias = async ({ alias, address }: any) => {
 };
 
 export const transfer = async (
-  assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+  assetId = ZANO_ASSET_ID,
   destination: any,
   amount: any,
   decimalPoint: any,
   comment?: string,
+  destinations = [],
 ) => {
-  const destinations = [
-    {
-      address: destination,
-      amount: addZeros(
-        amount,
-        typeof decimalPoint === "number" ? decimalPoint : 12
-      ),
-      asset_id: assetId,
-    },
-  ];
+  const primaryDestination = {
+    address: destination,
+    amount: addZeros(amount, typeof decimalPoint === "number" ? decimalPoint : 12),
+    asset_id: assetId,
+  };
 
-  const options: { [key: string]: typeof destinations | number | string } = {
-    destinations,
+  const allDestinations = destinations.length > 0 ? [primaryDestination, ...destinations] : [primaryDestination];
+
+  const options: { destinations: typeof allDestinations; fee: number; mixin: number; comment?: string } = {
+    destinations: allDestinations,
     fee: 10000000000,
     mixin: 10,
   };
@@ -345,13 +344,12 @@ export const transfer = async (
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const data = await response.json();
-  return data;
+  return await response.json();
 };
 
 // TODO: move bridge address to the config
 export const burnBridge = async (
-  assetId = "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+  assetId = ZANO_ASSET_ID,
   amount: any,
   destinationAddress: any,
   destinationChainId: any
@@ -466,12 +464,12 @@ export async function getWhiteList() {
     fetchedWhiteList.every(
       (e: any) =>
         e.asset_id !==
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a"
+        ZANO_ASSET_ID
     )
   ) {
     fetchedWhiteList.push({
       asset_id:
-        "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
+        ZANO_ASSET_ID,
       ticker: "ZANO",
       full_name: "Zano",
       decimal_point: 12,

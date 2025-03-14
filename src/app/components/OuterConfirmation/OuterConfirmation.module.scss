@@ -64,12 +64,40 @@
             font-weight: 400;
         }
 
-        .showMoreBtn {
+        .commentBtn {
             font-size: 16px;
             font-weight: 400;
             color: #1F8FEB;
             margin-left: 4px;
+
+            &.less {
+                margin-left: 0;
+                display: block;
+                margin-top: 4px;
+            }
         }
+    }
+
+    &__destinationWrapper {
+        margin-top: 4px;
+
+        .title {
+            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #B6B6C4;
+        }
+    }
+
+    &__showAddressesBtn {
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 400;
+        color: #1F8FEB;
     }
 
     &__bottom {

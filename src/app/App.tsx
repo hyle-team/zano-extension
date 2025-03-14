@@ -45,7 +45,7 @@ import useGetAsset from "./hooks/useGetAsset";
 
 // Types
 type dispatchType = () => void;
-type transferType = { transfer: { sender: string, destination: string, amount: string, asset: { ticker: string }, comment?: string }, id: number };
+type transferType = { transfer: { sender: string, destination: string, destinations: any, amount: string, asset: { ticker: string }, comment?: string }, id: number };
 type RequestType = { method: string; assetId: string, amount: string, destinationAddress: string, destinationChainId: string };
 type SwapRequest = {
 	id: string;
@@ -314,6 +314,7 @@ function App() {
 					method: "GET_TRANSFER_REQUEST",
 				});
 				const transferRequests = transferRes.data;
+
 				const tranfserPageReqs = transferRequests.map((e: transferType) => {
 					const { transfer } = e;
 					const transferParams = [
@@ -324,34 +325,48 @@ function App() {
 								: "???",
 						},
 						{
-							key: "To",
-							value: transfer.destination
-								? Formatters.walletAddress(transfer.destination)
-								: "???",
-						},
-						{
 							key: "Amount",
 							value: transfer.amount || "???",
 						},
 						{
 							key: "Asset",
 							value: transfer?.asset?.ticker || "???",
-						}
-					]
+						},
+					];
+
+					if (!transfer.destinations || transfer.destinations.length === 0) {
+						transferParams.push({
+							key: "To",
+							value: transfer.destination
+								? Formatters.walletAddress(transfer.destination)
+								: "???",
+						});
+					}
+
+					if (transfer.comment) {
+						transferParams.push({ key: "Comment", value: transfer.comment });
+					}
+
+					const destinations = transfer.destinations?.map((d: { address: string, amount: number }, index: number) => ({
+						address: Formatters.walletAddress(d.address),
+						amount: d.amount,
+					})) || [];
 
 					return {
 						id: e.id,
-						fee: transfer.destination,
+						fee: "fee" in transfer ? transfer.fee : "???",
 						method: "FINALIZE_TRANSFER_REQUEST",
 						name: "Transfer",
-						params: transfer.comment ? [...transferParams, { key: "Comment", value: transfer.comment }] : transferParams
-					}
+						params: transferParams,
+						destinations,
+					};
 				});
 
 				if (tranfserPageReqs && tranfserPageReqs.length > 0) {
 					goTo(OuterConfirmation, { reqs: tranfserPageReqs });
 				}
 			}
+
 
 			async function getSignRequests() {
 				const response = await fetchBackground({ method: "GET_SIGN_REQUESTS" });

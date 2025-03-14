@@ -8,12 +8,18 @@ import banditIcon from "../../assets/tokens-svg/bandit-icon.svg";
 import zanoIcon from "../../assets/tokens-svg/zano.svg";
 import bitcoinIcon from "../../assets/tokens-svg/bitcoin.svg";
 import ethIcon from "../../assets/tokens-svg/eth.svg";
+import arrowIcon from "../../assets/svg/arrow-blue.svg";
 import InfoTooltip from "../UI/InfoTooltip";
 import { getCurrent, goBack } from "react-chrome-extension-router";
 
 interface ParamsType {
 	key: number;
 	value: string;
+}
+
+interface DestionationType {
+	address: string
+	amount: string
 }
 
 const OuterConfirmation = () => {
@@ -23,12 +29,16 @@ const OuterConfirmation = () => {
 	const [reqIndex, setReqIndex] = useState(0);
 	const [accepting, setAccepting] = useState(false);
 	const [denying, setDenying] = useState(false);
+	const [showFullAddresses, setShowFullAddresses] = useState(false);
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex];
-	const { id, name, params, method } = req;
+	const { id, name, params, method, destinations } = req;
+
+	const isMultipleDestinations = destinations && destinations.length > 0;
 
 	const transactionParams = Object.fromEntries((params as ParamsType[]).map(item => [item.key, item.value]));
+	const totalAmount = Number(isMultipleDestinations ? destinations.reduce((sum: number, dest: { amount: number }) => sum + Number(dest.amount), 0) : transactionParams.Amount).toLocaleString();
 
 	useEffect(() => {
 		setReqIndex(0);
@@ -95,17 +105,21 @@ const OuterConfirmation = () => {
 					</div>
 					<div className={styles.row}>
 						<h5>Amount</h5>
-						<p>{Number(transactionParams.Amount).toLocaleString()}</p>
+						<p>{totalAmount}</p>
 					</div>
+
 					<div className={styles.col}>
 						<h5>Comment</h5>
 						<p>{(transactionParams.Comment.length > 60 && !showFullComment) ?
 							<>
 								{transactionParams.Comment.slice(0, 60)}...
-								<button className={styles.showMoreBtn} onClick={() => setShowFullComment(true)}>Show more</button>
+								<button className={styles.commentBtn} onClick={() => setShowFullComment(true)}>Show more</button>
 							</>
 							:
-							transactionParams.Comment
+							<>
+								{transactionParams.Comment}
+								<button className={`${styles.commentBtn} ${styles.less}`} onClick={() => setShowFullComment(false)}>Show less</button>
+							</>
 						}</p>
 					</div>
 				</div>
@@ -113,13 +127,43 @@ const OuterConfirmation = () => {
 				<div className={styles.confirmation__block}>
 					<div className={styles.row}>
 						<h5>To</h5>
-						<p>{transactionParams.To}</p>
+						<p>{isMultipleDestinations ? <>{destinations.length} addresses</> : transactionParams.To}</p>
 					</div>
-					<div className={styles.row}>
+
+					{!isMultipleDestinations && <div className={styles.row}>
 						<h5>Amount</h5>
-						<p>{Number(transactionParams.Amount).toLocaleString()}</p>
-					</div>
+						<p>{totalAmount}</p>
+					</div>}
 				</div>
+
+				{isMultipleDestinations && (
+					<>
+						<button
+							onClick={() => setShowFullAddresses(prev => !prev)}
+							className={styles.confirmation__showAddressesBtn}
+						>
+							Show addresses <img style={{ transform: `rotate(${showFullAddresses ? '180deg' : 0})` }} width={18} src={arrowIcon} alt="arrow" />
+						</button>
+
+						{showFullAddresses && destinations.map((item: DestionationType, idx: number) => (
+							<div className={styles.confirmation__destinationWrapper} key={idx}>
+								<p className={styles.title}>RECIPIENT {idx + 1}</p>
+
+								<div className={styles.confirmation__block}>
+									<div className={styles.row}>
+										<h5>To</h5>
+										<p>{item.address}</p>
+									</div>
+
+									<div className={styles.row}>
+										<h5>Amount</h5>
+										<p>{item.amount}</p>
+									</div>
+								</div>
+							</div>
+						))}
+					</>
+				)}
 			</div>
 
 			<div className={styles.confirmation__bottom}>
@@ -134,9 +178,8 @@ const OuterConfirmation = () => {
 
 				<div className={styles.confirmation__bottom_total}>
 					<h5>Total</h5>
-					<p>{Number(transactionParams.Amount).toLocaleString()}</p>
+					<p>{totalAmount}</p>
 				</div>
-
 
 				<div className={styles.confirmation__bottom_buttons}>
 					<Button

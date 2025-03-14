@@ -522,13 +522,15 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         sendResponse,
         (req) => {
           const transferData: any = req.transfer;
-          const { assetId, destination, amount, asset, comment } = transferData;
+          const { assetId, destination, amount, asset, comment, destinations } = transferData;
+
           return transfer(
             assetId,
             destination,
             amount,
             asset?.decimal_point ?? 12,
             comment ?? undefined,
+            destinations
           );
         },
         {
