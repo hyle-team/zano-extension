@@ -316,19 +316,29 @@ export const createAlias = async ({ alias, address }: any) => {
 
 export const transfer = async (
   assetId = ZANO_ASSET_ID,
-  destination: any,
-  amount: any,
+  destination: string,
+  amount: string,
   decimalPoint: any,
   comment?: string,
-  destinations = [],
+  destinations: { address: string; amount: number }[] = [],
 ) => {
-  const primaryDestination = {
-    address: destination,
-    amount: addZeros(amount, typeof decimalPoint === "number" ? decimalPoint : 12),
-    asset_id: assetId,
-  };
-
-  const allDestinations = destinations.length > 0 ? [primaryDestination, ...destinations] : [primaryDestination];
+  const allDestinations = destinations.length > 0
+    ? destinations.map(dest => ({
+      address: dest.address,
+      amount: addZeros(
+        dest.amount,
+        typeof decimalPoint === "number" ? decimalPoint : 12
+      ),
+      asset_id: assetId
+    }))
+    : [{
+      address: destination,
+      amount: addZeros(
+        amount,
+        typeof decimalPoint === "number" ? decimalPoint : 12
+      ),
+      asset_id: assetId
+    }];
 
   const options: { destinations: typeof allDestinations; fee: number; mixin: number; comment?: string } = {
     destinations: allDestinations,

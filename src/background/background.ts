@@ -524,13 +524,15 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
           const transferData: any = req.transfer;
           const { assetId, destination, amount, asset, comment, destinations } = transferData;
 
+          const hasMultipleDestinations = Array.isArray(destinations) && destinations.length > 0;
+
           return transfer(
             assetId,
-            destination,
-            amount,
+            hasMultipleDestinations ? undefined : destination,
+            hasMultipleDestinations ? undefined : amount,
             asset?.decimal_point ?? 12,
             comment ?? undefined,
-            destinations
+            hasMultipleDestinations ? destinations : []
           );
         },
         {
