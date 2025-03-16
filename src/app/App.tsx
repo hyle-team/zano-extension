@@ -45,7 +45,8 @@ import useGetAsset from "./hooks/useGetAsset";
 
 // Types
 type dispatchType = () => void;
-type transferType = { transfer: { sender: string, destination: string, destinations: any, amount: string, asset: { ticker: string }, comment?: string }, id: number };
+type destinationsType = { address: string, amount: number }[];
+type transferType = { transfer: { sender: string, destination: string, destinations: destinationsType, amount: string, asset: { ticker: string }, comment?: string }, id: number };
 type RequestType = { method: string; assetId: string, amount: string, destinationAddress: string, destinationChainId: string };
 type SwapRequest = {
 	id: string;

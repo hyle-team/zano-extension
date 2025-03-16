@@ -35,6 +35,8 @@ const OuterConfirmation = () => {
 	const req = reqs[reqIndex];
 	const { id, name, params, method, destinations } = req;
 
+	const isTransferMethod = name?.toLowerCase() === "transfer";
+
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
 	const transactionParams = Object.fromEntries((params as ParamsType[]).map(item => [item.key, item.value]));
@@ -90,96 +92,113 @@ const OuterConfirmation = () => {
 		<div className={styles.confirmation}>
 			<h3 className={styles.confirmation__title}>Request Confirmation</h3>
 			<h5 className={styles.confirmation__subtitle}>
-				{name?.toLowerCase() === "transfer" ? "Please confirm the transfer details" : name}
+				{isTransferMethod ? "Please confirm the transfer details" : name}
 			</h5>
 
 			<div className={styles.confirmation__content}>
-				<div className={styles.confirmation__block}>
-					<div className={styles.row}>
-						<h5>From</h5>
-						<p>{transactionParams.From}</p>
-					</div>
-					<div className={styles.row}>
-						<h5>Asset</h5>
-						<p>{getAssetIcon(transactionParams.Asset)} {transactionParams.Asset}</p>
-					</div>
-					<div className={styles.row}>
-						<h5>Amount</h5>
-						<p>{totalAmount}</p>
-					</div>
-
-					<div className={styles.col}>
-						<h5>Comment</h5>
-						<p>{(transactionParams.Comment.length > 60 && !showFullComment) ?
-							<>
-								{transactionParams.Comment.slice(0, 60)}...
-								<button className={styles.commentBtn} onClick={() => setShowFullComment(true)}>Show more</button>
-							</>
-							:
-							<>
-								{transactionParams.Comment}
-								<button className={`${styles.commentBtn} ${styles.less}`} onClick={() => setShowFullComment(false)}>Show less</button>
-							</>
-						}</p>
-					</div>
-				</div>
-
-				<div className={styles.confirmation__block}>
-					<div className={styles.row}>
-						<h5>To</h5>
-						<p>{isMultipleDestinations ? <>{destinations.length} addresses</> : transactionParams.To}</p>
-					</div>
-
-					{!isMultipleDestinations && <div className={styles.row}>
-						<h5>Amount</h5>
-						<p>{totalAmount}</p>
-					</div>}
-				</div>
-
-				{isMultipleDestinations && (
+				{isTransferMethod ? (
 					<>
-						<button
-							onClick={() => setShowFullAddresses(prev => !prev)}
-							className={styles.confirmation__showAddressesBtn}
-						>
-							Show addresses <img style={{ transform: `rotate(${showFullAddresses ? '180deg' : 0})` }} width={18} src={arrowIcon} alt="arrow" />
-						</button>
-
-						{showFullAddresses && destinations.map((item: DestionationType, idx: number) => (
-							<div className={styles.confirmation__destinationWrapper} key={idx}>
-								<p className={styles.title}>RECIPIENT {idx + 1}</p>
-
-								<div className={styles.confirmation__block}>
-									<div className={styles.row}>
-										<h5>To</h5>
-										<p>{item.address}</p>
-									</div>
-
-									<div className={styles.row}>
-										<h5>Amount</h5>
-										<p>{item.amount}</p>
-									</div>
-								</div>
+						<div className={styles.confirmation__block}>
+							<div className={styles.row}>
+								<h5>From</h5>
+								<p>{transactionParams.From}</p>
 							</div>
-						))}
+							<div className={styles.row}>
+								<h5>Asset</h5>
+								<p>{getAssetIcon(transactionParams.Asset)} {transactionParams.Asset}</p>
+							</div>
+							<div className={styles.row}>
+								<h5>Amount</h5>
+								<p>{totalAmount}</p>
+							</div>
+
+							<div className={styles.col}>
+								<h5>Comment</h5>
+								<p>{(transactionParams?.Comment?.length > 60 && !showFullComment) ?
+									<>
+										{transactionParams?.Comment?.slice(0, 60)}...
+										<button className={styles.commentBtn} onClick={() => setShowFullComment(true)}>Show more</button>
+									</>
+									:
+									<>
+										{transactionParams.Comment}
+										{showFullComment && <button className={`${styles.commentBtn} ${styles.less}`} onClick={() => setShowFullComment(false)}>Show less</button>}
+									</>
+								}</p>
+							</div>
+						</div>
+
+						<div className={styles.confirmation__block}>
+							<div className={styles.row}>
+								<h5>To</h5>
+								<p>{isMultipleDestinations ? <>{destinations?.length} addresses</> : transactionParams.To}</p>
+							</div>
+
+							{!isMultipleDestinations && <div className={styles.row}>
+								<h5>Amount</h5>
+								<p>{totalAmount}</p>
+							</div>}
+						</div>
+
+						{isMultipleDestinations && (
+							<>
+								<button
+									onClick={() => setShowFullAddresses(prev => !prev)}
+									className={styles.confirmation__showAddressesBtn}
+								>
+									Show addresses <img style={{ transform: `rotate(${showFullAddresses ? '180deg' : 0})` }} width={18} src={arrowIcon} alt="arrow" />
+								</button>
+
+								{showFullAddresses && destinations.map((item: DestionationType, idx: number) => (
+									<div className={styles.confirmation__destinationWrapper} key={idx}>
+										<p className={styles.title}>RECIPIENT {idx + 1}</p>
+
+										<div className={styles.confirmation__block}>
+											<div className={styles.row}>
+												<h5>To</h5>
+												<p>{item.address}</p>
+											</div>
+
+											<div className={styles.row}>
+												<h5>Amount</h5>
+												<p>{item.amount}</p>
+											</div>
+										</div>
+									</div>
+								))}
+							</>
+						)}
 					</>
+				) : (
+					<div>
+						<div className={styles.confirmation__block}>
+							{params.map((item: ParamsType, idx: number) => (
+								<div key={idx} className={styles.row}>
+									<h5>{item.key}</h5>
+									<p>{item.value}</p>
+								</div>
+							))}
+						</div>
+					</div>
 				)}
 			</div>
 
 			<div className={styles.confirmation__bottom}>
-				<div className={styles.confirmation__bottom_fee}>
-					<h5>
-						Transaction fee <InfoTooltip title="information" />
-					</h5>
-					<p>0.01 ZANO</p>
-				</div>
+				{isTransferMethod && <>
+					<div className={styles.confirmation__bottom_fee}>
+						<h5>
+							Transaction fee <InfoTooltip title="Total network fee" />
+						</h5>
+						<p>0.01 ZANO</p>
+					</div>
 
-				<div className={styles.divider} />
+					<div className={styles.divider} />
 
-				<div className={styles.confirmation__bottom_total}>
-					<h5>Total</h5>
-					<p>{totalAmount}</p>
-				</div>
+					<div className={styles.confirmation__bottom_total}>
+						<h5>Total</h5>
+						<p>{totalAmount}</p>
+					</div>
+				</>}
 
 				<div className={styles.confirmation__bottom_buttons}>
 					<Button
