@@ -347,7 +347,7 @@ export const transfer = async (
   };
 
   if (comment) options.comment = comment;
-
+  
   const response = await fetchData("transfer", options);
 
   if (!response.ok) {

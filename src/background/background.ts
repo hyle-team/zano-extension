@@ -294,6 +294,10 @@ interface RequestType {
   id: string;
   assetId: string;
   destination: string;
+  destinations: {
+    address: string;
+    amount: string
+  }[];
   amount: string;
   decimalPoint: string;
   success: boolean;
@@ -501,6 +505,26 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
         request.asset = asset || (await getAsset(ZANO_ID));
         request.sender = address || "";
+
+        const decimal_point = request.asset?.decimal_point ?? 12;
+
+        const destinations = request.destination ? 
+          [{ address: request.destination, amount: request.amount }] : 
+          request.destinations;
+
+        if (!Array.isArray(destinations) || destinations.length === 0) {
+          throw new Error("Invalid destination(s)");
+        }
+
+        const wrongDecimalPoint = destinations.some(dest => {
+          const [int, dec] = dest.amount.split(".");
+          return dec && dec.length > decimal_point;
+        });
+
+        if (wrongDecimalPoint) {
+          throw new Error("Invalid decimal amount(s)");
+        }
+
       } catch (e: unknown) {
         if (e instanceof Error) {
           return sendResponse({ error: e.message });
