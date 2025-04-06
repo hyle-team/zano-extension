@@ -32,14 +32,16 @@ const OuterConfirmation = () => {
 	const [showFullAddresses, setShowFullAddresses] = useState(false);
 	const [showFullComment, setShowFullComment] = useState(false);
 
-	const req = reqs[reqIndex];
+	const req = reqs[reqIndex] || {};
 	const { id, name, params, method, destinations } = req;
 
 	const isTransferMethod = name?.toLowerCase() === "transfer";
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
-	const transactionParams = Object.fromEntries((params as ParamsType[]).map(item => [item.key, item.value]));
+	const transactionParams = params
+		? Object.fromEntries((params as ParamsType[]).map(item => [item.key, item.value]))
+		: {};
 	const totalAmount = Number(isMultipleDestinations ? destinations.reduce((sum: number, dest: { amount: number }) => sum + Number(dest.amount), 0) : transactionParams.Amount).toLocaleString();
 
 	useEffect(() => {
@@ -88,6 +90,10 @@ const OuterConfirmation = () => {
 
 	console.log("FINALIZA TRANSACTION", req);
 
+	if (!req) {
+		return <div>No request found.</div>;
+	}
+
 	return (
 		<div className={styles.confirmation}>
 			<h3 className={styles.confirmation__title}>Request Confirmation</h3>
@@ -101,11 +107,11 @@ const OuterConfirmation = () => {
 						<div className={styles.confirmation__block}>
 							<div className={styles.row}>
 								<h5>From</h5>
-								<p>{transactionParams.From}</p>
+								<p>{transactionParams?.From}</p>
 							</div>
 							<div className={styles.row}>
 								<h5>Asset</h5>
-								<p>{getAssetIcon(transactionParams.Asset)} {transactionParams.Asset}</p>
+								<p>{getAssetIcon(transactionParams?.Asset)} {transactionParams?.Asset}</p>
 							</div>
 							<div className={styles.row}>
 								<h5>Amount</h5>
@@ -121,7 +127,7 @@ const OuterConfirmation = () => {
 									</>
 									:
 									<>
-										{transactionParams.Comment}
+										{transactionParams?.Comment}
 										{showFullComment && <button className={`${styles.commentBtn} ${styles.less}`} onClick={() => setShowFullComment(false)}>Show less</button>}
 									</>
 								}</p>
@@ -131,7 +137,7 @@ const OuterConfirmation = () => {
 						<div className={styles.confirmation__block}>
 							<div className={styles.row}>
 								<h5>To</h5>
-								<p>{isMultipleDestinations ? <>{destinations?.length} addresses</> : transactionParams.To}</p>
+								<p>{isMultipleDestinations ? <>{destinations?.length} addresses</> : transactionParams?.To}</p>
 							</div>
 
 							{!isMultipleDestinations && <div className={styles.row}>
@@ -149,7 +155,7 @@ const OuterConfirmation = () => {
 									Show addresses <img style={{ transform: `rotate(${showFullAddresses ? '180deg' : 0})` }} width={18} src={arrowIcon} alt="arrow" />
 								</button>
 
-								{showFullAddresses && destinations.map((item: DestionationType, idx: number) => (
+								{showFullAddresses && destinations?.map((item: DestionationType, idx: number) => (
 									<div className={styles.confirmation__destinationWrapper} key={idx}>
 										<p className={styles.title}>RECIPIENT {idx + 1}</p>
 
@@ -172,7 +178,7 @@ const OuterConfirmation = () => {
 				) : (
 					<div>
 						<div className={styles.confirmation__block}>
-							{params.map((item: ParamsType, idx: number) => (
+							{Array.isArray(params) && params?.map((item: ParamsType, idx: number) => (
 								<div key={idx} className={styles.row}>
 									<h5>{item.key}</h5>
 									<p>{item.value}</p>
