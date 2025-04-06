@@ -35,7 +35,7 @@ const ModalConfirmation = ({ isOpen, onClose, onConfirm }: ModalConfirmationProp
           <div className={cls.tableRow}>
             <div className={cls.label}>params:</div>
             <div className={cls.value}>
-              {params &&
+              {Array.isArray(params) &&
                 params.map((param: string) => <span key={param}>{param}</span>)}
             </div>
           </div>
