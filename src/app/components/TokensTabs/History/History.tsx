@@ -55,6 +55,9 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 
 const History = () => {
   const { state } = useContext(Store);
+  if (!state.wallet) {
+    return <div>No wallet connected.</div>;
+  }
 
   return (
     <div>

@@ -174,30 +174,36 @@ function App() {
 		const getWalletData = async () => {
 			if (!browser?.runtime?.sendMessage) return;
 
-			const walletsList = await fetchBackground({ method: "GET_WALLETS" });
-			if (!walletsList.data) return;
-			updateWalletsList(dispatch as dispatchType, walletsList.data);
+			try {
+				const walletsList = await fetchBackground({ method: "GET_WALLETS" });
+				if (walletsList.data) {
+					updateWalletsList(dispatch as dispatchType, walletsList.data);
+				}
 
-			const walletData = await fetchBackground({
-				method: "GET_WALLET_DATA",
-			});
-			if (!walletData.data) return;
-			const { address, alias, balance, transactions, assets } = walletData.data;
+				const walletData = await fetchBackground({
+					method: "GET_WALLET_DATA",
+				});
+				console.log("[DEBUG] walletData result:", walletData);
 
-			// console.log("WALLET DATA:");
-			// console.log(walletData.data);
-
-			updateWalletData(dispatch as dispatchType, {
-				address,
-				alias,
-				balance,
-				assets,
-				transactions,
-			});
-
-			console.log("wallet data updated");
-			updateLoading(dispatch as dispatchType, false);
-			setFirstWalletLoaded(true);
+				if (walletData.data) {
+					const { address, alias, balance, transactions, assets } = walletData.data;
+					updateWalletData(dispatch as dispatchType, {
+						address,
+						alias,
+						balance,
+						assets,
+						transactions,
+					});
+					setFirstWalletLoaded(true);
+					console.log("[DEBUG] setFirstWalletLoaded called");
+				} else {
+					console.error("No wallet data received");
+				}
+			} catch (error) {
+				console.error("Error fetching wallet data:", error);
+			} finally {
+				updateLoading(dispatch as dispatchType, false);
+			}
 		};
 
 		const intervalId = setInterval(async () => {

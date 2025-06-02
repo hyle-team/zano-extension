@@ -24,6 +24,9 @@ import browser from "../../utils/browserApi";
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
   const { state, dispatch } = useContext(Store);
+  if (!state.wallet) {
+    return <div className={s.wallet}>Wallet not connected.</div>;
+  }
   const { copied, copyToClipboard } = useCopy();
   const { censorValue } = useCensorDigits();
   const [menuVisible, setMenuVisible] = useState(false);

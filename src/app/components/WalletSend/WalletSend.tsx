@@ -42,12 +42,14 @@ interface AssetProps {
 
 const WalletSend = () => {
   const { state } = useContext(Store);
+  // Use fallback values if state.wallet is null
+  const walletAssets = state.wallet ? state.wallet.assets : [];
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
 
   // Form data
-  const [asset, setAsset] = useState(state.wallet.assets[0]);
+  const [asset, setAsset] = useState(walletAssets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
   const [amountValid, setAmountValid] = useState(false);
 
@@ -61,6 +63,10 @@ const WalletSend = () => {
   const fee = useInput(0.01, { isEmpty: true });
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
+
+  if (!state.wallet) {
+    return <div className={s.sendForm}>Wallet not connected.</div>;
+  }
 
   const sendTransfer = async (
     destination: string,
@@ -115,7 +121,7 @@ const WalletSend = () => {
   }, [address.value]);
 
   useEffect(() => {
-    const isValid = !!validateTokensInput(amount.value, Number(asset.decimalPoint));
+    const isValid = !!validateTokensInput(amount.value, Number(asset?.decimalPoint));
     setAmountValid(isValid);
   }, [amount.value, asset]);
 

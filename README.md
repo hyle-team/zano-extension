@@ -58,6 +58,23 @@ This extension is now fully cross-browser compatible! The codebase and build pro
 
 If you encounter any further issues or see new errors in the console, please open an issue or pull request!
 
+### Additional 2024 Codebase Improvements
+
+- **Robust State Handling:**
+  All major React components now guard against `null` or `undefined` wallet and user state, preventing crashes and providing clear fallback UI.
+
+- **React Hook Compliance:**
+  Refactored components to ensure all React hooks are called unconditionally at the top level, in line with React's best practices.
+
+- **Debug Logging:**
+  Added debug logging to wallet data fetch logic to aid in diagnosing loading and state transition issues.
+
+- **Dependency Upgrades:**
+  Upgraded `sass` and `sass-loader` to the latest versions, and removed all legacy references to `node-sass` for improved build performance and compatibility.
+
+- **Codebase Cleanup:**
+  Searched for and removed unused or deprecated code, and improved performance/resource usage throughout the codebase.
+
 ## Building for Each Browser
 
 ### Chrome
