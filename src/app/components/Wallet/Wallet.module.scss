@@ -1,5 +1,5 @@
 @use "sass:math";
-@import "src/app/styles/variables";
+@use "../../styles/variables" as *;
 
 .wallet {
   display: grid;

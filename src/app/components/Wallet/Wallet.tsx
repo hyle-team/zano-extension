@@ -20,9 +20,13 @@ import s from "./Wallet.module.scss";
 import NavLink from "../UI/NavLink/NavLink";
 import { classNames } from "../../utils/classNames";
 import { ZANO_ASSET_ID } from "../../../constants";
+import browser from "../../utils/browserApi";
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
   const { state, dispatch } = useContext(Store);
+  if (!state.wallet) {
+    return <div className={s.wallet}>Wallet not connected.</div>;
+  }
   const { copied, copyToClipboard } = useCopy();
   const { censorValue } = useCensorDigits();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -69,8 +73,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
   };
 
   const createAliasHandler = () => {
-    // eslint-disable-next-line no-undef
-    chrome.tabs.create({
+    browser.tabs.create({
       url: "https://docs.zano.org/docs/aliases",
     });
   };

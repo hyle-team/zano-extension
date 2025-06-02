@@ -2,6 +2,7 @@
 import Big from "big.js";
 import Decimal from "decimal.js";
 import sha256 from "sha256";
+import browser from "./browserApi";
 
 interface BackgroundResponse {
   password: string;
@@ -20,16 +21,12 @@ export async function fetchBackground(data: {
   credentials?: { port: string }; 
   alias?: string;
 }): Promise<any> {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.runtime.sendMessage(data, function (response) {
-        resolve(response);
-      });
-    } catch (error) {
-      console.error(`Error while fetching data (${data.method}):`, error);
-      reject(error);
-    }
-  });
+  try {
+    return await browser.runtime.sendMessage(data);
+  } catch (error) {
+    console.error(`Error while fetching data (${data.method}):`, error);
+    throw error;
+  }
 }
 
 export const removeZeros = (amount: string | number, decimal_point: number = 12): string => {

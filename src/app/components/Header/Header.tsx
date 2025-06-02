@@ -7,6 +7,7 @@ import { updateActiveWalletId, updateLoading } from "../../store/actions";
 import Formatters from "../../utils/formatters";
 import s from "./Header.module.scss";
 import { fetchBackground } from "../../utils/utils";
+import browser from "../../utils/browserApi";
 
 const Header = () => {
   const { dispatch, state } = useContext(Store);
@@ -23,21 +24,16 @@ const Header = () => {
     }
   };
 
-  const switchWallet = (id: number | undefined) => {
-    // eslint-disable-next-line no-undef
-    chrome.storage.local.set({ key: id }, function () {
-      updateLoading(dispatch as () => void, true);
-      updateActiveWalletId(dispatch as () => void, String(id));
-
-      fetchBackground({
-        method: "SET_ACTIVE_WALLET",
-        id: id,
-      });
-
-      console.log("Active wallet set to", id);
-      setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
+  const switchWallet = async (id: number | undefined) => {
+    await browser.storage.local.set({ key: id });
+    updateLoading(dispatch as () => void, true);
+    updateActiveWalletId(dispatch as () => void, String(id));
+    fetchBackground({
+      method: "SET_ACTIVE_WALLET",
+      id: id,
     });
-
+    console.log("Active wallet set to", id);
+    setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
     toggleDropdown();
   };
 

@@ -37,6 +37,9 @@ const getIconImage = (asset: Asset) => {
 const Assets = () => {
   const { state } = useContext(Store);
   const { censorValue } = useCensorDigits();
+  if (!state.wallet) {
+    return <div>No wallet connected.</div>;
+  }
   //TODO: only remove non whitelisted assets
   const remove = () => console.log("remove icon click");
 

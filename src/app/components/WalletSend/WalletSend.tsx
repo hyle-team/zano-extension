@@ -10,6 +10,7 @@ import MyInput from "../UI/MyInput/MyInput";
 import RoutersNav from "../UI/RoutersNav/RoutersNav";
 import s from "./WalletSend.module.scss";
 import { fetchBackground, validateTokensInput } from "../../utils/utils";
+import browser from "../../utils/browserApi";
 // import { getAliasDetails } from "../../../background/wallet";
 import AssetsSelect from "./ui/AssetsSelect/AssetsSelect";
 import AdditionalDetails from "./ui/AdditionalDetails/AdditionalDetails";
@@ -41,12 +42,14 @@ interface AssetProps {
 
 const WalletSend = () => {
   const { state } = useContext(Store);
+  // Use fallback values if state.wallet is null
+  const walletAssets = state.wallet ? state.wallet.assets : [];
   const [activeStep, setActiveStep] = useState(0);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
   const [txId, setTxId] = useState("");
 
   // Form data
-  const [asset, setAsset] = useState(state.wallet.assets[0]);
+  const [asset, setAsset] = useState(walletAssets[0]);
   const [submitAddress, setSubmitAddress] = useState("");
   const [amountValid, setAmountValid] = useState(false);
 
@@ -61,42 +64,38 @@ const WalletSend = () => {
   const isSenderInfo = useCheckbox(false);
   const isReceiverInfo = useCheckbox(false);
 
-  const sendTransfer = (
+  if (!state.wallet) {
+    return <div className={s.sendForm}>Wallet not connected.</div>;
+  }
+
+  const sendTransfer = async (
     destination: string,
     amount: string | number,
     comment: string,
     assetId: string,
     decimalPoint: number
   ): Promise<any> => {
-    return new Promise(async (resolve, reject) => {
-      // eslint-disable-next-line no-undef
-      if (chrome.runtime.sendMessage as any) {
-        // eslint-disable-next-line no-undef
-        const response: ResponseData = await fetchBackground({
-          method: "SEND_TRANSFER",
-          assetId,
-          destination,
-          amount,
-          comment,
-          decimalPoint,
-        } as FetchBackgroundParams);
+    const response: ResponseData = await fetchBackground({
+      method: "SEND_TRANSFER",
+      assetId,
+      destination,
+      amount,
+      comment,
+      decimalPoint,
+    } as FetchBackgroundParams);
 
-        if (response.data) {
-          resolve(response.data);
-        } else if (response.error) {
-          reject(response.error);
-        } else {
-          reject("No data or error received in response.");
-        }
-      } else {
-        reject("chrome.runtime.sendMessage is not available.");
-      }
-    });
+    if (response.data) {
+      return response.data;
+    } else if (response.error) {
+      throw response.error;
+    } else {
+      throw new Error("No data or error received in response.");
+    }
   };
 
   const openExplorer = (txId: string) => {
     // eslint-disable-next-line no-undef
-    chrome.tabs.create({
+    browser.tabs.create({
       url: `https://testnet-explorer.zano.org/block/${txId}`,
     });
   };
@@ -122,7 +121,7 @@ const WalletSend = () => {
   }, [address.value]);
 
   useEffect(() => {
-    const isValid = !!validateTokensInput(amount.value, Number(asset.decimalPoint));
+    const isValid = !!validateTokensInput(amount.value, Number(asset?.decimalPoint));
     setAmountValid(isValid);
   }, [amount.value, asset]);
 

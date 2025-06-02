@@ -3,9 +3,7 @@
   "name": "Zano Companion",
   "version": "1.1.4",
   "description": "A browser extension for Zano wallet app",
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://api.coingecko.com https://api.zano.org;"
   },
@@ -19,21 +17,13 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "static/js/content.bundle.js"
-      ]
+      "matches": ["<all_urls>"],
+      "js": ["static/js/content.bundle.js"]
     },
     {
       "world": "MAIN",
-      "js": [
-        "static/js/inject.bundle.js"
-      ],
-      "matches": [
-        "<all_urls>"
-      ],
+      "js": ["static/js/inject.bundle.js"],
+      "matches": ["<all_urls>"],
       "run_at": "document_start"
     }
   ],
@@ -41,10 +31,5 @@
     "16": "images/zano_16px.png",
     "48": "images/zano_48px.png",
     "128": "images/zano_128px.png"
-  },
-  "background": {
-    "scripts": [
-      "static/js/background.bundle.js"
-    ]
   }
-}
+} 
