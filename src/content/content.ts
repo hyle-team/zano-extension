@@ -1,3 +1,5 @@
+import browser from '../app/utils/browserApi';
+
 interface DocumentEventMap {
   "zano_request": CustomEvent<ZanoRequestData>;
 }
@@ -15,24 +17,17 @@ interface ZanoResponse {
 }
 
 async function fetchData(data: ZanoRequestData): Promise<ZanoResponse> {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.runtime.sendMessage(data, (response: ZanoResponse) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
-        }
-      });
-    } catch (error) {
-      console.error(`Error while fetching data (${data.method}):`, error);
-      reject(error);
-    }
-  });
+  try {
+    return await browser.runtime.sendMessage(data);
+  } catch (error) {
+    console.error(`Error while fetching data (${data.method}):`, error);
+    throw error;
+  }
 }
 
-document.addEventListener("zano_request", async (e: CustomEvent<ZanoRequestData>) => {
-  const data = e.detail;
+document.addEventListener("zano_request", async (e: Event) => {
+  const customEvent = e as CustomEvent<ZanoRequestData>;
+  const data = customEvent.detail;
 
   try {
     const response = await fetchData(data);

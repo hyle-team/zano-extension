@@ -18,6 +18,8 @@ import {
   addAssetToWhitelist
 } from "./wallet";
 import JSONbig from "json-bigint";
+import browser from "../app/utils/browserApi";
+import type { Windows } from 'webextension-polyfill';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -126,7 +128,7 @@ class PopupRequestsMethods {
       function finalize(data: unknown) {
         req.finalizer(data);
         delete savedRequests[requestType][reqId];
-        chrome.windows.remove(req.windowId);
+        browser.windows.remove(req.windowId);
       }
 
       if (!success) {
@@ -150,21 +152,24 @@ class PopupRequestsMethods {
   }
 }
 
-chrome.windows.onBoundsChanged.addListener((window) => {
-  if (
-    allPopupIds.includes(window.id as number) &&
-    window.width !== POPUP_WIDTH &&
-    window.height !== POPUP_HEIGHT
-  ) {
-    chrome.windows.update(window.id as number, {
-      width: POPUP_WIDTH,
-      height: POPUP_HEIGHT,
-    });
-  }
-});
+// Guard for Chrome-only API
+if (browser.windows.onBoundsChanged && browser.windows.onBoundsChanged.addListener) {
+  browser.windows.onBoundsChanged.addListener((window: any) => {
+    if (
+      allPopupIds.includes(window.id as number) &&
+      window.width !== POPUP_WIDTH &&
+      window.height !== POPUP_HEIGHT
+    ) {
+      browser.windows.update(window.id as number, {
+        width: POPUP_WIDTH,
+        height: POPUP_HEIGHT,
+      });
+    }
+  });
+}
 
 // eslint-disable-next-line no-undef
-chrome.runtime.onStartup.addListener(() => {
+browser.runtime.onStartup.addListener(() => {
   console.log("Background script loaded on startup");
 });
 
@@ -196,17 +201,12 @@ interface UserData {
 const defaultUserData: UserData = { password: undefined };
 
 async function setUserData(state: UserData): Promise<void> {
-  await new Promise((resolve) => {
-    chrome.storage.local.set({ userData: state }, resolve as (() => void));
-  });
+  await browser.storage.local.set({ userData: state });
 }
 
 async function getUserData(): Promise<UserData> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get("userData", (result) => {
-      resolve(result.userData || defaultUserData);
-    });
-  });
+  const result = await browser.storage.local.get("userData");
+  return result.userData || defaultUserData;
 }
 
 async function updateUserData(newData: Partial<UserData>): Promise<void> {
@@ -218,10 +218,9 @@ async function recoverApiCredentials(): Promise<void> {
   apiCredentials = (await getUserData()).apiCredentials || defaultCredentials;
 }
 
-chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.remove("userData", () => {
-    console.log("State cleared on browser startup");
-  });
+browser.runtime.onStartup.addListener(async () => {
+  await browser.storage.local.remove("userData");
+  console.log("State cleared on browser startup");
 });
 
 interface SignReqFinalizer {
@@ -244,15 +243,16 @@ const savedRequests: Record<
 
 const allPopupIds: number[] = [];
 
-chrome.storage.local.get("pendingTx", (result) => {
+(async () => {
+  const result = await browser.storage.local.get("pendingTx");
   if (result.pendingTx) {
     pendingTx = result.pendingTx;
   }
-});
+})();
 
-function openWindow(): Promise<chrome.windows.Window> {
-  return chrome.windows.create({
-    url: chrome.runtime.getURL("index.html"),
+function openWindow(): Promise<Windows.Window> {
+  return browser.windows.create({
+    url: browser.runtime.getURL("index.html"),
     type: "popup",
     width: POPUP_WIDTH,
     height: POPUP_HEIGHT,
@@ -283,8 +283,8 @@ const SELF_ONLY_REQUESTS = [
   "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS"
 ];
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  processRequest(request, sender as any, sendResponse);
+browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: any) => {
+  processRequest(request, sender, sendResponse);
   return true;
 });
 
@@ -340,9 +340,9 @@ interface SendResponse {
   (response: any): void;
 }
 
-async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
+async function processRequest(request: any, sender: any, sendResponse: any) {
   const isFromExtensionFrontend =
-    sender.url && sender.url.includes(chrome.runtime.getURL("/"));
+    sender.url && sender.url.includes(browser.runtime.getURL("/"));
 
   if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
     console.error("Unauthorized request from", sender.url);
@@ -659,10 +659,10 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         destinationChainId: request.destinationChainId,
       };
       // eslint-disable-next-line no-undef
-      chrome.storage.local.set({ pendingTx: pendingTx });
+      browser.storage.local.set({ pendingTx: pendingTx });
       sendResponse({ status: "confirmation_pending" });
       // eslint-disable-next-line no-undef
-      chrome.action.setBadgeText({ text: "1" });
+      browser.action.setBadgeText({ text: "1" });
       break;
 
     case "EXECUTE_BRIDGING_TRANSFER":
@@ -678,9 +678,9 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
             sendResponse({ data });
             pendingTx = null;
             // eslint-disable-next-line no-undef
-            chrome.storage.local.remove("pendingTx");
+            browser.storage.local.remove("pendingTx");
             // eslint-disable-next-line no-undef
-            chrome.action.setBadgeText({ text: "" });
+            browser.action.setBadgeText({ text: "" });
           })
           .catch((error) => {
             console.error("Error bridging transfer:", error);
@@ -736,7 +736,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
           signReqFinalizers[reqId](data);
           signReqs.splice(signReqs.indexOf(signReq), 1);
           delete signReqFinalizers[reqId];
-          chrome.windows.remove(signReq.windowId);
+          browser.windows.remove(signReq.windowId);
         }
 
         if (!success) {

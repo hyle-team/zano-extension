@@ -19,14 +19,20 @@
     "react-id-generator": "^3.0.2",
     "react-scripts": "5.0.1",
     "sha256": "^0.2.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "webextension-polyfill": "^0.10.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "webpack --mode production",
+    "postbuild": "npm run manifest:chrome && npm run copy:public",
+    "copy:public": "copyfiles -u 1 public/manifest.json public/images/* build/",
     "build:dev": "webpack --mode development --watch",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "manifest:chrome": "node build-manifest.js chrome",
+    "manifest:firefox": "node build-manifest.js firefox",
+    "build:firefox": "npm run build && npm run manifest:firefox && npm run copy:public"
   },
   "eslintConfig": {
     "extends": [
@@ -60,9 +66,11 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/sha256": "^0.2.2",
+    "@types/webextension-polyfill": "^0.12.3",
     "babel-loader": "^9.2.1",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
+    "copyfiles": "^2.4.1",
     "css-loader": "^6.11.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.6.3",

@@ -42,6 +42,7 @@ import Formatters from "./utils/formatters";
 import Big from "big.js";
 import swapModalStyles from "./styles/SwapModal.module.scss";
 import useGetAsset from "./hooks/useGetAsset";
+import browser from "./utils/browserApi";
 
 // Types
 type dispatchType = () => void;
@@ -131,8 +132,8 @@ function App() {
 	const closeModal = () => {
 		setConfirmationModalOpen(false);
 		updateConfirmationModal(dispatch as dispatchType, null);
-		chrome.storage?.local?.remove?.(["pendingTx"]);
-		chrome.action.setBadgeText({ text: "" });
+		browser.storage.local.remove(["pendingTx"]);
+		browser.action.setBadgeText({ text: "" });
 	};
 
 	const handleConfirm = async () => {
@@ -161,7 +162,7 @@ function App() {
 
 	useEffect(() => {
 		const checkConnection = async () => {
-			if (!chrome?.runtime?.sendMessage) return;
+			if (!browser?.runtime?.sendMessage) return;
 
 			const walletActive = await fetchBackground({
 				method: "GET_WALLET_DATA",
@@ -171,7 +172,7 @@ function App() {
 		};
 
 		const getWalletData = async () => {
-			if (!chrome?.runtime?.sendMessage) return;
+			if (!browser?.runtime?.sendMessage) return;
 
 			const walletsList = await fetchBackground({ method: "GET_WALLETS" });
 			if (!walletsList.data) return;
@@ -228,7 +229,7 @@ function App() {
 	}, [dispatch]);
 
 	useEffect(() => {
-		const listener = (request: RequestType, sender: chrome.runtime.MessageSender, sendResponse: (response: { status: string }) => void) => {
+		const listener = (request: RequestType, sender: any, sendResponse: (response: { status: string }) => void) => {
 			if (
 				!(
 					"assetId" in request &&
@@ -251,26 +252,27 @@ function App() {
 						request.destinationChainId,
 					],
 				});
-				chrome.storage?.local?.set?.({ pendingTx: request });
+				browser.storage.local.set({ pendingTx: request });
 				setConfirmationModalOpen(true);
 				sendResponse({ status: "confirmation_pending" });
 			}
 			return true;
 		};
 
-		if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
-			chrome.runtime.onMessage.addListener(listener);
+		if (typeof browser !== "undefined" && browser.runtime?.onMessage) {
+			browser.runtime.onMessage.addListener(listener);
 		}
 
 		return () => {
-			if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
-				chrome.runtime.onMessage.removeListener(listener);
+			if (typeof browser !== "undefined" && browser.runtime?.onMessage) {
+				browser.runtime.onMessage.removeListener(listener);
 			}
 		};
 	}, [dispatch]);
 
 	useEffect(() => {
-		chrome.storage?.local?.get?.(["pendingTx"], function (result) {
+		(async () => {
+			const result = await browser.storage.local.get(["pendingTx"]);
 			if (result.pendingTx) {
 				updateConfirmationModal(dispatch as dispatchType, {
 					method: "SEND_TRANSFER",
@@ -283,16 +285,16 @@ function App() {
 				});
 				setConfirmationModalOpen(true);
 			}
-		});
+		})();
 	}, [dispatch]);
 
 	useEffect(() => {
-		chrome.storage?.local?.get?.(["key"], function (result) {
+		(async () => {
 			let walletId = 0;
+			const result = await browser.storage.local.get(["key"]);
 			if (!result.key) {
-				chrome.storage?.local?.set?.({ key: walletId }, function () {
-					console.log("Active wallet set to", walletId);
-				});
+				await browser.storage.local.set({ key: walletId });
+				console.log("Active wallet set to", walletId);
 			} else {
 				walletId = result.key;
 			}
@@ -301,7 +303,7 @@ function App() {
 				id: walletId,
 			});
 			updateActiveWalletId(dispatch as dispatchType, walletId);
-		});
+		})();
 	}, [dispatch]);
 
 	const appConnected = !!(
