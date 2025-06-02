@@ -1,4 +1,4 @@
-@import "_variables";
+@use "./variables";
 
 ::-webkit-scrollbar {
   display: none;
@@ -29,16 +29,16 @@ a:active {
 
 html,
 body {
-  height: $appHeight;
+  height: variables.$appHeight;
   overflow: auto;
-  width: $appWidth;
+  width: variables.$appWidth;
 }
 
 body {
-  font-size: $fontSize;
-  color: $mainColor;
+  font-size: variables.$fontSize;
+  color: variables.$mainColor;
   line-height: 1;
-  font-family: $fontFamily;
+  font-family: variables.$fontFamily;
   -ms-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
@@ -50,7 +50,7 @@ body {
 input,
 button,
 textarea {
-   font-family: $fontFamily;
+   font-family: variables.$fontFamily;
    font-size: inherit;
 }
 

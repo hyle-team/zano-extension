@@ -46,6 +46,7 @@ This extension is now fully cross-browser compatible! The codebase and build pro
 - **Component and Utility Updates:** All React components and utility functions that interacted with extension storage or messaging have been updated to use async/await and the Promise-based API.
 - **Manifest Build System:** The manifest is now generated dynamically for each browser, and the build output is copied to the correct location for both Chrome and Firefox.
 - **API Compatibility:** All extension code now uses a unified `browser` API wrapper, ensuring that Chrome and Firefox differences (such as callback vs. Promise APIs) are handled automatically.
+- **SCSS Modernization:** All SCSS files have been migrated from the deprecated `@import` syntax to the modern `@use`/`@forward` module system. Variables are now referenced with their namespace (e.g., `variables.$appHeight` instead of `$appHeight`). The main variables file was renamed from `_variables.scss` to `variables.scss` to follow the new convention and ensure compatibility with `@use`.
 
 ### Secure Cross-Browser SDK Communication (2024 Update)
 
