@@ -1,50 +1,46 @@
 import browser from '../app/utils/browserApi';
 
-interface DocumentEventMap {
-  "zano_request": CustomEvent<ZanoRequestData>;
+function injectPageScript() {
+  const script = document.createElement('script');
+  script.src = chrome.runtime?.getURL
+    ? chrome.runtime.getURL('static/js/inject.bundle.js')
+    : (browser.runtime?.getURL ? browser.runtime.getURL('static/js/inject.bundle.js') : '');
+  script.onload = function() {
+    (this as HTMLScriptElement).remove();
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
+injectPageScript();
 
-interface ZanoRequestData {
-  method: string;
-  listenerID: string;
-  timeout?: number | null;
-  [key: string]: string | number | boolean | null | undefined;
-}
-
-interface ZanoResponse {
-  error?: string;
-  [key: string]: string | number | boolean | null | undefined;
-}
-
-async function fetchData(data: ZanoRequestData): Promise<ZanoResponse> {
-  try {
-    return await browser.runtime.sendMessage(data);
-  } catch (error) {
-    console.error(`Error while fetching data (${data.method}):`, error);
-    throw error;
-  }
-}
-
-document.addEventListener("zano_request", async (e: Event) => {
-  const customEvent = e as CustomEvent<ZanoRequestData>;
-  const data = customEvent.detail;
+window.addEventListener("message", async (event) => {
+  if (event.source !== window) return;
+  const data = event.data;
+  if (!data || !data.zanoRequest) return;
 
   try {
-    const response = await fetchData(data);
-
-    document.dispatchEvent(
-      new CustomEvent(`zano_response_${data.listenerID}`, {
-        detail: response,
-      })
+    const response = await browser.runtime.sendMessage({
+      method: data.method,
+      ...data.params,
+      timeout: data.timeout,
+    });
+    window.postMessage(
+      {
+        zanoResponse: true,
+        id: data.id,
+        response,
+      },
+      window.origin
     );
   } catch (error) {
-    console.error(`Error while processing zano_request:`, error);
-    document.dispatchEvent(
-      new CustomEvent(`zano_response_${data.listenerID}`, {
-        detail: { error: error instanceof Error ? error.message : String(error) },
-      })
+    window.postMessage(
+      {
+        zanoResponse: true,
+        id: data.id,
+        response: { error: error instanceof Error ? error.message : String(error) },
+      },
+      window.origin
     );
   }
 });
 
-console.log("Zano wallet loaded");
+console.log("Zano wallet content script loaded");

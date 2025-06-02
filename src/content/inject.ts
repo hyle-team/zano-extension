@@ -1,51 +1,43 @@
-class Zano {
-    async request(method: string, params: Record<string, any>, timeoutParam?: number): Promise<any> {
-        
-        function getRandonString(length: number): string {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-            const charLength = chars.length;
-            let result = '';
+(function() {
+  class Zano {
+    request(method: string, params: Record<string, any> = {}, timeoutParam?: number): Promise<any> {
+      const id = Math.random().toString(36).slice(2);
+      const timeoutMs = typeof timeoutParam === "number" ? timeoutParam : null;
 
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * charLength));
-            }
-
-            return result;
+      return new Promise((resolve, reject) => {
+        function handleResponse(event: MessageEvent) {
+          if (
+            event.source === window &&
+            event.data &&
+            event.data.zanoResponse &&
+            event.data.id === id
+          ) {
+            window.removeEventListener("message", handleResponse);
+            if (timeout) clearTimeout(timeout);
+            resolve(event.data.response);
+          }
         }
+        window.addEventListener("message", handleResponse);
 
-        const listenerID = getRandonString(16);
-        const timeoutMs: number | null = typeof timeoutParam === "number" ? timeoutParam : null;
+        const timeout = timeoutMs !== null
+          ? setTimeout(() => {
+              window.removeEventListener("message", handleResponse);
+              reject(new Error("Request timeout exceeded"));
+            }, timeoutMs)
+          : null;
 
-        return new Promise((resolve, reject) => {
-
-            const timeout = timeoutMs !== null ? (
-                setTimeout(() => {
-                    reject('Request timeout exceeded');
-                    document.removeEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
-                }, timeoutMs)
-            ) : undefined;
-
-            function handleResponse(e: CustomEvent) {                
-                document.removeEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
-                if (timeout) {
-                    clearTimeout(timeout);  
-                }
-                resolve(e.detail);
-            }
-
-            document.addEventListener(`zano_response_${listenerID}`, handleResponse as EventListener);
-
-            document.dispatchEvent(new CustomEvent('zano_request', { 
-                detail: {
-                    method: method,
-                    listenerID: listenerID,
-                    timeout: timeoutMs,
-                    ...params
-                }
-            }));
-
-        });
+        window.postMessage(
+          {
+            zanoRequest: true,
+            method,
+            params,
+            id,
+            timeout: timeoutMs,
+          },
+          window.origin
+        );
+      });
     }
-}
-
-window.zano = new Zano();
+  }
+  (window as any).zano = new Zano();
+})();
