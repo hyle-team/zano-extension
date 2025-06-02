@@ -43,8 +43,6 @@
     "128": "images/zano_128px.png"
   },
   "background": {
-    "scripts": [
-      "static/js/background.bundle.js"
-    ]
+    "service_worker": "static/js/background.bundle.js"
   }
 }

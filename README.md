@@ -31,14 +31,6 @@ Open the extension and connect your Zano wallet.
 Approve connection requests from supported dApps.
 Sign transactions securely.
 
-## Contributing
-
-Contributions are welcome! Feel free to submit issues or pull requests.
-
-## License
-
-MIT License
-
 ## Cross-Platform (Chrome & Firefox) Support
 
 This extension is now fully cross-browser compatible! The codebase and build process have been updated to support both Chrome and Firefox with a single codebase. Key changes include:
@@ -54,6 +46,14 @@ This extension is now fully cross-browser compatible! The codebase and build pro
 - **Component and Utility Updates:** All React components and utility functions that interacted with extension storage or messaging have been updated to use async/await and the Promise-based API.
 - **Manifest Build System:** The manifest is now generated dynamically for each browser, and the build output is copied to the correct location for both Chrome and Firefox.
 - **API Compatibility:** All extension code now uses a unified `browser` API wrapper, ensuring that Chrome and Firefox differences (such as callback vs. Promise APIs) are handled automatically.
+
+### Secure Cross-Browser SDK Communication (2024 Update)
+
+- **Robust SDK Bridge:** The extension now injects `window.zano` into the web page context using a dynamically added `<script>` tag, ensuring the Zano Web3 SDK works seamlessly in both Chrome and Firefox.
+- **postMessage Bridge:** Communication between the SDK (web page) and the extension is handled via `window.postMessage` and a content script bridge, following best practices for browser extension security and interoperability (as used by MetaMask, Keplr, etc.).
+- **No SDK Changes Required:** The Zano Web3 SDK did not require any changes for this compatibility update. All improvements were made on the extension side.
+- **Background API Contract:** As long as the extension background script supports the same API methods, the SDK will work in any browser supporting the WebExtension API.
+- **Security:** Only messages from the same window and with the correct structure are processed, ensuring safe and reliable operation.
 
 If you encounter any further issues or see new errors in the console, please open an issue or pull request!
 
@@ -83,4 +83,10 @@ If you encounter any further issues or see new errors in the console, please ope
 
 ---
 
-If you have any issues or want to contribute to cross-browser improvements, please open an issue or pull request!
+## Contributing
+
+Contributions are welcome! Feel free to submit issues or pull requests.
+
+## License
+
+MIT License
