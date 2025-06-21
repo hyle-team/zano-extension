@@ -26,7 +26,12 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "precommit": "lint-staged",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,css,scss}": ["eslint --fix", "prettier --write"]
   },
   "eslintConfig": {
     "extends": [
@@ -64,8 +69,13 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.11.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.6.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.5.3",
     "sass": "^1.62.0",
     "sass-loader": "^13.3.3",
     "style-loader": "^3.3.4",
