@@ -12,12 +12,12 @@ interface ValidationResult {
   error?: string;
 }
 
-export async function fetchBackground(data: { 
-  method: string; 
-  password?: string; 
-  id?: number; 
-  success?: boolean; 
-  credentials?: { port: string }; 
+export async function fetchBackground(data: {
+  method: string;
+  password?: string;
+  id?: number;
+  success?: boolean;
+  credentials?: { port: string };
   alias?: string;
 }): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -107,7 +107,7 @@ export function validateTokensInput(input: string | number, decimal_point: numbe
         const roundedInput = new Decimal(dotInput).toFixed(1);
 
         if (roundedInput.replace(/./g, '').length <= 20) {
-            return roundedInput;
+          return roundedInput;
         }
       }
 
@@ -144,3 +144,15 @@ export function validateTokensInput(input: string | number, decimal_point: numbe
     valid: true
   };
 }
+
+
+export const shortenAddress = (
+  address: string | undefined,
+  startAmount: number = 5,
+  endAmount: number = 3
+) => {
+  if (!address) {
+    return "";
+  }
+  return address.slice(0, startAmount) + "..." + address.slice(-endAmount);
+};

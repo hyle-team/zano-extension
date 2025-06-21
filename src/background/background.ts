@@ -15,7 +15,8 @@ import {
   getWhiteList,
   getAssetInfo,
   createAlias,
-  addAssetToWhitelist
+  addAssetToWhitelist,
+  burnAsset
 } from "./wallet";
 import JSONbig from "json-bigint";
 
@@ -232,14 +233,15 @@ const signReqFinalizers: SignReqFinalizer = {};
 const signReqs: unknown[] = [];
 
 const savedRequests: Record<
-  "IONIC_SWAP" | "ACCEPT_IONIC_SWAP" | "CREATE_ALIAS" | "TRANSFER" | "ASSETS_WHITELIST_ADD",
+  "IONIC_SWAP" | "ACCEPT_IONIC_SWAP" | "CREATE_ALIAS" | "TRANSFER" | "ASSETS_WHITELIST_ADD" | "BURN_ASSET",
   Record<string, PopupRequest>
 > = {
   IONIC_SWAP: {},
   ACCEPT_IONIC_SWAP: {},
   CREATE_ALIAS: {},
   TRANSFER: {},
-  ASSETS_WHITELIST_ADD: {}
+  ASSETS_WHITELIST_ADD: {},
+  BURN_ASSET: {},
 };
 
 const allPopupIds: number[] = [];
@@ -280,7 +282,9 @@ const SELF_ONLY_REQUESTS = [
   "GET_WALLETS",
   "FINALIZE_TRANSFER_REQUEST",
   "GET_ASSETS_WHITELIST_ADD_REQUESTS",
-  "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS"
+  "FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS",
+  "GET_BURN_ASSET_REQUESTS",
+  "FINALIZE_BURN_ASSET_REQUEST",
 ];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -321,6 +325,10 @@ interface RequestType {
   asset_id?: string;
   asset_name?: string;
   comment: string;
+  burnAmount: number;
+  nativeAmount?: number;
+  pointTxToAddress?: string;
+  serviceEntries?: any[];
 }
 
 interface Sender {
@@ -877,6 +885,45 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
       )
       break
     }
+    case "BURN_ASSET":
+      PopupRequestsMethods.onRequestCreate(
+        "BURN_ASSET",
+        request,
+        sendResponse,
+        {
+          method: "FINALIZE_BURN_ASSET_REQUEST",
+          name: "Burn asset",
+          burn: request,
+        } as any
+      );
+      break;
+
+    case "GET_BURN_ASSET_REQUESTS":
+      PopupRequestsMethods.getRequestsList("BURN_ASSET", sendResponse);
+      break;
+
+    case "FINALIZE_BURN_ASSET_REQUEST":
+      PopupRequestsMethods.onRequestFinalize(
+        "BURN_ASSET",
+        request,
+        sendResponse,
+        async (req) => {
+          const burnReq = req.burn as any;
+          return burnAsset({
+            assetId: burnReq.assetId,
+            burnAmount: burnReq.burnAmount,
+            nativeAmount: burnReq.nativeAmount,
+            pointTxToAddress: burnReq.pointTxToAddress,
+            serviceEntries: burnReq.serviceEntries,
+          });
+        },
+        {
+          console: "Burn asset error:",
+          response: "Failed to burn asset",
+          reqNotFound: "Burn asset request not found",
+        }
+      );
+      break;
 
 
     default:

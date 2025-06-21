@@ -41,49 +41,11 @@ import OuterConfirmation from "./components/OuterConfirmation/OuterConfirmation"
 import Formatters from "./utils/formatters";
 import Big from "big.js";
 import swapModalStyles from "./styles/SwapModal.module.scss";
-import useGetAsset from "./hooks/useGetAsset";
-
-// Types
-type dispatchType = () => void;
-type destinationsType = { address: string, amount: number }[];
-type transferType = { transfer: { sender: string, destination: string, destinations: destinationsType, amount: string, asset: { ticker: string }, comment?: string }, id: number };
-type RequestType = { method: string; assetId: string, amount: string, destinationAddress: string, destinationChainId: string };
-type SwapRequest = {
-	id: string;
-	swap: {
-		destinationAddress: string;
-		destinationAsset: string;
-		destinationAssetAmount: string;
-		currentAsset: string;
-		currentAssetAmount: string;
-	};
-};
-type SwapProposal = {
-	to_finalizer: { amount: Big }[];
-	to_initiator: { amount: Big }[];
-};
-type Asset = {
-	decimal_point: number;
-	[key: string]: any;
-};
-type AcceptSwapReq = {
-	id: string;
-	hex_raw_proposal: string;
-	swapProposal: SwapProposal;
-	receivingAsset: Asset;
-	sendingAsset: Asset;
-};
-
-type AssetWhitelistReq = {
-	id: string;
-	asset_id: string;
-	asset_name: string;
-}
+import { AcceptSwapReq, AssetWhitelistReq, dispatchType, RequestType, SwapRequest, transferType } from "../types";
 
 function App() {
 	const { state, dispatch } = useContext(Store);
 	const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
-	const { getAssetById } = useGetAsset();
 
 	const [incorrectPassword, setIncorrectPassword] = useState(false);
 	const [loggedIn, setLoggedIn] = useState(false);
@@ -91,11 +53,6 @@ function App() {
 	const [firstWalletLoaded, setFirstWalletLoaded] = useState(false);
 
 	const [connectOpened, setConnectOpened] = useState(false);
-
-	// Flags of display
-	// creatingPassword flag has an effect only in case of loggedIn flag is false.
-	// creatingPassword flag means whether to show the password create screen or existing password enter screen.
-	// const creatingPassword = !passwordExists();
 
 	useEffect(() => {
 		async function loadLogin() {
@@ -560,6 +517,29 @@ function App() {
 				}
 			}
 
+			async function getBurnAssetRequests() {
+				const response = await fetchBackground({ method: "GET_BURN_ASSET_REQUESTS" });
+				const burnRequests = response.data;
+
+				const pageReqs = burnRequests.map((e: any) => {
+					const data = e.burn;
+
+					return {
+						id: e.id,
+						method: "FINALIZE_BURN_ASSET_REQUEST",
+						name: "BURN_ASSET",
+						params: [
+							data
+						],
+					};
+				});
+
+				if (pageReqs.length > 0) {
+					goTo(OuterConfirmation, { reqs: pageReqs });
+				}
+			}
+
+			await getBurnAssetRequests();
 			await getAliasCreationRequests();
 			await getIonicSwapRequests();
 			await getSignRequests();
