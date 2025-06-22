@@ -1,74 +1,74 @@
-import React, { MouseEvent, ReactNode, useCallback, useEffect, useState } from "react";
-import cls from "./Modal.module.scss";
-import { createPortal } from "react-dom";
+import React, { MouseEvent, ReactNode, useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import cls from './Modal.module.scss';
 import { classNames } from '../../../utils/classNames';
 
 interface ModalProps {
-  className?: string;
-  children: ReactNode;
-  isOpen: boolean;
-  onClose: () => void;
-  width?: string | number;
+	className?: string;
+	children: ReactNode;
+	isOpen: boolean;
+	onClose: () => void;
+	width?: string | number;
 }
 
 const Modal = (props: ModalProps) => {
-  const { className, children, isOpen, onClose, width } = props;
+	const { className, children, isOpen, onClose, width } = props;
 
-  const [isMounted, setIsMounted] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsMounted(true);
-    }
-  }, [isOpen]);
+	useEffect(() => {
+		if (isOpen) {
+			setIsMounted(true);
+		}
+	}, [isOpen]);
 
-  const closeHandler = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
-  }, [onClose]);
+	const closeHandler = useCallback(() => {
+		if (onClose) {
+			onClose();
+		}
+	}, [onClose]);
 
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeHandler();
-      }
-    },
-    [closeHandler]
-  );
+	const onKeyDown = useCallback(
+		(e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				closeHandler();
+			}
+		},
+		[closeHandler],
+	);
 
-  useEffect(() => {
-    if (isOpen) {
-      window.addEventListener("keydown", onKeyDown);
-    }
+	useEffect(() => {
+		if (isOpen) {
+			window.addEventListener('keydown', onKeyDown);
+		}
 
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isOpen, onKeyDown]);
+		return () => {
+			window.removeEventListener('keydown', onKeyDown);
+		};
+	}, [isOpen, onKeyDown]);
 
-  const onContentClick = (e: MouseEvent) => {
-    e.stopPropagation();
-  };
+	const onContentClick = (e: MouseEvent) => {
+		e.stopPropagation();
+	};
 
-  const mods = {
-    [cls.opened]: isOpen,
-  };
+	const mods = {
+		[cls.opened]: isOpen,
+	};
 
-  if (!isMounted) {
-    return null;
-  }
+	if (!isMounted) {
+		return null;
+	}
 
-  return createPortal(
-    <div className={classNames(cls.Modal, mods, [className])}>
-      <div onClick={closeHandler} className={cls.wrapper}>
-        <div onClick={onContentClick} style={{ width }} className={cls.content}>
-          {children}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
+	return createPortal(
+		<div className={classNames(cls.Modal, mods, [className])}>
+			<div onClick={closeHandler} className={cls.wrapper}>
+				<div onClick={onContentClick} style={{ width }} className={cls.content}>
+					{children}
+				</div>
+			</div>
+		</div>,
+		document.body,
+	);
 };
 
 export default Modal;

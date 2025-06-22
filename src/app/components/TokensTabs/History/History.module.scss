@@ -1,75 +1,75 @@
-@use "sass:math";
+@use 'sass:math';
 
 .historyItem {
-   display: block;
-   width: 100%;
-   position: relative;
-   background-color: rgba(31, 143, 235, 0.15);
-   border-radius: 16px;
-   padding: 16px;
-   transition: background-color 0.2s ease 0s;
-   &:hover {
-      background-color: rgba(31, 143, 235, 0.3);
-   }
-   &:not(:last-child) {
-      margin-bottom: 8px;
-   }
+	display: block;
+	width: 100%;
+	position: relative;
+	background-color: rgba(31, 143, 235, 0.15);
+	border-radius: 16px;
+	padding: 16px;
+	transition: background-color 0.2s ease 0s;
+	&:hover {
+		background-color: rgba(31, 143, 235, 0.3);
+	}
+	&:not(:last-child) {
+		margin-bottom: 8px;
+	}
 }
 
 .historyLoading {
-   position: absolute;
-   z-index: 1;
-   top: 16px;
-   right: 16px;
-   width: 20px;
-   height: 20px;
-   animation: rotate 0.8s infinite linear;
-   @keyframes rotate {
-      0% {
-         transform: rotate(0deg);
-      }
-      100% {
-         transform: rotate(360deg);
-      }
-   }
+	position: absolute;
+	z-index: 1;
+	top: 16px;
+	right: 16px;
+	width: 20px;
+	height: 20px;
+	animation: rotate 0.8s infinite linear;
+	@keyframes rotate {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 }
 
 .historyTop {
-   display: flex;
-   align-items: center;
-   column-gap: 8px;
-   margin-bottom: 11px;
-   padding-right: 45px;
-   p {
-      font-weight: 600;
-      font-size: 24px;
-      line-height: math.div(29, 24);
+	display: flex;
+	align-items: center;
+	column-gap: 8px;
+	margin-bottom: 11px;
+	padding-right: 45px;
+	p {
+		font-weight: 600;
+		font-size: 24px;
+		line-height: math.div(29, 24);
 
-      > span {
-         word-break: break-all;
-      }
-   }
+		> span {
+			word-break: break-all;
+		}
+	}
 }
 
 .historyIcon {
-   font-size: 28px;
-   flex: 0 0 28px;
-   height: 28px;
-   width: 28px;
-   color: #1f8feb;
-   &.receiveVariant {
-      color: #16d1d6;
-      transform: rotate(-180deg);
-   }
+	font-size: 28px;
+	flex: 0 0 28px;
+	height: 28px;
+	width: 28px;
+	color: #1f8feb;
+	&.receiveVariant {
+		color: #16d1d6;
+		transform: rotate(-180deg);
+	}
 }
 
 .historyAddress {
-   display: block;
-   white-space: nowrap;
-   text-overflow: ellipsis;
-   overflow: hidden;
-   font-size: 14px;
-   line-height: math.div(17, 14);
-   color: #1F8FEB;
-   opacity: 0.5;
+	display: block;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	font-size: 14px;
+	line-height: math.div(17, 14);
+	color: #1f8feb;
+	opacity: 0.5;
 }

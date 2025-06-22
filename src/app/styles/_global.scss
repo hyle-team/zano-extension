@@ -1,101 +1,101 @@
-@use "sass:math";
+@use 'sass:math';
 
 .round-button {
-  position: relative;
-  flex: 0 0 35px;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background-color 0.2s ease 0s;
-  span {
-    position: absolute;
-    z-index: 10;
-    top: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    left: -5px;
-    transform: translate(-100%, 0);
-    padding: 0 8px;
-    border-radius: 5px;
-    height: 29px;
-    font-size: 16px;
-    white-space: nowrap;
-    line-height: math.div(19, 16);
-    font-weight: 300;
-    color: #ffffff;
-    background: rgba(20, 65, 130, 1);
-    opacity: 0;
-    visibility: hidden;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 11.5px;
-      right: -3px;
-      width: 6px;
-      height: 6px;
-      background: rgba(20, 65, 130, 1);
-      transform: rotate(45deg);
-    }
-  }
-  img {
-    width: 18px;
-    height: 18px;
-    max-width: 100%;
-  }
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.07);
-    span {
-      opacity: 1;
-      visibility: visible;
-      transition: all 0.1s ease 1s;
-    }
-  }
+	position: relative;
+	flex: 0 0 35px;
+	border-radius: 50%;
+	width: 35px;
+	height: 35px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: background-color 0.2s ease 0s;
+	span {
+		position: absolute;
+		z-index: 10;
+		top: 4px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		pointer-events: none;
+		left: -5px;
+		transform: translate(-100%, 0);
+		padding: 0 8px;
+		border-radius: 5px;
+		height: 29px;
+		font-size: 16px;
+		white-space: nowrap;
+		line-height: math.div(19, 16);
+		font-weight: 300;
+		color: #ffffff;
+		background: rgba(20, 65, 130, 1);
+		opacity: 0;
+		visibility: hidden;
+		&::after {
+			content: '';
+			position: absolute;
+			top: 11.5px;
+			right: -3px;
+			width: 6px;
+			height: 6px;
+			background: rgba(20, 65, 130, 1);
+			transform: rotate(45deg);
+		}
+	}
+	img {
+		width: 18px;
+		height: 18px;
+		max-width: 100%;
+	}
+	&:hover {
+		background-color: rgba(255, 255, 255, 0.07);
+		span {
+			opacity: 1;
+			visibility: visible;
+			transition: all 0.1s ease 1s;
+		}
+	}
 }
 
 // =========================================================
 ._input-filled {
-  border-color: #16D1D6 !important;
+	border-color: #16d1d6 !important;
 }
 
 // =========================================================
 // Table
 .table {
-  padding-bottom: 50px;
-  &__row {
-    display: flex;
-    align-items: center;
-    row-gap: 2px;
-    column-gap: 20px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    width: 100%;
+	padding-bottom: 50px;
+	&__row {
+		display: flex;
+		align-items: center;
+		row-gap: 2px;
+		column-gap: 20px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		width: 100%;
 
-    &:not(:last-child) {
-      margin-bottom: 16px;
-    }
-  }
-  &__label {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 18px;
-    line-height: math.div(21, 18);
-    color: #1F8FEB;
-  }
-  &__value {
-    font-weight: 300;
-    font-size: 18px;
-    line-height: math.div(21, 18);
-    color: rgba(255, 255, 255, 0.9);
-    word-break: break-all;
-    .table__row_button & {
-      flex: 1 1 100%;
-    }
-  }
+		&:not(:last-child) {
+			margin-bottom: 16px;
+		}
+	}
+	&__label {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 18px;
+		line-height: math.div(21, 18);
+		color: #1f8feb;
+	}
+	&__value {
+		font-weight: 300;
+		font-size: 18px;
+		line-height: math.div(21, 18);
+		color: rgba(255, 255, 255, 0.9);
+		word-break: break-all;
+		.table__row_button & {
+			flex: 1 1 100%;
+		}
+	}
 }

@@ -1,52 +1,53 @@
-@use "sass:math";
+@use 'sass:math';
 
 .label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  line-height: math.div(21, 18);
-  color: #1F8FEB;
-  height: 35px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	line-height: math.div(21, 18);
+	color: #1f8feb;
+	height: 35px;
 }
 
 .myInput {
-  transition: border-color 0.1s ease 0s;
+	transition: border-color 0.1s ease 0s;
 
-  input {
-    height: 41px;
-    padding: 10px 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    font-weight: 300;
-    background-color: transparent;
-    width: 100%;
-    color: #ffffff;
+	input {
+		height: 41px;
+		padding: 10px 12px;
+		border: 2px solid rgba(255, 255, 255, 0.2);
+		border-radius: 8px;
+		font-weight: 300;
+		background-color: transparent;
+		width: 100%;
+		color: #ffffff;
 
-    &:focus {
-      border-color: rgba(255, 255, 255, 0.4);
-    }
+		&:focus {
+			border-color: rgba(255, 255, 255, 0.4);
+		}
 
-    &.filled {
-      border-color: #16D1D6;
-    }
+		&.filled {
+			border-color: #16d1d6;
+		}
 
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.3);
-    }
+		&::placeholder {
+			color: rgba(255, 255, 255, 0.3);
+		}
 
-    &.error, &.customError {
-      border-color: #FF6767;
-    }
-  }
+		&.error,
+		&.customError {
+			border-color: #ff6767;
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+	-webkit-appearance: none;
+	margin: 0;
 }
 
-input[type=number] {
-  -moz-appearance: textfield;
+input[type='number'] {
+	-moz-appearance: textfield;
 }

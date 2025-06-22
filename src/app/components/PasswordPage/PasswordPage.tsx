@@ -1,9 +1,8 @@
-import React, { ChangeEvent } from "react";
-import s from "./PasswordPage.module.scss";
-import logo from "../../assets/svg/logo.svg";
-import MyInput from "../UI/MyInput/MyInput";
-import Button from "../UI/Button/Button";
-import { useState } from "react";
+import React, { ChangeEvent, useState } from 'react';
+import s from './PasswordPage.module.scss';
+import logo from '../../assets/svg/logo.svg';
+import MyInput from '../UI/MyInput/MyInput';
+import Button from '../UI/Button/Button';
 
 interface PasswordPageProps {
 	onConfirm: (password: string) => void;
@@ -12,13 +11,9 @@ interface PasswordPageProps {
 }
 
 function PasswordPage(props: PasswordPageProps) {
-	const {
-		onConfirm,
-		incorrectPassword,
-		setIncorrectPassword
-	} = props;
+	const { onConfirm, incorrectPassword, setIncorrectPassword } = props;
 
-	const [password, setPassword] = useState("");
+	const [password, setPassword] = useState('');
 
 	function onInputChange(event: ChangeEvent<HTMLInputElement>) {
 		setIncorrectPassword(false);
@@ -26,17 +21,12 @@ function PasswordPage(props: PasswordPageProps) {
 	}
 
 	function onButtonClick() {
-		onConfirm && onConfirm(password);
+		if (onConfirm) onConfirm(password);
 	}
 
 	return (
 		<div className={s.passwordPage}>
-
-			<img
-				className={s.logoImage}
-				src={logo}
-				alt="Zano"
-			/>
+			<img className={s.logoImage} src={logo} alt="Zano" />
 			<p>Enter your password</p>
 			<div className={s.inputPanel}>
 				<MyInput
@@ -44,15 +34,12 @@ function PasswordPage(props: PasswordPageProps) {
 					type="password"
 					inputData={{ value: password, isDirty: !!incorrectPassword }}
 					onChange={onInputChange}
-					onKeyDown={event => event.key === "Enter" ? onButtonClick() : undefined}
+					onKeyDown={(event) => (event.key === 'Enter' ? onButtonClick() : undefined)}
 				/>
-				<Button onClick={onButtonClick}>
-					Enter
-				</Button>
+				<Button onClick={onButtonClick}>Enter</Button>
 			</div>
-
 		</div>
-	)
+	);
 }
 
 export default PasswordPage;

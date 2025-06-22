@@ -1,42 +1,51 @@
 @charset "UTF-8";
 
 @font-face {
-   font-family: SFUIDisplay;
-   font-display: swap;
-   src: url("../assets/fonts/SFUIDisplay-light.woff2") format("woff2"), url("../assets/fonts/SFUIDisplay-light.woff") format("woff");
-   font-weight: 300;
-   font-style: normal;
+	font-family: SFUIDisplay;
+	font-display: swap;
+	src:
+		url('../assets/fonts/SFUIDisplay-light.woff2') format('woff2'),
+		url('../assets/fonts/SFUIDisplay-light.woff') format('woff');
+	font-weight: 300;
+	font-style: normal;
 }
 
 @font-face {
-   font-family: SFUIDisplay;
-   font-display: swap;
-   src: url("../assets/fonts/SFUIDisplay-regular.woff2") format("woff2"), url("../assets/fonts/SFUIDisplay-regular.woff") format("woff");
-   font-weight: 400;
-   font-style: normal;
+	font-family: SFUIDisplay;
+	font-display: swap;
+	src:
+		url('../assets/fonts/SFUIDisplay-regular.woff2') format('woff2'),
+		url('../assets/fonts/SFUIDisplay-regular.woff') format('woff');
+	font-weight: 400;
+	font-style: normal;
 }
 
 @font-face {
-   font-family: SFUIDisplay;
-   font-display: swap;
-   src: url("../assets/fonts/SFUIDisplay-medium.woff2") format("woff2"), url("../assets/fonts/SFUIDisplay-medium.woff") format("woff");
-   font-weight: 500;
-   font-style: normal;
+	font-family: SFUIDisplay;
+	font-display: swap;
+	src:
+		url('../assets/fonts/SFUIDisplay-medium.woff2') format('woff2'),
+		url('../assets/fonts/SFUIDisplay-medium.woff') format('woff');
+	font-weight: 500;
+	font-style: normal;
 }
 
 @font-face {
-   font-family: SFUIDisplay;
-   font-display: swap;
-   src: url("../assets/fonts/SFUIDisplay-semibold.woff2") format("woff2"), url("../assets/fonts/SFUIDisplay-semibold.woff") format("woff");
-   font-weight: 600;
-   font-style: normal;
+	font-family: SFUIDisplay;
+	font-display: swap;
+	src:
+		url('../assets/fonts/SFUIDisplay-semibold.woff2') format('woff2'),
+		url('../assets/fonts/SFUIDisplay-semibold.woff') format('woff');
+	font-weight: 600;
+	font-style: normal;
 }
 
 @font-face {
-   font-family: SFUIDisplay;
-   font-display: swap;
-   src: url("../assets/fonts/SFUIDisplay-bold.woff2") format("woff2"), url("../assets/fonts/SFUIDisplay-bold.woff") format("woff");
-   font-weight: 700;
-   font-style: normal;
+	font-family: SFUIDisplay;
+	font-display: swap;
+	src:
+		url('../assets/fonts/SFUIDisplay-bold.woff2') format('woff2'),
+		url('../assets/fonts/SFUIDisplay-bold.woff') format('woff');
+	font-weight: 700;
+	font-style: normal;
 }
-

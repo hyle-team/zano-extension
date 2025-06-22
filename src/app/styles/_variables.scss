@@ -1,18 +1,18 @@
-$fontFamily: "SFUIDisplay";
+$fontFamily: 'SFUIDisplay';
 $fontSize: 18px;
 $mainColor: #ffffff;
 $blueColor: #1f8feb;
 $appWidth: 360px;
 $appHeight: 600px;
 
-:root{
-  // Sizes
-  --app-width: 360px;
-  --app-height: 600px;
+:root {
+	// Sizes
+	--app-width: 360px;
+	--app-height: 600px;
 
-  // Z-index's
-  --modal-z-index: 150;
+	// Z-index's
+	--modal-z-index: 150;
 
-  // Colors
-  --overlay-color: rgba(0, 0, 0, 0.7);
+	// Colors
+	--overlay-color: rgba(0, 0, 0, 0.7);
 }
