@@ -540,7 +540,7 @@ export const burnAsset = async ({
   };
 
   if (nativeAmount) {
-    params.native_amount = nativeAmount;
+    params.native_amount = addZeros(nativeAmount, 12).toFixed(0);
   }
 
   if (pointTxToAddress) {
@@ -550,6 +550,9 @@ export const burnAsset = async ({
   if (serviceEntries.length > 0) {
     params.service_entries = serviceEntries;
   }
+
+  console.log("BURN PARAMS:", params);
+  
 
   const response = await fetchData("burn_asset", params);
 

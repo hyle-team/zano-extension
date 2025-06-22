@@ -82,9 +82,9 @@ export interface BurnAssetRequest {
 
 export interface BurnAssetDataType {
     assetId: string;
-    burnAmount: number;
+    burnAmount: string;
     decimalPoint?: number;
-    nativeAmount?: number;
+    nativeAmount?: string;
     pointTxToAddress?: string;
     serviceEntries?: {
         service_id: string;

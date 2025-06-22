@@ -205,7 +205,7 @@ const OuterConfirmation = () => {
 							<h5>Burn Amount</h5>
 							<p>{burnAmount}</p>
 						</div>
-						{nativeAmount ?? (
+						{typeof nativeAmount === "string" && (
 							<div className={styles.row}>
 								<h5>Native Amount</h5>
 								<p>{nativeAmount}</p>
