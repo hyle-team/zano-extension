@@ -512,3 +512,51 @@ export async function addAssetToWhitelist(assetId: string) {
   return data;
 
 }
+
+export const burnAsset = async ({
+  assetId,
+  burnAmount,
+  decimalPoint = 12,
+  nativeAmount = 0,
+  pointTxToAddress,
+  serviceEntries = [],
+}: {
+  assetId: string;
+  burnAmount: number;
+  decimalPoint?: number;
+  nativeAmount?: number;
+  pointTxToAddress?: string;
+  serviceEntries?: {
+    body: string;
+    flags: number;
+    instruction: string;
+    security?: string;
+    service_id: string;
+  }[];
+}) => {
+  const params: any = {
+    asset_id: assetId,
+    burn_amount: addZeros(burnAmount, decimalPoint).toFixed(0),
+  };
+
+  if (nativeAmount) {
+    params.native_amount = nativeAmount;
+  }
+
+  if (pointTxToAddress) {
+    params.point_tx_to_address = pointTxToAddress;
+  }
+
+  if (serviceEntries.length > 0) {
+    params.service_entries = serviceEntries;
+  }
+
+  const response = await fetchData("burn_asset", params);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};

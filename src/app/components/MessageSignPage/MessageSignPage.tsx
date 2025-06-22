@@ -21,7 +21,7 @@ export default function MessageSignPage() {
         setReqIndex(0);
     }, [signRequests]);
 
-    function nextRequest() {
+    async function nextRequest() {
         if (reqIndex < signRequests.length - 1) {
             setReqIndex(reqIndex + 1);
         } else {
@@ -31,18 +31,17 @@ export default function MessageSignPage() {
 
     async function acceptClick() {
         setAccepting(true);
-        await fetchBackground({ method: "FINALIZE_MESSAGE_SIGN", id: signRequest.id, success: true });
+        await fetchBackground({ method: "FINALIZE_MESSAGE_SIGN", id: signRequest?.id, success: true });
         setAccepting(false);
-        nextRequest();
+        await nextRequest();
     }
 
     async function denyClick() {
         setDenying(true);
-        await fetchBackground({ method: "FINALIZE_MESSAGE_SIGN", id: signRequest.id, success: false });
+        await fetchBackground({ method: "FINALIZE_MESSAGE_SIGN", id: signRequest?.id, success: false });
         setDenying(false);
-        nextRequest();
+        await nextRequest();
     }
-
     return (
         <div className={styles.signContainer}>
             <h3 className={styles.title}>Sign Request</h3>
@@ -50,7 +49,7 @@ export default function MessageSignPage() {
             <p className={styles.subtext}>You sign:</p>
             <div className={styles.messageBlock}>
                 <p className={styles.messageTitle}>Message:</p>
-                <p>{signRequest.message}</p>
+                <p>{signRequest?.message}</p>
             </div>
             <div className={styles.buttonsContainer}>
                 <Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>Deny</Button>
