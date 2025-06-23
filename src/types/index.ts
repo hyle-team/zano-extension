@@ -94,3 +94,10 @@ export interface BurnAssetDataType {
         security?: string;
     }[];
 }
+
+export interface IAsset {
+  asset_id: string;
+  ticker: string;
+  full_name: string;
+  decimal_point: number;
+}

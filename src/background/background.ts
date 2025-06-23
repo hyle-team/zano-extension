@@ -19,6 +19,8 @@ import {
   burnAsset
 } from "./wallet";
 import JSONbig from "json-bigint";
+import { IAsset } from "../types";
+import { getAsset } from "./wallet";
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -26,32 +28,6 @@ const POPUP_WIDTH = 370;
 const ZANO_ID =
   ZANO_ASSET_ID;
 
-interface Asset {
-  asset_id: string;
-  ticker: string;
-  full_name: string;
-  decimal_point: number;
-}
-
-async function getAsset(assetId: string): Promise<Asset | undefined> {
-  if (assetId === ZANO_ID) {
-    return {
-      asset_id: ZANO_ID,
-      ticker: "ZANO",
-      full_name: "Zano",
-      decimal_point: 12,
-    };
-  } else {
-    const assetRsp = await getAssetInfo(assetId);
-    const asset = assetRsp?.result?.asset_descriptor;
-
-    if (!asset) {
-      return undefined;
-    }
-
-    return asset;
-  }
-}
 
 interface PopupRequest {
   windowId: number;
@@ -307,8 +283,8 @@ interface RequestType {
   success: boolean;
   destinationAssetID: string;
   currentAssetID: string;
-  currentAsset: Asset;
-  destinationAsset: Asset;
+  currentAsset: IAsset;
+  destinationAsset: IAsset;
   hex_raw_proposal?: string;
   alias?: string;
   sender?: string;
@@ -325,7 +301,7 @@ interface RequestType {
   destinationAddress?: string;
   receivingAsset?: any;
   sendingAsset?: any;
-  asset?: Asset;
+  asset?: IAsset;
   asset_id?: string;
   asset_name?: string;
   comment: string;

@@ -5,6 +5,7 @@ import { Buffer } from "buffer";
 import JSONbig from "json-bigint";
 import { ZANO_ASSET_ID } from "../constants";
 // window.Buffer = Buffer;
+import { IAsset } from "../types";
 
 interface JWTPayload {
   body_hash: string,
@@ -347,7 +348,7 @@ export const transfer = async (
   };
 
   if (comment) options.comment = comment;
-  
+
   const response = await fetchData("transfer", options);
 
   if (!response.ok) {
@@ -501,6 +502,26 @@ export async function getAssetInfo(assetId: any) {
   return data;
 }
 
+export async function getAsset(assetId: string): Promise<IAsset | undefined> {
+  if (assetId === ZANO_ASSET_ID) {
+    return {
+      asset_id: ZANO_ASSET_ID,
+      ticker: "ZANO",
+      full_name: "Zano",
+      decimal_point: 12,
+    };
+  } else {
+    const assetRsp = await getAssetInfo(assetId);
+    const asset = assetRsp?.result?.asset_descriptor;
+
+    if (!asset) {
+      return undefined;
+    }
+
+    return asset;
+  }
+}
+
 export async function addAssetToWhitelist(assetId: string) {
   const response = await fetchData("assets_whitelist_add", {
     asset_id: assetId,
@@ -516,14 +537,12 @@ export async function addAssetToWhitelist(assetId: string) {
 export const burnAsset = async ({
   assetId,
   burnAmount,
-  decimalPoint = 12,
   nativeAmount = 0,
   pointTxToAddress,
   serviceEntries = [],
 }: {
   assetId: string;
   burnAmount: number;
-  decimalPoint?: number;
   nativeAmount?: number;
   pointTxToAddress?: string;
   serviceEntries?: {
@@ -534,27 +553,25 @@ export const burnAsset = async ({
     service_id: string;
   }[];
 }) => {
-  const params: any = {
-    asset_id: assetId,
-    burn_amount: addZeros(burnAmount, decimalPoint).toFixed(0),
-  };
 
-  if (nativeAmount) {
-    params.native_amount = addZeros(nativeAmount, 12).toFixed(0);
+  const asset_data = await getAsset(assetId);
+
+  if (!asset_data) {
+    throw new Error('Unable to fetch asset data')
   }
 
-  if (pointTxToAddress) {
-    params.point_tx_to_address = pointTxToAddress;
-  }
-
-  if (serviceEntries.length > 0) {
-    params.service_entries = serviceEntries;
-  }
-
-  console.log("BURN PARAMS:", params);
   
 
-  const response = await fetchData("burn_asset", params);
+  const response = await fetchData("burn_asset", {
+    fee: 10000000000,
+    mixin: 15,
+    service_entries_permanent: true,
+    asset_id: assetId,
+    burn_amount: addZeros(burnAmount, asset_data?.decimal_point),
+    service_entries: serviceEntries || [],
+    point_tx_to_address: typeof pointTxToAddress === 'string' ? pointTxToAddress : undefined,
+    native_amount: parseInt(addZeros(nativeAmount, 12).toFixed(0)),
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
