@@ -9,6 +9,6 @@ export const classNames = (
 		cls,
 		...additional.filter(Boolean),
 		...Object.entries(mods)
-			.filter(([className, value]) => Boolean(value))
+			.filter(([_className, value]) => Boolean(value))
 			.map(([classNames]) => classNames),
 	].join(' ');

@@ -6,7 +6,7 @@ export function useCensorDigits() {
 	const { state, dispatch } = useContext(Store);
 
 	const changeCensor = () => {
-		updateBalancesHidden(dispatch, (prevState: boolean) => !prevState);
+		updateBalancesHidden(dispatch, !state.isBalancesHidden);
 	};
 
 	const censorValue = (number: number | string): string | number => {

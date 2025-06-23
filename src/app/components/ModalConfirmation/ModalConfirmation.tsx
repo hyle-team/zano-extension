@@ -10,9 +10,14 @@ interface ModalConfirmationProps {
 	onConfirm: () => void;
 }
 
+interface confirmationModalType {
+	params: string;
+	method: string;
+}
+
 const ModalConfirmation = ({ isOpen, onClose, onConfirm }: ModalConfirmationProps) => {
 	const { state } = useContext(Store);
-	const { method, params } = state.confirmationModal || {};
+	const { method, params } = (state.confirmationModal as unknown as confirmationModalType) || {};
 
 	const closeHandler = useCallback(() => {
 		onClose();

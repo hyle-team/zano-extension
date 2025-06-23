@@ -30,7 +30,9 @@
 			}
 		],
 		"import/no-unresolved": "off",
+		"import/no-mutable-exports": "off",
 		"no-async-promise-executor": "off",
+		"default-param-last": "off",
 		"no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
 		"func-names": "off",
 		"consistent-return": "off",

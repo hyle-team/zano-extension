@@ -15,6 +15,7 @@ export const useValidation = (value: string | number, validations: Validations) 
 
 	useEffect(() => {
 		for (const validation in validations) {
+			if (!Object.prototype.hasOwnProperty.call(validations, validation)) continue;
 			switch (validation) {
 				case 'minLength':
 					if (typeof value === 'string' && value.length < validations[validation]!) {
@@ -26,14 +27,15 @@ export const useValidation = (value: string | number, validations: Validations) 
 				case 'isEmpty':
 					setIsEmpty(!value);
 					break;
-				case 'isAmountCorrect':
+				case 'isAmountCorrect': {
 					const amountCheckResult =
 						typeof value === 'number' &&
-						!isNaN(value) &&
+						!Number.isNaN(value) &&
 						value >= 0.000000000001 &&
 						value <= 1000000000;
 					setAmountCorrectError(!amountCheckResult);
 					break;
+				}
 				case 'customValidation':
 					setInputValid(true);
 					break;

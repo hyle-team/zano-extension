@@ -45,7 +45,7 @@ import {
 	AcceptSwapReq,
 	AssetWhitelistReq,
 	dispatchType,
-	RequestType,
+	BurnAssetRequestType,
 	SwapRequest,
 	transferType,
 } from '../types';
@@ -82,6 +82,7 @@ function App() {
 			const response = await fetchBackground({
 				method: 'EXECUTE_BRIDGING_TRANSFER',
 			});
+
 			if (response.data.error) {
 				return { sent: false, status: response.data.error };
 			}
@@ -129,6 +130,7 @@ function App() {
 			const walletActive = await fetchBackground({
 				method: 'GET_WALLET_DATA',
 			});
+
 			updateWalletConnected(dispatch as dispatchType, !walletActive.error);
 			updateLoading(dispatch as dispatchType, false);
 		};
@@ -137,6 +139,7 @@ function App() {
 			if (!chrome?.runtime?.sendMessage) return;
 
 			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
+
 			if (!walletsList.data) return;
 			updateWalletsList(dispatch as dispatchType, walletsList.data);
 
@@ -192,7 +195,7 @@ function App() {
 
 	useEffect(() => {
 		const listener = (
-			request: RequestType,
+			request: BurnAssetRequestType,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: { status: string }) => void,
 		) => {
@@ -380,7 +383,11 @@ function App() {
 				const swapPageReqs = swapRequests.map((e: SwapRequest) => {
 					const { swap } = e;
 
-					const swapParams: { address: string } | any = {};
+					const swapParams: {
+						address?: string;
+						receiving?: React.JSX.Element;
+						sending?: React.JSX.Element;
+					} | null = {};
 
 					swapParams.address = swap.destinationAddress;
 
@@ -389,13 +396,16 @@ function App() {
 
 					swapParams.receiving = getSwapAmountText(
 						receivingAmount,
-						receivingAsset as any,
+						receivingAsset as unknown as { ticker: string },
 					);
 
 					const sendingAsset = swap.currentAsset;
 					const sendingAmount = new Big(swap.currentAssetAmount);
 
-					swapParams.sending = getSwapAmountText(sendingAmount, sendingAsset as any);
+					swapParams.sending = getSwapAmountText(
+						sendingAmount,
+						sendingAsset as unknown as { ticker: string },
+					);
 
 					return {
 						id: e.id,
@@ -433,7 +443,10 @@ function App() {
 
 						const swap = e?.swapProposal;
 
-						const swapParams: { receiving: string } | any = {};
+						const swapParams: {
+							receiving?: React.JSX.Element;
+							sending?: React.JSX.Element;
+						} = {};
 
 						function toBigWithDecimal(amount: Big, decimalPoint: number) {
 							if (amount) {
@@ -451,7 +464,7 @@ function App() {
 							if (receivingAmount !== undefined) {
 								swapParams.receiving = getSwapAmountText(
 									receivingAmount,
-									receivingAsset as any,
+									receivingAsset as unknown as { ticker: string },
 								);
 							}
 
@@ -464,7 +477,7 @@ function App() {
 							if (sendingAmount !== undefined) {
 								swapParams.sending = getSwapAmountText(
 									sendingAmount,
-									sendingAsset as any,
+									sendingAsset as unknown as { ticker: string },
 								);
 							}
 						}
@@ -532,7 +545,7 @@ function App() {
 				const response = await fetchBackground({ method: 'GET_BURN_ASSET_REQUESTS' });
 				const burnRequests = response.data;
 
-				const pageReqs = burnRequests.map((e: any) => {
+				const pageReqs = burnRequests.map((e: { burn: unknown; id: string }) => {
 					const data = e.burn;
 
 					return {
@@ -569,7 +582,7 @@ function App() {
 				credentials: {
 					token: state.connectCredentials.token,
 					port: state?.connectCredentials?.port || defaultPort,
-				} as any,
+				} as { token: string; port: string },
 			});
 		}
 	}, [state.connectCredentials]);
@@ -617,44 +630,50 @@ function App() {
 				{loggedIn && state.isConnected && <Header />}
 				<AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
-				{appConnected && !connectOpened ? (
-					loggedIn ? (
-						state.isConnected ? (
-							<div className="container">
-								<Router>
-									<Wallet setConnectOpened={setConnectOpened} />
-									<TokensTabs />
-								</Router>
-							</div>
-						) : (
-							<AppPlug setConnectOpened={setConnectOpened} />
-						)
-					) : (
-						PasswordPages()
-					)
-				) : (
-					<ConnectPage
-						incorrectPassword={incorrectPassword}
-						setIncorrectPassword={setIncorrectPassword}
-						passwordExists={passwordExists()}
-						setConnectOpened={setConnectOpened}
-						onConfirm={async (inputPassword, connectKey, walletPort) => {
-							const password = inputPassword || (await getSessionPassword());
-
-							if (!password) return;
-							setPassword(password);
-
-							if (connectKey)
-								ConnectKeyUtils.setConnectData(
-									connectKey,
-									String(walletPort),
-									password,
+				{(() => {
+					if (appConnected && !connectOpened) {
+						if (loggedIn) {
+							if (state.isConnected) {
+								return (
+									<div className="container">
+										<Router>
+											<Wallet setConnectOpened={setConnectOpened} />
+											<TokensTabs />
+										</Router>
+									</div>
 								);
-							setLoggedIn(true);
-							await setSessionPassword(password);
-						}}
-					/>
-				)}
+							}
+							return <AppPlug setConnectOpened={setConnectOpened} />;
+						}
+						return PasswordPages();
+					}
+
+					return (
+						<ConnectPage
+							incorrectPassword={incorrectPassword}
+							setIncorrectPassword={setIncorrectPassword}
+							passwordExists={passwordExists()}
+							setConnectOpened={setConnectOpened}
+							onConfirm={async (inputPassword, connectKey, walletPort) => {
+								const password = inputPassword || (await getSessionPassword());
+								if (!password) return;
+
+								setPassword(password);
+
+								if (connectKey) {
+									ConnectKeyUtils.setConnectData(
+										connectKey,
+										String(walletPort),
+										password,
+									);
+								}
+
+								setLoggedIn(true);
+								await setSessionPassword(password);
+							}}
+						/>
+					);
+				})()}
 			</>
 		</div>
 	);

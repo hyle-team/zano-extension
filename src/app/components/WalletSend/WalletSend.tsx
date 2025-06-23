@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { popToTop } from 'react-chrome-extension-router';
 import failedImage from '../../assets/images/failed-round.png';
 import successImage from '../../assets/images/success-round.png';
@@ -28,7 +28,7 @@ interface FetchBackgroundParams {
 	};
 }
 
-interface AssetProps {
+export interface AssetProps {
 	unlockedBalance: number;
 	balance: number;
 }
@@ -63,7 +63,7 @@ const WalletSend = () => {
 		decimalPoint: number,
 	) =>
 		new Promise(async (resolve, reject) => {
-			if (chrome.runtime.sendMessage as any) {
+			try {
 				const response = await fetchBackground({
 					method: 'SEND_TRANSFER',
 					assetId,
@@ -80,8 +80,8 @@ const WalletSend = () => {
 				} else {
 					reject(new Error('No data or error received in response.'));
 				}
-			} else {
-				reject(new Error('chrome.runtime.sendMessage is not available.'));
+			} catch (err) {
+				reject(err);
 			}
 		});
 
@@ -151,7 +151,14 @@ const WalletSend = () => {
 										inputData={address as inputDataProps}
 										isValid={!!submitAddress}
 									/>
-									<AssetsSelect value={asset} setValue={setAsset} />
+
+									<AssetsSelect
+										value={asset}
+										setValue={
+											setAsset as Dispatch<SetStateAction<{ name: string }>>
+										}
+									/>
+
 									<MyInput
 										type="number"
 										placeholder="Amount to transfer"
@@ -176,7 +183,11 @@ const WalletSend = () => {
 											!submitAddress ||
 											!amount.value ||
 											!amountValid ||
-											!checkAvailableBalance(amount.value, asset)
+											!asset.unlockedBalance ||
+											!checkAvailableBalance(
+												amount.value,
+												asset as AssetProps,
+											)
 										}
 									>
 										Send
@@ -203,14 +214,14 @@ const WalletSend = () => {
 
 								<Button
 									onClick={async () => {
-										const transferStatus = await sendTransfer(
+										const transferStatus = (await sendTransfer(
 											submitAddress,
 											amount.value,
 											String(comment.value),
 											String(asset.assetId),
 											Number(asset.decimalPoint),
-										);
-										console.log('transfer status', transferStatus);
+										)) as { result?: { tx_hash: string } };
+
 										if (transferStatus.result) {
 											setTxId(transferStatus.result.tx_hash);
 											setTransactionSuccess(true);

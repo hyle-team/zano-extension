@@ -44,6 +44,7 @@ const OuterConfirmation = () => {
 	const transactionParams = params
 		? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
 		: {};
+
 	const totalAmount = Number(
 		isMultipleDestinations
 			? destinations.reduce(
@@ -113,7 +114,7 @@ const OuterConfirmation = () => {
 					<div className={styles.confirmation__block}>
 						<div className={styles.row}>
 							<h5>From</h5>
-							<p>{transactionParams?.F}</p>
+							<p>{transactionParams?.From}</p>
 						</div>
 						<div className={styles.row}>
 							<h5>Asset</h5>
@@ -248,12 +249,14 @@ const OuterConfirmation = () => {
 							<h5>Burn Amount</h5>
 							<p>{burnAmount}</p>
 						</div>
-						{nativeAmount && (
+
+						{typeof nativeAmount === 'string' && (
 							<div className={styles.row}>
 								<h5>Native Amount</h5>
 								<p>{nativeAmount}</p>
 							</div>
 						)}
+
 						{pointTxToAddress && (
 							<div className={styles.row}>
 								<h5>Send Tx To</h5>
@@ -317,6 +320,7 @@ const OuterConfirmation = () => {
 				</>
 			);
 		}
+
 		return (
 			<div>
 				<div className={styles.confirmation__block}>
@@ -344,28 +348,27 @@ const OuterConfirmation = () => {
 			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
 
 			<div className={styles.confirmation__bottom}>
-				{isTransferMethod ||
-					(isBurnMethod && (
-						<>
-							<div className={styles.confirmation__bottom_fee}>
-								<h5>
-									Transaction fee <InfoTooltip title="Total network fee" />
-								</h5>
-								<p>0.01 ZANO</p>
-							</div>
+				{(isTransferMethod || isBurnMethod) && (
+					<>
+						<div className={styles.confirmation__bottom_fee}>
+							<h5>
+								Transaction fee <InfoTooltip title="Total network fee" />
+							</h5>
+							<p>0.01 ZANO</p>
+						</div>
 
-							{isTransferMethod && (
-								<>
-									<div className={styles.divider} />
+						{isTransferMethod && (
+							<>
+								<div className={styles.divider} />
 
-									<div className={styles.confirmation__bottom_total}>
-										<h5>Total</h5>
-										<p>{totalAmount}</p>
-									</div>
-								</>
-							)}
-						</>
-					))}
+								<div className={styles.confirmation__bottom_total}>
+									<h5>Total</h5>
+									<p>{totalAmount}</p>
+								</div>
+							</>
+						)}
+					</>
+				)}
 
 				<div className={styles.confirmation__bottom_buttons}>
 					<Button

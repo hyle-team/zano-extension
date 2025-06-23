@@ -79,7 +79,10 @@ export const updateLoading = (dispatch: DispatchFunction, state: WalletState['is
 		payload: state,
 	});
 
-export const updateBalancesHidden = (dispatch: any, state: any): void =>
+export const updateBalancesHidden = (
+	dispatch: React.Dispatch<{ type: 'BALANCES_HIDDEN_UPDATED'; payload: boolean }>,
+	state: boolean,
+): void =>
 	dispatch({
 		type: 'BALANCES_HIDDEN_UPDATED',
 		payload: state,
@@ -96,7 +99,7 @@ export const updateConfirmationModal = (
 
 export const updateTransactionStatus = (
 	dispatch: DispatchFunction,
-	state: WalletState['transactionStatus'] | any,
+	state: WalletState['transactionStatus'] | object,
 ): void =>
 	dispatch({
 		type: 'TRANSACTION_STATUS_UPDATED',

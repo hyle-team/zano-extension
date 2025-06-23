@@ -66,7 +66,7 @@ interface State {
 	isConnected: boolean | undefined;
 	isBalancesHidden: boolean;
 	priceData: PriceData;
-	confirmationModal: string | null | any;
+	confirmationModal: null | string;
 	transactionStatus: TransactionStatus;
 	connectCredentials: ConnectCredentials;
 	whitelistedAssets: string[];

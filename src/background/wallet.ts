@@ -4,6 +4,17 @@ import JSONbig from 'json-bigint';
 import { apiCredentials } from './background';
 import { addZeros, removeZeros } from '../app/utils/utils';
 import { ZANO_ASSET_ID } from '../constants';
+import {
+	BurnAssetDataType,
+	BurnAssetParamsType,
+	ionicSwapType,
+	ParsedAddress,
+	ParsedBalance,
+	Transaction,
+	TransactionRaw,
+	WalletAsset,
+	WalletRaw,
+} from '../types';
 // window.Buffer = Buffer;
 
 interface JWTPayload {
@@ -66,7 +77,7 @@ interface fetchDataProps {
 
 export const fetchData = async (
 	method: string,
-	params: fetchDataProps | object = {},
+	params: string | fetchDataProps | object = {},
 ): Promise<Response> => {
 	const httpBody: string = JSON.stringify({
 		jsonrpc: '2.0',
@@ -102,7 +113,7 @@ const fetchTxData = async () => {
 	return JSONbig.parse(data);
 };
 
-export const getAlias = async (address: string) => {
+export const getAlias = async (address: string | fetchDataProps | object = {}) => {
 	const response = await fetchData('get_alias_by_address', address);
 	const data = await response.json();
 	if (data.result?.status === 'OK') {
@@ -131,17 +142,17 @@ export const getWallets = async () => {
 	// console.log("wallets:", data.result.wallets);
 
 	const wallets = await Promise.all(
-		data.result.wallets.map(async (wallet: any) => {
+		data.result.wallets.map(async (wallet: WalletRaw) => {
 			const alias = await getAlias(wallet.wi.address);
-			const balance = wallet.wi.balances.find(
-				(asset: any) => asset.asset_info.asset_id === ZANO_ASSET_ID,
-			).total;
+			const balanceRaw =
+				wallet.wi.balances.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
+					?.total || '0';
 
 			return {
 				address: wallet.wi.address,
 				alias,
-				balance: removeZeros(balance),
-				is_watch_only: wallet?.wi?.is_watch_only,
+				balance: removeZeros(balanceRaw),
+				is_watch_only: wallet.wi.is_watch_only,
 				wallet_id: wallet.wallet_id,
 			};
 		}),
@@ -157,13 +168,14 @@ export const getWallets = async () => {
 
 export const getWalletData = async () => {
 	const addressResponse = await fetchData('getaddress');
-	const addressParsed = await addressResponse.json();
+	const addressParsed: ParsedAddress = await addressResponse.json();
 	const { address } = addressParsed.result;
-	const balanceResponse = await fetchData('getbalance');
-	const balanceParsed = JSONbig.parse(await balanceResponse.text());
 
-	const assets = balanceParsed.result.balances
-		.map((asset: any) => ({
+	const balanceResponse = await fetchData('getbalance');
+	const balanceParsed: ParsedBalance = JSONbig.parse(await balanceResponse.text());
+
+	const assets: WalletAsset[] = balanceParsed.result.balances
+		.map((asset) => ({
 			name: asset.asset_info.full_name,
 			ticker: asset.asset_info.ticker,
 			assetId: asset.asset_info.asset_id,
@@ -171,33 +183,30 @@ export const getWalletData = async () => {
 			balance: removeZeros(asset.total, asset.asset_info.decimal_point),
 			unlockedBalance: removeZeros(asset.unlocked, asset.asset_info.decimal_point),
 		}))
-		.sort((a: any, b: any) => {
-			if (a.assetId === ZANO_ASSET_ID) {
-				return -1;
-			}
-			if (b.assetId === ZANO_ASSET_ID) {
-				return 1;
-			}
+		.sort((a, b) => {
+			if (a.assetId === ZANO_ASSET_ID) return -1;
+			if (b.assetId === ZANO_ASSET_ID) return 1;
 			return 0;
 		});
 
-	function getAssetDecimalPoint(assetId: any) {
-		return assets.find((asset: any) => asset.assetId === assetId)?.decimalPoint;
+	function getAssetDecimalPoint(assetId: string): number | undefined {
+		return assets.find((asset) => asset.assetId === assetId)?.decimalPoint;
 	}
 
 	const balance = removeZeros(
-		balanceParsed.result.balances.find(
-			(asset: any) => asset.asset_info.asset_id === ZANO_ASSET_ID,
-		).total,
+		balanceParsed.result.balances.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
+			?.total || '0',
 	);
+
 	const txDataResponse = await fetchTxData();
-	const txData = txDataResponse.result.transfers;
-	let transactions = [];
+	const txData: TransactionRaw[] = txDataResponse.result.transfers;
+
+	let transactions: Transaction[] = [];
 
 	if (txData) {
 		transactions = txData
-			.filter((tx: any) => !tx.is_service)
-			.map((tx: any) => ({
+			.filter((tx) => !tx.is_service)
+			.map((tx) => ({
 				isConfirmed: tx.height !== 0,
 				txHash: tx.tx_hash,
 				blobSize: tx.tx_blob_size,
@@ -207,8 +216,8 @@ export const getWalletData = async () => {
 				comment: tx.comment,
 				fee: removeZeros(tx.fee),
 				addresses: tx.remote_addresses,
-				isInitiator: !!tx.employed_entries?.spent?.some?.((e: any) => e?.index === 0),
-				transfers: tx.subtransfers.map((transfer: any) => ({
+				isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
+				transfers: tx.subtransfers.map((transfer) => ({
 					amount: removeZeros(
 						transfer.amount,
 						getAssetDecimalPoint(transfer.asset_id) || 12,
@@ -219,9 +228,8 @@ export const getWalletData = async () => {
 			}));
 	}
 
-	// console.log("get alias:", address);
-
 	const alias = await getAlias(address);
+
 	return {
 		address,
 		alias,
@@ -231,7 +239,7 @@ export const getWalletData = async () => {
 	};
 };
 
-export const ionicSwap = async (swapParams: any) => {
+export const ionicSwap = async (swapParams: ionicSwapType) => {
 	const response = await fetchData('ionic_swap_generate_proposal', {
 		proposal: {
 			to_initiator: [
@@ -267,7 +275,7 @@ export const ionicSwap = async (swapParams: any) => {
 	return data;
 };
 
-export const ionicSwapAccept = async (swapParams: any) => {
+export const ionicSwapAccept = async (swapParams: { hex_raw_proposal: unknown }) => {
 	console.log(swapParams.hex_raw_proposal);
 
 	const response = await fetchData('ionic_swap_accept_proposal', {
@@ -296,9 +304,9 @@ export const createAlias = async ({ alias, address }: { address: string; alias: 
 
 export const transfer = async (
 	assetId = ZANO_ASSET_ID,
-	destination: string,
-	amount: string,
-	decimalPoint: any,
+	destination: string | undefined,
+	amount: string | undefined,
+	decimalPoint: number,
 	comment?: string,
 	destinations: { address: string; amount: number }[] = [],
 ) => {
@@ -316,7 +324,7 @@ export const transfer = async (
 					{
 						address: destination,
 						amount: addZeros(
-							amount,
+							String(amount),
 							typeof decimalPoint === 'number' ? decimalPoint : 12,
 						),
 						asset_id: assetId,
@@ -342,15 +350,15 @@ export const transfer = async (
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	return await response.json();
+	return response.json();
 };
 
 // TODO: move bridge address to the config
 export const burnBridge = async (
+	amount: string,
+	destinationAddress: string,
+	destinationChainId: string,
 	assetId = ZANO_ASSET_ID,
-	amount: any,
-	destinationAddress: any,
-	destinationChainId: any,
 ) => {
 	const bodyData = {
 		service_id: 'B',
@@ -394,7 +402,7 @@ export const burnBridge = async (
 	return data;
 };
 
-export const signMessage = async (message: any) => {
+export const signMessage = async (message: string) => {
 	const base64 = Buffer.from(message).toString('base64');
 
 	const signRequest = {
@@ -411,15 +419,15 @@ export const signMessage = async (message: any) => {
 	return data;
 };
 export const createConnectKey = async () =>
-	await fetch(`http://localhost:${apiCredentials.port}/connect-api-consumer`, {
+	fetch(`http://localhost:${apiCredentials.port}/connect-api-consumer`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
 	}).then((r) => r.json());
 
-export const validateConnectKey = async (key: any) =>
-	await fetch(`http://localhost:${apiCredentials.port}/validate-connection-key`, {
+export const validateConnectKey = async (key: string | undefined) =>
+	fetch(`http://localhost:${apiCredentials.port}/validate-connection-key`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -427,7 +435,7 @@ export const validateConnectKey = async (key: any) =>
 		body: JSON.stringify({ key }),
 	}).then((r) => r.json());
 
-export const getSwapProposalInfo = async (hex: any) => {
+export const getSwapProposalInfo = async (hex: string | undefined) => {
 	const response = await fetchData('ionic_swap_get_proposal_info', {
 		hex_raw_proposal: hex,
 	});
@@ -446,7 +454,7 @@ export async function getWhiteList() {
 		.then((response) => response.json())
 		.then((data) => data.assets);
 
-	if (fetchedWhiteList.every((e: any) => e.asset_id !== ZANO_ASSET_ID)) {
+	if (fetchedWhiteList.every((e: { asset_id: string }) => e.asset_id !== ZANO_ASSET_ID)) {
 		fetchedWhiteList.push({
 			asset_id: ZANO_ASSET_ID,
 			ticker: 'ZANO',
@@ -458,7 +466,7 @@ export async function getWhiteList() {
 	return fetchedWhiteList;
 }
 
-export async function getAssetInfo(assetId: any) {
+export async function getAssetInfo(assetId: string) {
 	const response = await fetchData('get_asset_info', { asset_id: assetId });
 
 	if (!response.ok) {
@@ -485,30 +493,17 @@ export const burnAsset = async ({
 	assetId,
 	burnAmount,
 	decimalPoint = 12,
-	nativeAmount = 0,
+	nativeAmount = '0',
 	pointTxToAddress,
 	serviceEntries = [],
-}: {
-	assetId: string;
-	burnAmount: number;
-	decimalPoint?: number;
-	nativeAmount?: number;
-	pointTxToAddress?: string;
-	serviceEntries?: {
-		body: string;
-		flags: number;
-		instruction: string;
-		security?: string;
-		service_id: string;
-	}[];
-}) => {
-	const params: any = {
+}: BurnAssetDataType) => {
+	const params: BurnAssetParamsType = {
 		asset_id: assetId,
 		burn_amount: addZeros(burnAmount, decimalPoint).toFixed(0),
 	};
 
 	if (nativeAmount) {
-		params.native_amount = nativeAmount;
+		params.native_amount = addZeros(nativeAmount, 12).toFixed(0);
 	}
 
 	if (pointTxToAddress) {

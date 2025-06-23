@@ -1,6 +1,6 @@
-/* global chrome */
 import JSONbig from 'json-bigint';
 import { ZANO_ASSET_ID } from '../constants';
+import { BurnAssetDataType, ionicSwapType, RequestType, TransferDataType } from '../types/index';
 import {
 	fetchData,
 	getWalletData,
@@ -52,8 +52,8 @@ async function getAsset(assetId: string): Promise<Asset | undefined> {
 }
 
 interface PopupRequest {
-	windowId: number;
-	finalizer: (data: unknown) => void;
+	windowId?: number;
+	finalizer?: (data: unknown) => void;
 	[key: string]: unknown;
 }
 
@@ -68,9 +68,35 @@ interface ErrorMessages {
 	reqNotFound: string;
 }
 
+type SavedRequestType =
+	| 'IONIC_SWAP'
+	| 'ACCEPT_IONIC_SWAP'
+	| 'CREATE_ALIAS'
+	| 'TRANSFER'
+	| 'ASSETS_WHITELIST_ADD'
+	| 'BURN_ASSET';
+
+const savedRequests: Record<
+	| 'IONIC_SWAP'
+	| 'ACCEPT_IONIC_SWAP'
+	| 'CREATE_ALIAS'
+	| 'TRANSFER'
+	| 'ASSETS_WHITELIST_ADD'
+	| 'BURN_ASSET',
+	Record<string, PopupRequest>
+> = {
+	IONIC_SWAP: {},
+	ACCEPT_IONIC_SWAP: {},
+	CREATE_ALIAS: {},
+	TRANSFER: {},
+	ASSETS_WHITELIST_ADD: {},
+	BURN_ASSET: {},
+};
+
+const allPopupIds: number[] = [];
 class PopupRequestsMethods {
 	static onRequestCreate(
-		requestType: keyof typeof savedRequests,
+		requestType: SavedRequestType,
 		request: { timeout?: number },
 		sendResponse: (response: RequestResponse) => void,
 		reqParams: PopupRequest,
@@ -82,11 +108,11 @@ class PopupRequestsMethods {
 			const req = {
 				...reqParams,
 				windowId: requestWindow.id,
-				finalizer: (data: unknown) => sendResponse(data as any),
+				finalizer: (data: unknown) => sendResponse(data as RequestResponse),
 			};
 
 			allPopupIds.push(requestWindow.id as number);
-			(savedRequests[requestType][reqId] as any) = req;
+			savedRequests[requestType][reqId] = req;
 
 			if (typeof request.timeout === 'number') {
 				setTimeout(() => {
@@ -121,13 +147,13 @@ class PopupRequestsMethods {
 		const { success } = request;
 		const req = savedRequests[requestType][reqId];
 
-		if (req) {
-			function finalize(data: unknown) {
-				req.finalizer(data);
-				delete savedRequests[requestType][reqId];
-				chrome.windows.remove(req.windowId);
-			}
+		function finalize(data: unknown) {
+			if (req.finalizer) req.finalizer(data);
+			delete savedRequests[requestType][reqId];
+			if (req.windowId) chrome.windows.remove(req.windowId);
+		}
 
+		if (req) {
 			if (!success) {
 				finalize({ error: 'Request denied by user' });
 				sendResponse({ data: true });
@@ -228,26 +254,11 @@ interface SignReqFinalizer {
 }
 
 const signReqFinalizers: SignReqFinalizer = {};
-const signReqs: unknown[] = [];
-
-const savedRequests: Record<
-	| 'IONIC_SWAP'
-	| 'ACCEPT_IONIC_SWAP'
-	| 'CREATE_ALIAS'
-	| 'TRANSFER'
-	| 'ASSETS_WHITELIST_ADD'
-	| 'BURN_ASSET',
-	Record<string, PopupRequest>
-> = {
-	IONIC_SWAP: {},
-	ACCEPT_IONIC_SWAP: {},
-	CREATE_ALIAS: {},
-	TRANSFER: {},
-	ASSETS_WHITELIST_ADD: {},
-	BURN_ASSET: {},
-};
-
-const allPopupIds: number[] = [];
+const signReqs: {
+	id: string;
+	windowId: number;
+	message: string;
+}[] = [];
 
 chrome.storage.local.get('pendingTx', (result) => {
 	if (result.pendingTx) {
@@ -289,62 +300,22 @@ const SELF_ONLY_REQUESTS = [
 	'GET_BURN_ASSET_REQUESTS',
 	'FINALIZE_BURN_ASSET_REQUEST',
 ];
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	processRequest(request, sender as any, sendResponse);
-	return true;
-});
-
-interface RequestType {
-	method: string;
-	credentials: Object;
-	id: string;
-	assetId: string;
-	destination: string;
-	amount: string;
-	decimalPoint: string;
-	success: boolean;
-	destinationAssetID: string;
-	currentAssetID: string;
-	currentAsset: Asset;
-	destinationAsset: Asset;
-	hex_raw_proposal?: string;
-	alias?: string;
-	sender?: string;
-	transfer?: any;
-	swapProposal?: any;
-	password?: string;
-	key?: string;
-	aliasDetails?: any;
-	signReqs?: any[];
-	windowId?: number;
-	message?: string;
-	timeout?: number;
-	destinationChainId?: string;
-	destinationAddress?: string;
-	receivingAsset?: any;
-	sendingAsset?: any;
-	asset?: Asset;
-	asset_id?: string;
-	asset_name?: string;
-	comment: string;
-	burnAmount: number;
-	nativeAmount?: number;
-	pointTxToAddress?: string;
-	serviceEntries?: any[];
-}
-
 interface Sender {
 	id: string;
 	name?: string;
 	email?: string;
 	phoneNumber?: string;
 	address?: string;
-	[key: string]: any;
+	[key: string]: string | undefined;
 }
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	processRequest(request, sender as Sender, sendResponse);
+	return true;
+});
+
 interface SendResponse {
-	(_response: any): void;
+	(_response: unknown): void;
 }
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
@@ -375,8 +346,8 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 		case 'PING_WALLET':
 			fetch(`http://localhost:${apiCredentials.port}/ping`)
 				.then((res) => res.json())
-				.then((res) => sendResponse({ data: true }))
-				.catch((err) => sendResponse({ data: false }));
+				.then((_res) => sendResponse({ data: true }))
+				.catch((_err) => sendResponse({ data: false }));
 			break;
 
 		case 'SET_ACTIVE_WALLET':
@@ -457,7 +428,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				'IONIC_SWAP',
 				request,
 				sendResponse,
-				(req) => ionicSwap(req.swap),
+				(req) => ionicSwap(req.swap as ionicSwapType),
 				{
 					console: 'Error creating ionic swap:',
 					response: 'An error occurred while creating ionic swap',
@@ -485,7 +456,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 			PopupRequestsMethods.onRequestCreate('IONIC_SWAP', request, sendResponse, {
 				swap: request,
-			} as any);
+			});
 			break;
 		}
 
@@ -512,7 +483,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 			PopupRequestsMethods.onRequestCreate('TRANSFER', request, sendResponse, {
 				transfer: request,
-			} as any);
+			});
 			break;
 		}
 
@@ -522,9 +493,9 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				request,
 				sendResponse,
 				(req) => {
-					const transferData: any = req.transfer;
+					const transferData = req.transfer;
 					const { assetId, destination, amount, asset, comment, destinations } =
-						transferData;
+						transferData as TransferDataType;
 
 					const hasMultipleDestinations =
 						Array.isArray(destinations) && destinations.length > 0;
@@ -574,7 +545,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				sendResponse,
 				async (req) =>
 					createAlias({
-						alias: req.alias,
+						alias: String(req.alias),
 						address: (await getWalletData()).address,
 					}),
 				{
@@ -623,7 +594,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				'ACCEPT_IONIC_SWAP',
 				request,
 				sendResponse,
-				request as any,
+				request as unknown as PopupRequest,
 			);
 			break;
 		}
@@ -648,7 +619,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				burnBridge(
 					pendingTx.assetId,
 					pendingTx.amount,
-					pendingTx.destinationAddress,
+					String(pendingTx.destinationAddress),
 					pendingTx.destinationChainId,
 				)
 					.then((data) => {
@@ -706,14 +677,17 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 		case 'FINALIZE_MESSAGE_SIGN': {
 			const reqId = request.id;
 			const { success } = request;
-			const signReq: any = signReqs.find((req: any) => req.id === reqId);
+			const signReq = signReqs.find((req) => req.id === reqId);
 
 			if (signReq && signReqFinalizers[reqId]) {
-				function finalize(data: any) {
+				// eslint-disable-next-line no-inner-declarations
+				function finalize(data: unknown) {
 					signReqFinalizers[reqId](data);
-					signReqs.splice(signReqs.indexOf(signReq), 1);
-					delete signReqFinalizers[reqId];
-					chrome.windows.remove(signReq.windowId);
+					if (signReq) {
+						signReqs.splice(signReqs.indexOf(signReq), 1);
+						delete signReqFinalizers[reqId];
+						chrome.windows.remove(signReq.windowId);
+					}
 				}
 
 				if (!success) {
@@ -758,13 +732,13 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 				signReqs.push({
 					id: signReqId,
-					windowId: requestWindow.id,
-					message: request.message,
+					windowId: Number(requestWindow.id),
+					message: String(request.message),
 				});
 
 				if (typeof request.timeout === 'number') {
 					setTimeout(() => {
-						const signReqIndex = signReqs.findIndex((req: any) => req.id === signReqId);
+						const signReqIndex = signReqs.findIndex((req) => req.id === signReqId);
 
 						if (signReqIndex === -1) {
 							return;
@@ -832,7 +806,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 			PopupRequestsMethods.onRequestCreate('CREATE_ALIAS', request, sendResponse, {
 				alias: request.alias,
-			} as any);
+			});
 			break;
 		}
 
@@ -853,7 +827,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				'ASSETS_WHITELIST_ADD',
 				request,
 				sendResponse,
-				request as any,
+				request as unknown as PopupRequest,
 			);
 			break;
 		}
@@ -877,7 +851,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				method: 'FINALIZE_BURN_ASSET_REQUEST',
 				name: 'Burn asset',
 				burn: request,
-			} as any);
+			});
 			break;
 
 		case 'GET_BURN_ASSET_REQUESTS':
@@ -890,7 +864,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				request,
 				sendResponse,
 				async (req) => {
-					const burnReq = req.burn as any;
+					const burnReq = req.burn as BurnAssetDataType;
 					return burnAsset({
 						assetId: burnReq.assetId,
 						burnAmount: burnReq.burnAmount,
