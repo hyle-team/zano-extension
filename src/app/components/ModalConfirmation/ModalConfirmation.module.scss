@@ -1,69 +1,68 @@
-@use "sass:math";
+@use 'sass:math';
 
 .ConfirmationModal {
-
 }
 
 .title {
-  color: #FFF;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 8px;
+	color: #fff;
+	text-align: center;
+	font-size: 22px;
+	font-weight: 600;
+	margin-bottom: 8px;
 }
 
 .subTitle {
-  color: rgba(255, 255, 255, 0.90);
-  text-align: center;
-  font-size: 18px;
-  font-weight: 300;
-  margin-bottom: 8px;
+	color: rgba(255, 255, 255, 0.9);
+	text-align: center;
+	font-size: 18px;
+	font-weight: 300;
+	margin-bottom: 8px;
 }
 
 .table {
-  margin: 16px 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  font-size: 16px;
-  column-gap: 20px;
-  max-height: 150px;
-  overflow-x: visible;
-  overflow-y: auto;
+	margin: 16px 0;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.05);
+	padding: 16px;
+	font-size: 16px;
+	column-gap: 20px;
+	max-height: 150px;
+	overflow-x: visible;
+	overflow-y: auto;
 }
 
 .tableRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  column-gap: 20px;
-  row-gap: 5px;
-  &:not(:last-child) {
-    margin-bottom: 8px;
-  }
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	column-gap: 20px;
+	row-gap: 5px;
+	&:not(:last-child) {
+		margin-bottom: 8px;
+	}
 }
 
 .label {
-  color: #1F8FEB;
-  margin-bottom: 5px;
+	color: #1f8feb;
+	margin-bottom: 5px;
 }
 
 .value {
-  font-weight: 300;
-  line-height: 1.2;
-  span {
-    //text-align: right;
-    display: block;
-    word-break: break-all;
-    &:not(:last-child) {
-      margin-bottom: 8px;
-    }
-  }
+	font-weight: 300;
+	line-height: 1.2;
+	span {
+		//text-align: right;
+		display: block;
+		word-break: break-all;
+		&:not(:last-child) {
+			margin-bottom: 8px;
+		}
+	}
 }
 
 .actions {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 16px;
+	margin-top: 8px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	column-gap: 16px;
 }

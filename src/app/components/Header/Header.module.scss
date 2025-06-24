@@ -1,105 +1,105 @@
-@use "sass:math";
-@import "src/app/styles/variables";
+@use 'sass:math';
+@import 'src/app/styles/variables';
 
 .header {
-  position: fixed;
-  z-index: 100;
-  top: 0;
-  left: 0;
-  width: 360px;
-  height: 56px;
-  background: #0f2055;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  column-gap: 30px;
-  padding: 0 16px;
-  text-align: center;
+	position: fixed;
+	z-index: 100;
+	top: 0;
+	left: 0;
+	width: 360px;
+	height: 56px;
+	background: #0f2055;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	column-gap: 30px;
+	padding: 0 16px;
+	text-align: center;
 }
 
 // =========================================================
 .headerStatus {
-  display: flex;
-  align-items: center;
-  column-gap: 5px;
-  font-size: 14px;
-  text-align: right;
-  span {
-    border-radius: 50%;
-    width: 10px;
-    height: 10px;
-    flex: 0 0 10px;
-  }
+	display: flex;
+	align-items: center;
+	column-gap: 5px;
+	font-size: 14px;
+	text-align: right;
+	span {
+		border-radius: 50%;
+		width: 10px;
+		height: 10px;
+		flex: 0 0 10px;
+	}
 }
 
 // =========================================================
 .dropdown {
-  position: absolute;
-  width: 100%;
-  left: 0;
-  top: calc(100% + 1px);
-  height: calc($appHeight - 56px);
-  background-color: var(--overlay-color);
+	position: absolute;
+	width: 100%;
+	left: 0;
+	top: calc(100% + 1px);
+	height: calc($appHeight - 56px);
+	background-color: var(--overlay-color);
 }
 
 .dropdownButton {
-  display: flex;
-  align-items: center;
-  column-gap: 8px;
-  font-weight: 600;
-  line-height: math.div(21, 18);
-  color: #fff;
-  font-size: 18px;
+	display: flex;
+	align-items: center;
+	column-gap: 8px;
+	font-weight: 600;
+	line-height: math.div(21, 18);
+	color: #fff;
+	font-size: 18px;
 }
 
 .dropdownList {
-  background-color: #0F2055;
-  max-height: 300px;
-  overflow-y: scroll;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: block;
-    width: 5px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-  }
+	background-color: #0f2055;
+	max-height: 300px;
+	overflow-y: scroll;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: block;
+		width: 5px;
+	}
+	&::-webkit-scrollbar-thumb {
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 5px;
+	}
 }
 
 .dropdownTitle {
-  padding: 20px 16px;
-  display: flex;
-  align-items: center;
-  column-gap: 30px;
-  justify-content: space-between;
-  width: 100%;
+	padding: 20px 16px;
+	display: flex;
+	align-items: center;
+	column-gap: 30px;
+	justify-content: space-between;
+	width: 100%;
 
-  text-align: left;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: math.div(21, 18);
-  span {
-    margin-top: 6px;
-    display: block;
-    font-size: 14px;
-    line-height: math.div(17, 14);
-    opacity: 0.5;
-  }
-  &:not(:last-child) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
+	text-align: left;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: math.div(21, 18);
+	span {
+		margin-top: 6px;
+		display: block;
+		font-size: 14px;
+		line-height: math.div(17, 14);
+		opacity: 0.5;
+	}
+	&:not(:last-child) {
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+	&:hover {
+		background: rgba(255, 255, 255, 0.05);
+	}
 }
 
 .dropdownBalance {
-  font-weight: 600;
-  font-size: 18px;
-  line-height: math.div(21, 18);
-  text-align: right;
-  color: #1F8FEB;
+	font-weight: 600;
+	font-size: 18px;
+	line-height: math.div(21, 18);
+	text-align: right;
+	color: #1f8feb;
 }

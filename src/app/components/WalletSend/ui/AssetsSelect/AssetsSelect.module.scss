@@ -1,152 +1,152 @@
-@use "sass:math";
+@use 'sass:math';
 
 .select {
-  position: relative;
+	position: relative;
 }
 
 .selectValue {
-  text-align: left;
-  width: 100%;
-  padding: 10px 12px;
-  height: 41px;
-  display: flex;
-  white-space: nowrap;
-  align-items: center;
-  background: #11316B;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  justify-content: space-between;
-  text-transform: capitalize;
-  &:focus {
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  .valueArrow {
-    display: block;
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
-  }
-  img {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
-    max-width: 100%;
-  }
-  span {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    column-gap: 8px;
-  }
-  &.active {
-    border-color: rgba(255, 255, 255, 0.5);
-    border-radius: 8px 8px 0 0;
-    .valueArrow {
-      transform: rotate(-180deg);
-    }
-  }
+	text-align: left;
+	width: 100%;
+	padding: 10px 12px;
+	height: 41px;
+	display: flex;
+	white-space: nowrap;
+	align-items: center;
+	background: #11316b;
+	border-radius: 8px;
+	border: 2px solid transparent;
+	justify-content: space-between;
+	text-transform: capitalize;
+	&:focus {
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+	.valueArrow {
+		display: block;
+		width: 18px;
+		height: 18px;
+		flex: 0 0 18px;
+	}
+	img {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 18px;
+		max-width: 100%;
+	}
+	span {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		column-gap: 8px;
+	}
+	&.active {
+		border-color: rgba(255, 255, 255, 0.5);
+		border-radius: 8px 8px 0 0;
+		.valueArrow {
+			transform: rotate(-180deg);
+		}
+	}
 }
 
 .options {
-  position: absolute;
-  z-index: 20;
-  width: 100%;
-  left: 0;
-  overflow: auto;
-  border-radius: 0 0 8px 8px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-top: none;
-  background-color: #11316B;
-  visibility: hidden;
-  opacity: 0;
-  max-height: 300px;
+	position: absolute;
+	z-index: 20;
+	width: 100%;
+	left: 0;
+	overflow: auto;
+	border-radius: 0 0 8px 8px;
+	border: 2px solid rgba(255, 255, 255, 0.5);
+	border-top: none;
+	background-color: #11316b;
+	visibility: hidden;
+	opacity: 0;
+	max-height: 300px;
 
-  &.active{
-    opacity: 1;
-    visibility: visible;
-  }
+	&.active {
+		opacity: 1;
+		visibility: visible;
+	}
 }
 
 .option {
-  position: relative;
-  text-align: left;
-  text-transform: capitalize;
-  display: flex;
-  align-items: center;
-  column-gap: 8px;
-  width: 100%;
-  padding: 10px 12px;
-  height: 41px;
-  .selectPoint {
-    position: absolute;
-    z-index: 2;
-    display: block;
-    top: 11px;
-    right: 12px;
-    width: 18px;
-    flex: 0 0 18px;
-    border-radius: 50%;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    background-color: transparent;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      border-radius: 50%;
-      width: 10px;
-      height: 10px;
-      opacity: 0;
-      visibility: hidden;
-    }
-  }
+	position: relative;
+	text-align: left;
+	text-transform: capitalize;
+	display: flex;
+	align-items: center;
+	column-gap: 8px;
+	width: 100%;
+	padding: 10px 12px;
+	height: 41px;
+	.selectPoint {
+		position: absolute;
+		z-index: 2;
+		display: block;
+		top: 11px;
+		right: 12px;
+		width: 18px;
+		flex: 0 0 18px;
+		border-radius: 50%;
+		height: 18px;
+		border: 2px solid rgba(255, 255, 255, 0.5);
+		background-color: transparent;
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background-color: #fff;
+			border-radius: 50%;
+			width: 10px;
+			height: 10px;
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
 
-  &:focus,
-  &:active {
-    &::after {
-      opacity: 1;
-    }
-  }
+	&:focus,
+	&:active {
+		&::after {
+			opacity: 1;
+		}
+	}
 
-  &[disabled] {
-    opacity: 0.5;
-  }
+	&[disabled] {
+		opacity: 0.5;
+	}
 
-  &[data-active*=true] {
-    .selectPoint {
-      &::after {
-        opacity: 1;
-        visibility: visible;
-      }
-    }
-  }
+	&[data-active*='true'] {
+		.selectPoint {
+			&::after {
+				opacity: 1;
+				visibility: visible;
+			}
+		}
+	}
 
-  img {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
-    max-width: 100%;
-  }
+	img {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 18px;
+		max-width: 100%;
+	}
 
-  &::after {
-    content: "";
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.1);
-    width: 100%;
-    left: 0;
-    height: 100%;
-    opacity: 0;
-  }
-  @media (any-hover: hover) {
-    &:hover {
-      &:not([disabled]) {
-        &::after {
-          opacity: 1;
-        }
-      }
-    }
-  }
+	&::after {
+		content: '';
+		position: absolute;
+		background-color: rgba(255, 255, 255, 0.1);
+		width: 100%;
+		left: 0;
+		height: 100%;
+		opacity: 0;
+	}
+	@media (any-hover: hover) {
+		&:hover {
+			&:not([disabled]) {
+				&::after {
+					opacity: 1;
+				}
+			}
+		}
+	}
 }

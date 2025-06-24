@@ -1,45 +1,47 @@
 .Modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--app-width);
-  height: var(--app-height);
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition: all 0.2s ease 0s;
-  z-index: -1;
-  &.opened {
-    z-index: var(--modal-z-index);
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: var(--app-width);
+	height: var(--app-height);
+	opacity: 0;
+	pointer-events: none;
+	visibility: hidden;
+	transition: all 0.2s ease 0s;
+	z-index: -1;
+
+	&.opened {
+		z-index: var(--modal-z-index);
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
 }
 
 .wrapper {
-  width: 100%;
-  height: 100%;
-  background-color: var(--overlay-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	width: 100%;
+	height: 100%;
+	background-color: var(--overlay-color);
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .content {
-  z-index: 11;
-  padding: 16px;
-  border-radius: 8px;
-  width: 328px;
-  min-height: 200px;
-  background: #11316B;
-  transform: scale(0.8);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease 0s;
-  .opened & {
-    transform: scale(1);
-    opacity: 1;
-    visibility: visible;
-  }
+	z-index: 11;
+	padding: 16px;
+	border-radius: 8px;
+	width: 328px;
+	min-height: 200px;
+	background: #11316b;
+	transform: scale(0.8);
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.2s ease 0s;
+
+	.opened & {
+		transform: scale(1);
+		opacity: 1;
+		visibility: visible;
+	}
 }

@@ -1,15 +1,14 @@
-@use "sass:math";
-
+@use 'sass:math';
 
 .transaction__transfers {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 10px;
 
-  .transaction__transfer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+	.transaction__transfer {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
 }

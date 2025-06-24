@@ -1,57 +1,56 @@
-@use "sass:math";
+@use 'sass:math';
 
 .detailsSelect {
-  margin: 5px 0;
-
+	margin: 5px 0;
 }
 
 .detailsSelectValue {
-  background: #11316B;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  padding: 10px 12px;
-  justify-content: space-between;
-  height: 41px;
-  width: 100%;
-  border: 2px solid transparent;
-  img{
-    width: 18px;
-    display: block;
-    height: 18px;
-    flex: 0 0 18px;
-    max-width: 100%;
-  }
+	background: #11316b;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	padding: 10px 12px;
+	justify-content: space-between;
+	height: 41px;
+	width: 100%;
+	border: 2px solid transparent;
+	img {
+		width: 18px;
+		display: block;
+		height: 18px;
+		flex: 0 0 18px;
+		max-width: 100%;
+	}
 
-  transition: border-color 0.2s ease 0s;
+	transition: border-color 0.2s ease 0s;
 
-  &:focus {
-    border-color: rgba(255, 255, 255, 0.2);
-  }
+	&:focus {
+		border-color: rgba(255, 255, 255, 0.2);
+	}
 
-  &.active {
-    border-radius: 8px 8px 0 0;
+	&.active {
+		border-radius: 8px 8px 0 0;
 
-    img {
-      transform: rotate(-180deg);
-    }
-  }
+		img {
+			transform: rotate(-180deg);
+		}
+	}
 }
 
 .detailsSelectContent {
-  background: #11316B;
-  border-radius: 0 0 8px 8px;
-  padding: 5px 12px 18px 12px;
+	background: #11316b;
+	border-radius: 0 0 8px 8px;
+	padding: 5px 12px 18px 12px;
 }
 
 .detailsSelectInputs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 12px;
-  margin-bottom: 16px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	column-gap: 12px;
+	margin-bottom: 16px;
 }
 
 .detailsSelectCheckboxes {
-  display: grid;
-  row-gap: 16px;
+	display: grid;
+	row-gap: 16px;
 }

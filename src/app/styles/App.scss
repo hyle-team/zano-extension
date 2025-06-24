@@ -1,19 +1,19 @@
-@use "reset";
-@use "global";
-@use "fonts";
-@use "variables";
+@use 'reset';
+@use 'global';
+@use 'fonts';
+@use 'variables';
 
 .App {
-  position: relative;
-  background-color: #0C0C3A;
-  padding-top: 72px;
-  min-height: variables.$appHeight;
-  resize: none;
+	position: relative;
+	background-color: #0c0c3a;
+	padding-top: 72px;
+	min-height: variables.$appHeight;
+	resize: none;
 }
 
 .container {
-  margin: 0 16px;
-  height: 100%;
-  max-width: 100%;
-  min-height: 528px;
+	margin: 0 16px;
+	height: 100%;
+	max-width: 100%;
+	min-height: 528px;
 }

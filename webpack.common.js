@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require('path');
 
 module.exports = {
   module: {
@@ -6,38 +6,38 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: ["babel-loader"],
+        use: ['babel-loader'],
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.s[ac]ss$/i,
         use: [
-          "style-loader",
+          'style-loader',
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               modules: {
                 auto: /\.module\.\w+$/i,
-                localIdentName: "[path][name]__[local]--[hash:base64:5]",
+                localIdentName: '[path][name]__[local]--[hash:base64:5]',
               },
               importLoaders: 1,
               sourceMap: true,
             },
           },
-          "sass-loader",
+          'sass-loader',
         ],
       },
       {
         test: /\.svg$/,
         use: [
           {
-            loader: "url-loader",
+            loader: 'url-loader',
             options: {
               limit: 8192,
-              mimetype: "image/svg+xml",
+              mimetype: 'image/svg+xml',
             },
           },
         ],
@@ -46,10 +46,10 @@ module.exports = {
         test: /\.(png|jpe?g|gif)$/i,
         use: [
           {
-            loader: "file-loader",
+            loader: 'file-loader',
             options: {
-              outputPath: "static/images",
-              name: "[name].[ext]",
+              outputPath: 'static/images',
+              name: '[name].[ext]',
             },
           },
         ],
@@ -57,11 +57,11 @@ module.exports = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: "ts-loader",
+        use: 'ts-loader',
       },
     ],
   },
   resolve: {
-    extensions: ["*", ".js", ".jsx", ".ts", ".tsx"],
+    extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
   },
 };

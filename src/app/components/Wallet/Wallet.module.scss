@@ -1,184 +1,196 @@
-@use "sass:math";
-@import "src/app/styles/variables";
+@use 'sass:math';
+@import 'src/app/styles/variables';
 
 .wallet {
-  display: grid;
-  grid-template-columns: 1fr 25px;
-  align-items: start;
-  background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
-  border-radius: 16px;
-  padding: 16px 16px 10px 16px;
-  &:not(:last-child) {
-    margin-bottom: 20px;
-  }
+	display: grid;
+	grid-template-columns: 1fr 25px;
+	align-items: start;
+	background: radial-gradient(100% 188.88% at 0% 0%, #16d1d6 0%, #274cff 100%);
+	border-radius: 16px;
+	padding: 16px 16px 10px 16px;
+
+	&:not(:last-child) {
+		margin-bottom: 20px;
+	}
 }
 
 .actionsWallet {
-  display: grid;
-  row-gap: 5px;
+	display: grid;
+	row-gap: 5px;
 }
 
 .actionsSettings {
-  position: relative;
+	position: relative;
 }
 
 .settings {
-  position: absolute;
-  z-index: 2;
-  top: 105%;
-  right: -5px;
-  background: #11316b;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  width: 213px;
-  padding: 10px 0;
+	position: absolute;
+	z-index: 2;
+	top: 105%;
+	right: -5px;
+	background: #11316b;
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	border-radius: 8px;
+	width: 213px;
+	padding: 10px 0;
 }
 
 .settingsBtn {
-  text-align: left;
-  display: flex;
-  align-items: center;
-  column-gap: 6px;
-  height: 41px;
-  padding: 0 20px;
-  position: relative;
-  width: 100%;
-  img {
-    flex: 0 0 18px;
-  }
-  &[disabled] {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  &::after {
-    content: "";
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: rgba(255, 255, 255, 0.1);
-    opacity: 0;
-    visibility: hidden;
-  }
-  @media (any-hover: hover) {
-    &:hover {
-      &::after {
-        opacity: 1;
-        visibility: visible;
-      }
-    }
-  }
+	text-align: left;
+	display: flex;
+	align-items: center;
+	column-gap: 6px;
+	height: 41px;
+	padding: 0 20px;
+	position: relative;
+	width: 100%;
+
+	img {
+		flex: 0 0 18px;
+	}
+
+	&[disabled] {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		z-index: 1;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		background: rgba(255, 255, 255, 0.1);
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	@media (any-hover: hover) {
+		&:hover {
+			&::after {
+				opacity: 1;
+				visibility: visible;
+			}
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 .infoWallet {
-  display: grid;
-  row-gap: 11px;
+	display: grid;
+	row-gap: 11px;
 }
 
 .balance {
-  text-align: left;
-  display: flex;
-  align-self: center;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 32px;
-  line-height: math.div(38, 32);
-  .percentChange {
-    color: #ffcbcb;
-    font-size: 18px;
-    font-weight: 400;
-    line-height: math.div(21, 18);
-    padding-left: 6px;
-  }
+	text-align: left;
+	display: flex;
+	align-self: center;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+	font-weight: 600;
+	font-size: 32px;
+	line-height: math.div(38, 32);
+
+	.percentChange {
+		color: #ffcbcb;
+		font-size: 18px;
+		font-weight: 400;
+		line-height: math.div(21, 18);
+		padding-left: 6px;
+	}
 }
+
 .infoAddress {
-  display: flex;
-  column-gap: 20px;
-  align-items: center;
-  max-width: 256px;
-  span {
-    flex: 1 1 auto;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 14px;
-    line-height: math.div(17, 14);
-    opacity: 0.5;
-  }
+	display: flex;
+	column-gap: 20px;
+	align-items: center;
+	max-width: 256px;
+
+	span {
+		flex: 1 1 auto;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: 14px;
+		line-height: math.div(17, 14);
+		opacity: 0.5;
+	}
 }
 
 // =========================================================
 .aliasContent {
-  display: inline-block;
-  &.active {
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 5px 16px 6px 16px;
-    &::after {
-      content: "";
-      position: absolute;
-      right: -3px;
-      top: -3px;
-      width: 14px;
-      height: 14px;
-      background: url("../../assets/svg/crown.svg") center no-repeat;
-    }
-  }
+	display: inline-block;
+
+	&.active {
+		position: relative;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 8px;
+		padding: 5px 16px 6px 16px;
+
+		&::after {
+			content: '';
+			position: absolute;
+			right: -3px;
+			top: -3px;
+			width: 14px;
+			height: 14px;
+			background: url('../../assets/svg/crown.svg') center no-repeat;
+		}
+	}
 }
 
 .aliasCreateBtn {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 0 16px;
-  line-height: 32px;
-  transition: background-color 0.1s ease 0s;
-  @media (any-hover: hover) {
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.4);
-    }
-  }
+	background-color: rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	padding: 0 16px;
+	line-height: 32px;
+	transition: background-color 0.1s ease 0s;
+
+	@media (any-hover: hover) {
+		&:hover {
+			background-color: rgba(255, 255, 255, 0.4);
+		}
+	}
 }
 
 // =========================================================
 
 .balanceWrapper {
-  position: relative;
-  display: inline-block;
+	position: relative;
+	display: inline-block;
 
-  &:hover .tooltipText {
-    visibility: visible;
-    opacity: 1;
-  }
+	&:hover .tooltipText {
+		visibility: visible;
+		opacity: 1;
+	}
 }
 
 .tooltipText {
-  visibility: hidden;
-  background-color: #144182;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  top: 125%;
-  left: 50%;
-  margin-left: -120px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  &:after {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent #144182 transparent;
-  }
+	visibility: hidden;
+	background-color: #144182;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px;
+	position: absolute;
+	z-index: 1;
+	top: 125%;
+	left: 50%;
+	margin-left: -120px;
+	opacity: 0;
+	transition: opacity 0.3s;
+
+	&:after {
+		content: '';
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		margin-left: -5px;
+		border-width: 5px;
+		border-style: solid;
+		border-color: transparent transparent #144182 transparent;
+	}
 }
