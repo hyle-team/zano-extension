@@ -2,30 +2,28 @@ import JSONbig from 'json-bigint';
 import { ZANO_ASSET_ID } from '../constants';
 import { BurnAssetDataType, ionicSwapType, RequestType, TransferDataType } from '../types/index';
 import {
-  fetchData,
-  getWalletData,
-  getWallets,
-  transfer,
-  burnBridge,
-  ionicSwap,
-  ionicSwapAccept,
-  signMessage,
-  validateConnectKey,
-  getAliasDetails,
-  getSwapProposalInfo,
-  getWhiteList,
-  getAssetInfo,
-  createAlias,
-  addAssetToWhitelist,
-  burnAsset,
-  getAsset
-} from "./wallet";
+	fetchData,
+	getWalletData,
+	getWallets,
+	transfer,
+	burnBridge,
+	ionicSwap,
+	ionicSwapAccept,
+	signMessage,
+	validateConnectKey,
+	getAliasDetails,
+	getSwapProposalInfo,
+	getWhiteList,
+	createAlias,
+	addAssetToWhitelist,
+	burnAsset,
+	getAsset,
+} from './wallet';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
 
 const ZANO_ID = ZANO_ASSET_ID;
-
 
 interface PopupRequest {
 	windowId?: number;
@@ -448,35 +446,33 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				const { address } = walletData;
 				console.log('asset to transfer:', asset);
 
-        request.asset = asset || (await getAsset(ZANO_ID));
-        request.sender = address || "";
+				request.asset = asset || (await getAsset(ZANO_ID));
+				request.sender = address || '';
 
-        const decimal_point = request.asset?.decimal_point ?? 12;
+				const decimal_point = request.asset?.decimal_point ?? 12;
 
-        const destinations = request.destination ? 
-          [{ address: request.destination, amount: request.amount }] : 
-          request.destinations;
+				const destinations = request.destination
+					? [{ address: request.destination, amount: request.amount }]
+					: request.destinations;
 
-        if (!Array.isArray(destinations) || destinations.length === 0) {
-          throw new Error("Invalid destination(s)");
-        }
+				if (!Array.isArray(destinations) || destinations.length === 0) {
+					throw new Error('Invalid destination(s)');
+				}
 
-        const wrongDecimalPoint = destinations.some(dest => {
-          const [int, dec] = dest.amount.toString().split(".");
-          return dec && dec.length > decimal_point;
-        });
+				const wrongDecimalPoint = destinations.some((dest) => {
+					const [_, dec] = dest.amount.toString().split('.');
+					return dec && dec.length > decimal_point;
+				});
 
-        if (wrongDecimalPoint) {
-          throw new Error("Invalid decimal amount(s)");
-        }
-
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          return sendResponse({ error: e.message });
-        } else {
-          return sendResponse({ error: 'Unknown error occurred' });
-        }
-      }
+				if (wrongDecimalPoint) {
+					throw new Error('Invalid decimal amount(s)');
+				}
+			} catch (e: unknown) {
+				if (e instanceof Error) {
+					return sendResponse({ error: e.message });
+				}
+				return sendResponse({ error: 'Unknown error occurred' });
+			}
 
 			PopupRequestsMethods.onRequestCreate('TRANSFER', request, sendResponse, {
 				transfer: request,

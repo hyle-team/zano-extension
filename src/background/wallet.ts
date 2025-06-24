@@ -6,7 +6,6 @@ import { addZeros, removeZeros } from '../app/utils/utils';
 import { ZANO_ASSET_ID } from '../constants';
 import {
 	BurnAssetDataType,
-	BurnAssetParamsType,
 	ionicSwapType,
 	ParsedAddress,
 	ParsedBalance,

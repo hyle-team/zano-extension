@@ -275,8 +275,8 @@ export interface TransferDataType {
 }
 
 export interface IAsset {
-  asset_id: string;
-  ticker: string;
-  full_name: string;
-  decimal_point: number;
+	asset_id: string;
+	ticker: string;
+	full_name: string;
+	decimal_point: number;
 }
