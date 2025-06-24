@@ -17,11 +17,9 @@ import {
   getAssetInfo,
   createAlias,
   addAssetToWhitelist,
-  burnAsset
+  burnAsset,
+  getAsset
 } from "./wallet";
-import JSONbig from "json-bigint";
-import { IAsset } from "../types";
-import { getAsset } from "./wallet";
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -464,7 +462,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
         }
 
         const wrongDecimalPoint = destinations.some(dest => {
-          const [int, dec] = dest.amount.split(".");
+          const [int, dec] = dest.amount.toString().split(".");
           return dec && dec.length > decimal_point;
         });
 

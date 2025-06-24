@@ -83,7 +83,6 @@ export interface BurnAssetRequest {
 export interface BurnAssetDataType {
 	assetId: string;
 	burnAmount: string;
-	decimalPoint?: number;
 	nativeAmount?: string;
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
@@ -260,6 +259,7 @@ export interface RequestType {
 	nativeAmount?: string;
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
+	destinations?: destinationsType;
 }
 
 export interface TransferDataType {
@@ -273,7 +273,6 @@ export interface TransferDataType {
 		decimal_point: number;
 	};
 }
-
 
 export interface IAsset {
   asset_id: string;
