@@ -145,7 +145,7 @@ export const getWallets = async () => {
 		data.result.wallets.map(async (wallet: WalletRaw) => {
 			const alias = await getAlias(wallet.wi.address);
 			const balanceRaw =
-				wallet.wi.balances.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
+				wallet?.wi?.balances?.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
 					?.total || '0';
 
 			return {
