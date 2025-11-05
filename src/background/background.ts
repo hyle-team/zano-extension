@@ -19,6 +19,7 @@ import {
 	burnAsset,
 	getAsset,
 } from './wallet';
+import { truncateToDecimals } from '../app/utils/utils';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -421,6 +422,19 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				if (!destinationAsset || !currentAsset) {
 					throw new Error('One or both assets not found');
 				}
+
+				if (!request.destinationAssetAmount || !request.currentAssetAmount) {
+					throw new Error('Invalid asset amounts');
+				}
+
+				request.destinationAssetAmount = truncateToDecimals(
+					request.destinationAssetAmount || '0',
+					destinationAsset.decimal_point,
+				);
+				request.currentAssetAmount = truncateToDecimals(
+					request.currentAssetAmount || '0',
+					currentAsset.decimal_point,
+				);
 
 				request.currentAsset = currentAsset;
 				request.destinationAsset = destinationAsset;

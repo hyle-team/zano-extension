@@ -260,6 +260,8 @@ export interface RequestType {
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
 	destinations?: destinationsType;
+	destinationAssetAmount?: string;
+	currentAssetAmount?: string;
 }
 
 export interface TransferDataType {

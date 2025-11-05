@@ -152,3 +152,9 @@ export const shortenAddress = (address: string | undefined, startAmount = 5, end
 	}
 	return `${address.slice(0, startAmount)}...${address.slice(-endAmount)}`;
 };
+
+export function truncateToDecimals(value: string, decimalPoints: number) {
+	const decimal = new Decimal(value);
+
+	return decimal.toDecimalPlaces(decimalPoints, Decimal.ROUND_DOWN).toFixed();
+}
