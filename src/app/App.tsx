@@ -49,6 +49,7 @@ import {
 	SwapRequest,
 	transferType,
 } from '../types';
+import { useFullscreenDetect } from './hooks/useFullscreenDetect';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
@@ -586,6 +587,8 @@ function App() {
 			});
 		}
 	}, [state.connectCredentials]);
+
+	useFullscreenDetect();
 
 	function PasswordPages() {
 		return (
