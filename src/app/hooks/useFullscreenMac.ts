@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 
-export function useFullscreenDetect(className = 'app-fullscreen') {
+export function useFullscreenMac(className = 'app-fullscreen') {
+	const isMacOS = /Macintosh|MacIntel|MacPPC|Mac68K/.test(navigator.userAgent);
+
+	if (!isMacOS) return;
+
 	useEffect(() => {
 		const checkFullscreen = () => {
 			const fullscreenElement =
