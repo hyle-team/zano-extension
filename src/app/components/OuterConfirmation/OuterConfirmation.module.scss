@@ -1,6 +1,7 @@
 @import 'src/app/styles/variables';
 
 .confirmation {
+	width: 100%;
 	height: calc($appHeight - 72px);
 	display: flex;
 	flex-direction: column;
@@ -25,6 +26,7 @@
 
 	&__content {
 		width: 100%;
+		min-width: calc(var(--app-width) - 20px);
 		margin-top: 12px;
 		display: flex;
 		flex-direction: column;
@@ -118,6 +120,8 @@
 		&_fee {
 			display: flex;
 			justify-content: space-between;
+			width: calc(var(--app-width) - 20px);
+			margin-inline: auto;
 
 			h5 {
 				display: flex;
@@ -137,6 +141,8 @@
 		&_total {
 			display: flex;
 			justify-content: space-between;
+			width: calc(var(--app-width) - 20px);
+			margin-inline: auto;
 
 			h5,
 			p {
@@ -156,8 +162,14 @@
 		&_buttons {
 			margin-top: 12px;
 			width: 100%;
-			display: flex;
-			gap: 8px;
+			display: grid;
+			place-content: center;
+
+			.content {
+				width: calc(var(--app-width) - 20px);
+				display: flex;
+				gap: 8px;
+			}
 
 			.btn {
 				flex: 1;

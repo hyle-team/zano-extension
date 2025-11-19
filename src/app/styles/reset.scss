@@ -29,12 +29,21 @@ a:active {
 
 html,
 body {
-	height: $appHeight;
 	overflow: auto;
+	height: $appHeight;
 	width: $appWidth;
 }
 
+html.app-fullscreen,
+body.app-fullscreen {
+	width: 100% !important;
+	height: 100% !important;
+	display: grid;
+	place-content: center;
+}
+
 body {
+	background-color: #0c0c3a;
 	font-size: $fontSize;
 	color: $mainColor;
 	line-height: 1;

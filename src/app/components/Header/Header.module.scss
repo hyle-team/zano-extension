@@ -6,7 +6,8 @@
 	z-index: 100;
 	top: 0;
 	left: 0;
-	width: 360px;
+	min-width: 360px;
+	width: 100%;
 	height: 56px;
 	background: #0f2055;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -39,7 +40,7 @@
 	width: 100%;
 	left: 0;
 	top: calc(100% + 1px);
-	height: calc($appHeight - 56px);
+	height: 100dvh;
 	background-color: var(--overlay-color);
 }
 

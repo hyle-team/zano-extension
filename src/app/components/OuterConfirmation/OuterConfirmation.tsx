@@ -371,18 +371,20 @@ const OuterConfirmation = () => {
 				)}
 
 				<div className={styles.confirmation__bottom_buttons}>
-					<Button
-						className={styles.btn}
-						disabled={disabled}
-						theme={ButtonThemes.Outline}
-						onClick={denyClick}
-					>
-						Cancel
-					</Button>
+					<div className={styles.content}>
+						<Button
+							className={styles.btn}
+							disabled={disabled}
+							theme={ButtonThemes.Outline}
+							onClick={denyClick}
+						>
+							Cancel
+						</Button>
 
-					<Button className={styles.btn} disabled={disabled} onClick={acceptClick}>
-						Confirm
-					</Button>
+						<Button className={styles.btn} disabled={disabled} onClick={acceptClick}>
+							Confirm
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
