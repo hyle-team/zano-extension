@@ -36,6 +36,10 @@ function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) 
 	const fiatBalance = (Number(balance) * (assetPrice || 0)).toFixed(2);
 	const price = censorValue(fiatBalance);
 
+	if (assetPrice === null) {
+		return <>...</>;
+	}
+
 	return <>${price}</>;
 }
 
