@@ -26,14 +26,14 @@
 		height: 18px;
 		flex: 0 0 18px;
 	}
-	img {
+	img,
+	svg {
 		width: 18px;
 		height: 18px;
 		flex: 0 0 18px;
 		max-width: 100%;
 	}
 	span {
-		width: 100%;
 		display: flex;
 		align-items: center;
 		column-gap: 8px;
@@ -124,7 +124,9 @@
 		}
 	}
 
-	img {
+	img,
+	svg,
+	span {
 		width: 18px;
 		height: 18px;
 		flex: 0 0 18px;

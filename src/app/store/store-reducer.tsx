@@ -5,11 +5,11 @@ interface Asset {
 	name: string;
 	ticker: string;
 	balance: number;
+	assetId: string;
 	lockedBalance?: number;
 	unlockedBalance?: number;
 	value: number;
 	decimalPoint?: number;
-	assetId?: string;
 }
 
 interface Transfer {
@@ -97,33 +97,7 @@ const initialState: State = {
 		alias: 'ravaga',
 		balance: 1337,
 		lockedBalance: 0,
-		assets: [
-			{
-				name: 'Zano',
-				ticker: 'ZANO',
-				balance: 1337,
-				lockedBalance: 0,
-				value: 1000,
-			},
-			{
-				name: 'Wrapped Bitcoin',
-				ticker: 'WBTC',
-				balance: 0.212,
-				value: 4096.96,
-			},
-			{
-				name: 'Wrapped Ethereum',
-				ticker: 'WETH',
-				balance: 2.1,
-				value: 3020.12,
-			},
-			{
-				name: 'Confidential Token',
-				ticker: 'CT',
-				balance: 15.52,
-				value: 672.84,
-			},
-		],
+		assets: [],
 		transactions: [
 			{
 				isConfirmed: true,

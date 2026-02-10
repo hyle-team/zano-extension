@@ -48,7 +48,8 @@
 	font-size: 24px;
 	font-weight: 600;
 	line-height: math.div(28, 24);
-	svg {
+	svg,
+	span {
 		width: 24px;
 		height: 24px;
 		flex: 0 0 24px;

@@ -8,9 +8,11 @@ import { Store } from '../../../../store/store-reducer';
 import mainStyles from '../../WalletSend.module.scss';
 import s from './AssetsSelect.module.scss';
 import { classNames } from '../../../../utils/classNames';
+import WhitelistIconImage from '../../../UI/WhitelistIconImage/WhitelistIconImage';
 
 interface Asset {
 	name: string;
+	assetId: string;
 }
 
 interface AssetsSelectProps {
@@ -60,19 +62,6 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
 		setIsOpen(false);
 	}
 
-	const getAssetImage = (name: string) => {
-		switch (name) {
-			case 'Zano':
-				return zanoIcon;
-			case 'Wrapped Bitcoin':
-				return bitcoinIcon;
-			case 'Wrapped Ethereum':
-				return ethIcon;
-			default:
-				return customTokenIcon;
-		}
-	};
-
 	return (
 		<div onClick={() => setIsOpen(false)} onKeyDown={handleKeyDown}>
 			<div className={mainStyles.label}>Asset:</div>
@@ -82,7 +71,7 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
 					className={isOpen ? `${s.selectValue} ${s.active}` : s.selectValue}
 				>
 					<span>
-						<img src={getAssetImage(value.name)} alt={`${value.name} icon`} />
+						<WhitelistIconImage asset={value} />
 						{value.name}
 					</span>
 					<span className={s.valueArrow}>
@@ -93,12 +82,12 @@ const AssetsSelect = ({ value, setValue }: AssetsSelectProps) => {
 				<div className={classNames(s.options, { [s.active]: isOpen })} ref={selectRef}>
 					{state.wallet.assets.map((asset) => (
 						<button
-							data-active={asset.name === value.name}
+							data-active={asset.assetId === value.assetId}
 							className={s.option}
-							key={asset.name}
+							key={asset.assetId}
 							onClick={() => setValueHandler(asset)}
 						>
-							<img src={getAssetImage(asset.name)} alt={`${value.name} icon`} />
+							<WhitelistIconImage asset={asset} />
 							{asset.name}
 							<span className={s.selectPoint} />
 						</button>

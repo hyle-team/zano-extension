@@ -1,36 +1,10 @@
 import React, { useContext } from 'react';
 import Decimal from 'decimal.js';
-import bitcoinIcon from '../../../assets/tokens-svg/bitcoin.svg';
-import banditIcon from '../../../assets/tokens-svg/bandit-icon.svg';
-import customTokenIcon from '../../../assets/tokens-svg/custom-token.svg';
-import ethIcon from '../../../assets/tokens-svg/eth.svg';
-import zanoIcon from '../../../assets/tokens-svg/zano.svg';
+import WhitelistIconImage from '../../UI/WhitelistIconImage/WhitelistIconImage';
 import { useCensorDigits } from '../../../hooks/useCensorDigits';
 import { Store } from '../../../store/store-reducer';
 import s from './Assets.module.scss';
-
-interface Asset {
-	name: string;
-	ticker: string;
-	balance: number;
-	lockedBalance?: number;
-	value: number;
-}
-
-const getIconImage = (asset: Asset) => {
-	switch (asset.name) {
-		case 'Zano':
-			return <img src={zanoIcon} alt="ZanoIcon" />;
-		case 'Wrapped Bitcoin':
-			return <img src={bitcoinIcon} alt="bitcoin icon" />;
-		case 'Wrapped Ethereum':
-			return <img src={ethIcon} alt="EthIcon" />;
-		case 'BANDIT':
-			return <img src={banditIcon} alt="bandit icon" />;
-		default:
-			return <img src={customTokenIcon} alt="CustomTokenIcon" />;
-	}
-};
+import { ZANO_ASSET_ID } from '../../../../constants';
 
 const Assets = () => {
 	const { state } = useContext(Store);
@@ -41,13 +15,14 @@ const Assets = () => {
 			{state.wallet.assets.map((asset) => {
 				const fiatBalance = (Number(asset.balance) * state.priceData.price).toFixed(2);
 				return (
-					<div className={s.asset} key={asset.name}>
+					<div className={s.asset} key={asset.assetId}>
 						{/* <button className={s.assetRemoveBtn} onClick={remove}>
               <img src={crossIcon} alt="CrossIcon" />
             </button> */}
 						<button className={s.assetBody}>
 							<span className={s.assetTitle}>
-								{getIconImage(asset)}
+								{/* {getIconImage(asset)} */}
+								<WhitelistIconImage asset={asset} />
 								{asset.name}
 							</span>
 							<span className={s.assetInfo}>
@@ -67,7 +42,10 @@ const Assets = () => {
 								<div>
 									<div className={s.assetInfoLabel}>Value</div>
 									<div className={s.assetInfoValue}>
-										${censorValue(asset.name === 'Zano' ? fiatBalance : 0)}
+										$
+										{censorValue(
+											asset.assetId === ZANO_ASSET_ID ? fiatBalance : 0,
+										)}
 									</div>
 								</div>
 							</span>
