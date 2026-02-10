@@ -5,7 +5,7 @@
   "description": "A browser extension for Zano wallet app",
   "permissions": ["storage", "network"],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://api.coingecko.com https://api.zano.org;"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://api.coingecko.com https://api.zano.org https://explorer.zano.org;"
   },
   "action": {
     "default_popup": "index.html",

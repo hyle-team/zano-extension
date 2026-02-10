@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Decimal from 'decimal.js';
 import WhitelistIconImage from '../../UI/WhitelistIconImage/WhitelistIconImage';
 import { useCensorDigits } from '../../../hooks/useCensorDigits';
@@ -6,14 +6,45 @@ import { Store } from '../../../store/store-reducer';
 import s from './Assets.module.scss';
 import { ZANO_ASSET_ID } from '../../../../constants';
 
-const Assets = () => {
+function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) {
 	const { state } = useContext(Store);
 	const { censorValue } = useCensorDigits();
 
+	const [assetPrice, setAssetPrice] = React.useState<number | null>(null);
+
+	useEffect(() => {
+		if (assetId === ZANO_ASSET_ID) {
+			setAssetPrice(state.priceData.change);
+			return;
+		}
+
+		fetch(`https://explorer.zano.org/api/price?asset_id=${assetId}`)
+			.then((response) => response.json())
+			.then((response) => {
+				if (response.data && response.data.usd) {
+					setAssetPrice(response.data.usd);
+				} else {
+					setAssetPrice(0);
+				}
+			})
+			.catch((error) => {
+				console.error('Error fetching asset price:', error);
+				setAssetPrice(0);
+			});
+	}, [assetId]);
+
+	const fiatBalance = (Number(balance) * (assetPrice || 0)).toFixed(2);
+	const price = censorValue(fiatBalance);
+
+	return <>${price}</>;
+}
+
+const Assets = () => {
+	const { state } = useContext(Store);
+	const { censorValue } = useCensorDigits();
 	return (
 		<div>
 			{state.wallet.assets.map((asset) => {
-				const fiatBalance = (Number(asset.balance) * state.priceData.price).toFixed(2);
 				return (
 					<div className={s.asset} key={asset.assetId}>
 						{/* <button className={s.assetRemoveBtn} onClick={remove}>
@@ -42,10 +73,10 @@ const Assets = () => {
 								<div>
 									<div className={s.assetInfoLabel}>Value</div>
 									<div className={s.assetInfoValue}>
-										$
-										{censorValue(
-											asset.assetId === ZANO_ASSET_ID ? fiatBalance : 0,
-										)}
+										<AssetPrice
+											assetId={asset.assetId}
+											balance={asset.balance}
+										/>
 									</div>
 								</div>
 							</span>
