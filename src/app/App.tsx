@@ -329,6 +329,7 @@ function App() {
 
 					return {
 						id: e.id,
+						assetId: transfer.assetId,
 						fee: 'fee' in transfer ? transfer.fee : '???',
 						method: 'FINALIZE_TRANSFER_REQUEST',
 						name: 'Transfer',

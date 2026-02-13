@@ -11,6 +11,7 @@ export type transferType = {
 		asset: {
 			ticker: string;
 		};
+		assetId: string;
 		comment?: string;
 	};
 };

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { getCurrent, goBack } from 'react-chrome-extension-router';
+import Big from 'big.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
 import { fetchBackground, shortenAddress } from '../../utils/utils';
@@ -11,7 +12,8 @@ import ethIcon from '../../assets/tokens-svg/eth.svg';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType } from '../../../types';
-import { BANDIT_ASSET_ID, ZANO_ASSET_ID } from '../../../constants';
+import { BANDIT_ASSET_ID, WBTC_ASSET_ID, WETH_ASSET_ID, ZANO_ASSET_ID } from '../../../constants';
+import { Store } from '../../store/store-reducer';
 
 interface ParamsType {
 	key: number;
@@ -24,6 +26,7 @@ interface DestionationType {
 }
 
 const OuterConfirmation = () => {
+	const { state } = useContext(Store);
 	const { props } = getCurrent();
 	const { reqs } = props;
 
@@ -34,7 +37,7 @@ const OuterConfirmation = () => {
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations } = req;
+	const { id, name, params, method, destinations, assetId } = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
@@ -80,22 +83,20 @@ const OuterConfirmation = () => {
 		nextRequest();
 	}
 
-	const getAssetIcon = (assetId: string) => {
+	const getAssetIcon = () => {
 		switch (assetId) {
-			case 'ZANO':
+			case ZANO_ASSET_ID:
 				return <img width={16} src={zanoIcon} alt="ZANO asset" />;
-			case 'BANDIT':
+			case BANDIT_ASSET_ID:
 				return <img width={16} src={banditIcon} alt="ZANO asset" />;
-			case 'Wrapped Bitcoin':
+			case WBTC_ASSET_ID:
 				return <img width={16} src={bitcoinIcon} alt="bitcoin icon" />;
-			case 'Wrapped Ethereum':
+			case WETH_ASSET_ID:
 				return <img width={16} src={ethIcon} alt="EthIcon" />;
 			default:
 				return <img width={16} src={customTokenIcon} alt="CustomTokenIcon" />;
 		}
 	};
-
-	const disabled = accepting || denying;
 
 	const getConfirmationName = () => {
 		if (isTransferMethod) {
@@ -106,6 +107,37 @@ const OuterConfirmation = () => {
 		}
 		return name;
 	};
+
+	const fee = 0.01;
+	const zanoBalance = new Big(state.wallet?.balance || 0);
+	const rawTotalAmount = isMultipleDestinations
+		? destinations.reduce(
+				(sum: Big, dest: { amount: string }) => sum.plus(new Big(dest.amount || 0)),
+				new Big(0),
+			)
+		: new Big(transactionParams.Amount || 0);
+
+	const assetBalance =
+		assetId === ZANO_ASSET_ID
+			? new Big(state.wallet?.balance || 0)
+			: new Big(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
+	const feeBig = new Big(fee);
+
+	const { notEnoughAmount, notEnoughFee } = useMemo(() => {
+		if (assetId === ZANO_ASSET_ID) {
+			return {
+				notEnoughAmount: zanoBalance.lt(rawTotalAmount.plus(feeBig)),
+				notEnoughFee: false,
+			};
+		}
+
+		return {
+			notEnoughAmount: assetBalance.lt(rawTotalAmount),
+			notEnoughFee: zanoBalance.lt(feeBig),
+		};
+	}, [assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
+
+	const disabled = accepting || denying;
 
 	const getConfirmationContent = () => {
 		if (isTransferMethod) {
@@ -119,7 +151,7 @@ const OuterConfirmation = () => {
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p>
-								{getAssetIcon(transactionParams?.Asset)} {transactionParams?.Asset}
+								{getAssetIcon()} {transactionParams?.Asset}
 							</p>
 						</div>
 						<div className={styles.row}>
@@ -226,15 +258,6 @@ const OuterConfirmation = () => {
 				pointTxToAddress,
 				serviceEntries,
 			}: BurnAssetDataType = params[0];
-			const getIconByAsseetId = () => {
-				if (assetId === ZANO_ASSET_ID) {
-					return 'ZANO';
-				}
-				if (assetId === BANDIT_ASSET_ID) {
-					return 'BANDIT';
-				}
-				return assetId;
-			};
 
 			return (
 				<>
@@ -242,7 +265,7 @@ const OuterConfirmation = () => {
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p>
-								{getAssetIcon(getIconByAsseetId())} {shortenAddress(assetId, 6, 6)}
+								{getAssetIcon()} {shortenAddress(assetId, 6, 6)}
 							</p>
 						</div>
 						<div className={styles.row}>
@@ -350,21 +373,35 @@ const OuterConfirmation = () => {
 			<div className={styles.confirmation__bottom}>
 				{(isTransferMethod || isBurnMethod) && (
 					<>
-						<div className={styles.confirmation__bottom_fee}>
-							<h5>
+						<div className={styles.confirmation__bottom_row}>
+							<h5 className={styles.label}>
 								Transaction fee <InfoTooltip title="Total network fee" />
 							</h5>
-							<p>0.01 ZANO</p>
+							<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
+								{fee} ZANO
+							</p>
 						</div>
 
 						{isTransferMethod && (
 							<>
 								<div className={styles.divider} />
 
-								<div className={styles.confirmation__bottom_total}>
-									<h5>Total</h5>
-									<p>{totalAmount}</p>
+								<div
+									className={`${styles.confirmation__bottom_row} ${styles.total}`}
+								>
+									<h5 className={styles.label}>Total</h5>
+									<p
+										className={`${styles.value} ${notEnoughAmount ? styles.error : ''}`}
+									>
+										{totalAmount}
+									</p>
 								</div>
+
+								{(notEnoughFee || notEnoughAmount) && (
+									<div className={styles.confirmation__bottom_error}>
+										Insufficient balance
+									</div>
+								)}
 							</>
 						)}
 					</>
@@ -381,7 +418,11 @@ const OuterConfirmation = () => {
 							Cancel
 						</Button>
 
-						<Button className={styles.btn} disabled={disabled} onClick={acceptClick}>
+						<Button
+							className={styles.btn}
+							disabled={disabled || notEnoughAmount || notEnoughFee}
+							onClick={acceptClick}
+						>
 							Confirm
 						</Button>
 					</div>

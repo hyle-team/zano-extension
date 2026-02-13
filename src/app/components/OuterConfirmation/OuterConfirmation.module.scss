@@ -125,13 +125,21 @@
 		padding-top: 12px;
 		padding-bottom: 24px;
 
-		&_fee {
+		&_row {
 			display: flex;
 			justify-content: space-between;
 			width: calc(var(--app-width) - 20px);
 			margin-inline: auto;
 
-			h5 {
+			&.total {
+				.label,
+				.value {
+					font-size: 18px;
+					font-weight: 600;
+				}
+			}
+
+			.label {
 				display: flex;
 				align-items: center;
 				gap: 8px;
@@ -140,23 +148,21 @@
 				color: #b6b6c4;
 			}
 
-			p {
+			.value {
 				font-size: 16px;
 				font-weight: 400;
+
+				&.error {
+					color: #ff6767;
+				}
 			}
 		}
 
-		&_total {
-			display: flex;
-			justify-content: space-between;
-			width: calc(var(--app-width) - 20px);
-			margin-inline: auto;
-
-			h5,
-			p {
-				font-size: 18px;
-				font-weight: 600;
-			}
+		&_error {
+			color: #ff6767;
+			font-size: 14px;
+			font-weight: 500;
+			margin-top: 8px;
 		}
 
 		.divider {
