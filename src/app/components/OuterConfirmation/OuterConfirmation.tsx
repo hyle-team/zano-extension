@@ -4,16 +4,12 @@ import Big from 'big.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
 import { fetchBackground, shortenAddress } from '../../utils/utils';
-import customTokenIcon from '../../assets/tokens-svg/custom-token.svg';
-import banditIcon from '../../assets/tokens-svg/bandit-icon.svg';
-import zanoIcon from '../../assets/tokens-svg/zano.svg';
-import bitcoinIcon from '../../assets/tokens-svg/bitcoin.svg';
-import ethIcon from '../../assets/tokens-svg/eth.svg';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType } from '../../../types';
-import { BANDIT_ASSET_ID, WBTC_ASSET_ID, WETH_ASSET_ID, ZANO_ASSET_ID } from '../../../constants';
+import { ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
+import WhitelistIconImage from '../UI/WhitelistIconImage';
 
 interface ParamsType {
 	key: number;
@@ -83,21 +79,6 @@ const OuterConfirmation = () => {
 		nextRequest();
 	}
 
-	const getAssetIcon = () => {
-		switch (assetId) {
-			case ZANO_ASSET_ID:
-				return <img width={16} src={zanoIcon} alt="ZANO asset" />;
-			case BANDIT_ASSET_ID:
-				return <img width={16} src={banditIcon} alt="ZANO asset" />;
-			case WBTC_ASSET_ID:
-				return <img width={16} src={bitcoinIcon} alt="bitcoin icon" />;
-			case WETH_ASSET_ID:
-				return <img width={16} src={ethIcon} alt="EthIcon" />;
-			default:
-				return <img width={16} src={customTokenIcon} alt="CustomTokenIcon" />;
-		}
-	};
-
 	const getConfirmationName = () => {
 		if (isTransferMethod) {
 			return 'Please confirm the transfer details';
@@ -151,7 +132,8 @@ const OuterConfirmation = () => {
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p>
-								{getAssetIcon()} {transactionParams?.Asset}
+								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
+								{transactionParams?.Asset}
 							</p>
 						</div>
 						<div className={styles.row}>
@@ -265,7 +247,8 @@ const OuterConfirmation = () => {
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p>
-								{getAssetIcon()} {shortenAddress(assetId, 6, 6)}
+								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
+								{shortenAddress(assetId, 6, 6)}
 							</p>
 						</div>
 						<div className={styles.row}>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import Decimal from 'decimal.js';
-import WhitelistIconImage from '../../UI/WhitelistIconImage/WhitelistIconImage';
+import WhitelistIconImage from '../../UI/WhitelistIconImage';
 import { useCensorDigits } from '../../../hooks/useCensorDigits';
 import { Store } from '../../../store/store-reducer';
 import s from './Assets.module.scss';

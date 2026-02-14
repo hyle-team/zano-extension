@@ -8,7 +8,7 @@ import { Store } from '../../../../store/store-reducer';
 import mainStyles from '../../WalletSend.module.scss';
 import s from './AssetsSelect.module.scss';
 import { classNames } from '../../../../utils/classNames';
-import WhitelistIconImage from '../../../UI/WhitelistIconImage/WhitelistIconImage';
+import WhitelistIconImage from '../../../UI/WhitelistIconImage';
 
 interface Asset {
 	name: string;
