@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { getCurrent, goBack } from 'react-chrome-extension-router';
-import Big from 'big.js';
+import Decimal from 'decimal.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
 import { fetchBackground, shortenAddress } from '../../utils/utils';
@@ -90,31 +90,31 @@ const OuterConfirmation = () => {
 	};
 
 	const fee = 0.01;
-	const zanoBalance = new Big(state.wallet?.balance || 0);
+	const zanoBalance = new Decimal(state.wallet?.balance || 0);
 	const rawTotalAmount = isMultipleDestinations
 		? destinations.reduce(
-				(sum: Big, dest: { amount: string }) => sum.plus(new Big(dest.amount || 0)),
-				new Big(0),
+				(sum: Decimal, dest: { amount: string }) => sum.plus(new Decimal(dest.amount || 0)),
+				new Decimal(0),
 			)
-		: new Big(transactionParams.Amount || 0);
+		: new Decimal(transactionParams.Amount || 0);
 
 	const assetBalance =
 		assetId === ZANO_ASSET_ID
-			? new Big(state.wallet?.balance || 0)
-			: new Big(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
-	const feeBig = new Big(fee);
+			? new Decimal(state.wallet?.balance || 0)
+			: new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
+	const feeBig = new Decimal(fee);
 
 	const { notEnoughAmount, notEnoughFee } = useMemo(() => {
 		if (assetId === ZANO_ASSET_ID) {
 			return {
-				notEnoughAmount: zanoBalance.lt(rawTotalAmount.plus(feeBig)),
+				notEnoughAmount: zanoBalance.lessThan(rawTotalAmount.plus(feeBig)),
 				notEnoughFee: false,
 			};
 		}
 
 		return {
-			notEnoughAmount: assetBalance.lt(rawTotalAmount),
-			notEnoughFee: zanoBalance.lt(feeBig),
+			notEnoughAmount: assetBalance.lessThan(rawTotalAmount),
+			notEnoughFee: zanoBalance.lessThan(feeBig),
 		};
 	}, [assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
 
