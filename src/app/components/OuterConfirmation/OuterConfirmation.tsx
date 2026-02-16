@@ -108,12 +108,14 @@ const OuterConfirmation = () => {
 
 	const { notEnoughAmount, notEnoughFee } = useMemo(() => {
 		if (assetId === ZANO_ASSET_ID) {
+			const enoughForFee = zanoBalance.greaterThanOrEqualTo(feeBig);
+			const enoughForTotal = zanoBalance.greaterThanOrEqualTo(rawTotalAmount.plus(feeBig));
+
 			return {
-				notEnoughAmount: zanoBalance.lessThan(rawTotalAmount.plus(feeBig)),
-				notEnoughFee: false,
+				notEnoughAmount: !enoughForTotal,
+				notEnoughFee: !enoughForFee,
 			};
 		}
-
 		return {
 			notEnoughAmount: assetBalance.lessThan(rawTotalAmount),
 			notEnoughFee: zanoBalance.lessThan(feeBig),
