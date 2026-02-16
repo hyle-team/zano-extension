@@ -90,7 +90,9 @@ const OuterConfirmation = () => {
 	};
 
 	const fee = 0.01;
-	const zanoBalance = new Decimal(state.wallet?.balance || 0);
+	const balance = new Decimal(state.wallet?.balance || 0);
+	const locked = new Decimal(state.wallet?.lockedBalance || 0);
+	const zanoBalance = balance.minus(locked);
 	const rawTotalAmount = isMultipleDestinations
 		? destinations.reduce(
 				(sum: Decimal, dest: { amount: string }) => sum.plus(new Decimal(dest.amount || 0)),
@@ -131,7 +133,7 @@ const OuterConfirmation = () => {
 						</div>
 						<div className={styles.row}>
 							<h5>Asset</h5>
-							<p>
+							<p className={styles.asset}>
 								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
 								{transactionParams?.Asset}
 							</p>
@@ -246,7 +248,7 @@ const OuterConfirmation = () => {
 					<div className={styles.confirmation__block}>
 						<div className={styles.row}>
 							<h5>Asset</h5>
-							<p>
+							<p className={styles.asset}>
 								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
 								{shortenAddress(assetId, 6, 6)}
 							</p>
