@@ -14,7 +14,7 @@ function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) 
 
 	useEffect(() => {
 		if (assetId === ZANO_ASSET_ID) {
-			setAssetPrice(state.priceData.change);
+			setAssetPrice(state.priceData.price);
 			return;
 		}
 
