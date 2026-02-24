@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from
 import { popToTop } from 'react-chrome-extension-router';
 import failedImage from '../../assets/images/failed-round.png';
 import successImage from '../../assets/images/success-round.png';
-import { useCheckbox } from '../../hooks/useCheckbox';
 import { useInput } from '../../hooks/useInput';
 import { Store } from '../../store/store-reducer';
 import Button from '../UI/Button/Button';
@@ -52,8 +51,6 @@ const WalletSend = () => {
 	const comment = useInput('', { isEmpty: true });
 	const mixin = useInput(10, { isEmpty: true });
 	const fee = useInput(0.01, { isEmpty: true });
-	const isSenderInfo = useCheckbox(false);
-	const isReceiverInfo = useCheckbox(false);
 
 	const sendTransfer = (
 		destination: string,
@@ -171,12 +168,7 @@ const WalletSend = () => {
 										label="Comment:"
 										inputData={comment as inputDataProps}
 									/>
-									<AdditionalDetails
-										mixin={mixin}
-										fee={fee}
-										isSenderInfo={isSenderInfo}
-										isReceiverInfo={isReceiverInfo}
-									/>
+									<AdditionalDetails mixin={mixin} fee={fee} />
 									<Button
 										onClick={() => setActiveStep(1)}
 										disabled={
