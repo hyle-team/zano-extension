@@ -139,22 +139,36 @@ const WalletSend = () => {
 		})();
 	}, [address.value]);
 
+	const checkAvailableBalance = (amount: string | number, asset: AssetProps) => {
+		try {
+			return asset.unlockedBalance !== asset.balance
+				? new Decimal(amount).lessThanOrEqualTo(
+						new Decimal(asset.unlockedBalance).minus(new Decimal(fee.value)),
+					)
+				: true;
+		} catch {
+			return false;
+		}
+	};
+
+	const isAmountAvailable = checkAvailableBalance(amount.value, asset as AssetProps);
+
 	useEffect(() => {
 		let isValid = false;
 
 		try {
-			isValid = validateTokensInput(amount.value, Number(asset.decimalPoint)).valid;
+			const isValidZanoAssetAmount = validateTokensInput(
+				amount.value,
+				Number(asset.decimalPoint),
+			).valid;
+
+			isValid = isValidZanoAssetAmount && isAmountAvailable;
 		} catch {
 			isValid = false;
 		}
 
 		setAmountValid(isValid);
 	}, [amount.value, asset]);
-
-	const checkAvailableBalance = (amount: string | number, asset: AssetProps) =>
-		asset.unlockedBalance !== asset.balance
-			? +amount <= asset.unlockedBalance - Number(fee.value)
-			: true;
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Subcomponents
@@ -196,7 +210,7 @@ const WalletSend = () => {
 										placeholder="Amount to transfer"
 										label="Amount:"
 										inputData={amount as inputDataProps}
-										isError={amount.value ? !amountValid : false}
+										isError={amount.value !== '' ? !amountValid : false}
 									/>
 									<MyInput
 										placeholder="Enter the comment"
@@ -208,13 +222,10 @@ const WalletSend = () => {
 										onClick={() => setActiveStep(1)}
 										disabled={
 											!submitAddress ||
-											!amount.value ||
+											amount.value === '' ||
 											!amountValid ||
 											!asset.unlockedBalance ||
-											!checkAvailableBalance(
-												amount.value,
-												asset as AssetProps,
-											)
+											!isAmountAvailable
 										}
 									>
 										Send
