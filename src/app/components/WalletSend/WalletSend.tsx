@@ -1,5 +1,12 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { popToTop } from 'react-chrome-extension-router';
+import Decimal from 'decimal.js';
+import {
+	validateTokensInput,
+	// @ts-expect-error - Disabling TS error while importing /shared submodule
+	// due to global tsconfig "moduleResolution" prop is set to "node"
+} from 'zano_web3/shared';
+
 import failedImage from '../../assets/images/failed-round.png';
 import successImage from '../../assets/images/success-round.png';
 import { useInput } from '../../hooks/useInput';
@@ -8,7 +15,7 @@ import Button from '../UI/Button/Button';
 import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import s from './WalletSend.module.scss';
-import { fetchBackground, validateTokensInput } from '../../utils/utils';
+import { fetchBackground, isPositiveFloatStr } from '../../utils/utils';
 import AssetsSelect from './ui/AssetsSelect/AssetsSelect';
 import AdditionalDetails from './ui/AdditionalDetails/AdditionalDetails';
 
@@ -44,13 +51,35 @@ const WalletSend = () => {
 	const [amountValid, setAmountValid] = useState(false);
 
 	const address = useInput('', { customValidation: true });
-	const amount = useInput('', {
-		isEmpty: true,
-		isAmountCorrect: true,
-	});
+	const amount = useInput(
+		'',
+		{
+			isEmpty: true,
+		},
+		{
+			onChangeFactory:
+				({ setValue }) =>
+				(event) => {
+					const newValue = event.target.value;
+
+					if (
+						newValue !== '' &&
+						!isPositiveFloatStr(newValue, { allowCommaSeparator: true }) &&
+						newValue !== ''
+					) {
+						return;
+					}
+
+					setValue(newValue);
+				},
+		},
+	);
 	const comment = useInput('', { isEmpty: true });
 	const mixin = useInput(10, { isEmpty: true });
 	const fee = useInput(0.01, { isEmpty: true });
+
+	const amountWithDot =
+		typeof amount.value === 'string' ? amount.value.replace(',', '.') : amount.value;
 
 	const sendTransfer = (
 		destination: string,
@@ -111,7 +140,14 @@ const WalletSend = () => {
 	}, [address.value]);
 
 	useEffect(() => {
-		const isValid = !!validateTokensInput(amount.value, Number(asset.decimalPoint));
+		let isValid = false;
+
+		try {
+			isValid = validateTokensInput(amount.value, Number(asset.decimalPoint)).valid;
+		} catch {
+			isValid = false;
+		}
+
 		setAmountValid(isValid);
 	}, [amount.value, asset]);
 
@@ -155,9 +191,8 @@ const WalletSend = () => {
 											setAsset as Dispatch<SetStateAction<{ name: string }>>
 										}
 									/>
-
+									<p>test</p>
 									<MyInput
-										type="number"
 										placeholder="Amount to transfer"
 										label="Amount:"
 										inputData={amount as inputDataProps}
@@ -196,7 +231,7 @@ const WalletSend = () => {
 								<div style={{ minHeight: '410px' }} className="table">
 									<TableRow
 										label="Amount"
-										value={`${amount?.value} ${asset?.ticker}`}
+										value={`${amountWithDot} ${asset?.ticker}`}
 									/>
 									<TableRow label="From" value={state?.wallet?.address} />
 									<TableRow label="To" value={String(address.value)} />
@@ -208,7 +243,7 @@ const WalletSend = () => {
 									onClick={async () => {
 										const transferStatus = (await sendTransfer(
 											submitAddress,
-											amount.value,
+											new Decimal(amountWithDot).toFixed(),
 											String(comment.value),
 											String(asset.assetId),
 											Number(asset.decimalPoint),
