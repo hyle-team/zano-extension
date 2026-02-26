@@ -205,7 +205,6 @@ const WalletSend = () => {
 											setAsset as Dispatch<SetStateAction<{ name: string }>>
 										}
 									/>
-									<p>test</p>
 									<MyInput
 										placeholder="Amount to transfer"
 										label="Amount:"
