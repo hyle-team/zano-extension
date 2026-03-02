@@ -38,7 +38,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	if (amount === undefined) {
 		displayAmount = 'N/A';
 	} else if (transfer.assetId === ZANO_ASSET_ID) {
-		if (!isInitiator) {
+		if (!isInitiator || transfer.incoming) {
 			displayAmount = amount.toFixed();
 		} else {
 			const resultAmount = amount.minus(fixedFee);
