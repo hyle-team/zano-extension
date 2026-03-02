@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import Big from 'big.js';
+import Decimal from 'decimal.js';
 import LoadingIcon from '../../../assets/svg/loading.svg';
 import receiveIcon from '../../../assets/svg/receive-colored.svg';
 import sendIcon from '../../../assets/svg/send-colored.svg';
@@ -25,12 +25,12 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 
 	const amount = (() => {
 		try {
-			return transfer.amount !== undefined ? new Big(transfer.amount) : undefined;
+			return transfer.amount !== undefined ? new Decimal(transfer.amount) : undefined;
 		} catch {
 			return undefined;
 		}
 	})();
-	const fixedFee = new Big(fee);
+	const fixedFee = new Decimal(fee);
 
 	let displayAmount: string;
 	let isFeeOnlyTransfer = false;
