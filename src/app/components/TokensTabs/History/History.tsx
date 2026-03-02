@@ -73,8 +73,6 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 const History = () => {
 	const { state } = useContext(Store);
 
-	console.log('state.wallet.transactions', state.wallet.transactions);
-
 	return (
 		<div>
 			{state.wallet.transactions.map((tx) => (
