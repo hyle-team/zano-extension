@@ -4,6 +4,12 @@ module.exports = {
   module: {
     rules: [
       {
+        include: /node_modules[\\/]zano_web3[\\/]/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ['babel-loader'],
@@ -62,6 +68,6 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
   },
 };

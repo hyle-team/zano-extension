@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import MyCheckbox from '../../../UI/MyCheckbox/MyCheckbox';
 import MyInput, { inputDataProps } from '../../../UI/MyInput/MyInput';
 import s from './AdditionalDetails.module.scss';
 import { classNames } from '../../../../utils/classNames';
@@ -34,15 +33,8 @@ interface feeType {
 interface AdditionalDetailsProps {
 	fee: string | number | feeType;
 	mixin: string | number | mixinType;
-	isSenderInfo: { isChecked: boolean; onChange: () => void };
-	isReceiverInfo: { isChecked: boolean; onChange: () => void };
 }
-const AdditionalDetails = ({
-	fee,
-	mixin,
-	isSenderInfo,
-	isReceiverInfo,
-}: AdditionalDetailsProps) => {
+const AdditionalDetails = ({ fee, mixin }: AdditionalDetailsProps) => {
 	const [detailsVisible, setDetailsVisible] = useState(false);
 
 	const toggleDetails = () => {
@@ -66,20 +58,6 @@ const AdditionalDetails = ({
 					<div className={s.detailsSelectInputs}>
 						<MyInput label="Mixin:" inputData={mixin as inputDataProps} disabled />
 						<MyInput label="Fee:" inputData={fee as inputDataProps} disabled />
-					</div>
-
-					<div className={s.detailsSelectCheckboxes}>
-						<MyCheckbox
-							label="Include sender info"
-							checked={isSenderInfo.isChecked}
-							onChange={isSenderInfo.onChange}
-						/>
-
-						<MyCheckbox
-							label="Include receiver info"
-							checked={isReceiverInfo.isChecked}
-							onChange={isReceiverInfo.onChange}
-						/>
 					</div>
 				</div>
 			)}

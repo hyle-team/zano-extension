@@ -1,15 +1,21 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { popToTop } from 'react-chrome-extension-router';
+import Decimal from 'decimal.js';
+import {
+	validateTokensInput,
+	// @ts-expect-error - Disabling TS error while importing /shared submodule
+	// due to global tsconfig "moduleResolution" prop is set to "node"
+} from 'zano_web3/shared';
+
 import failedImage from '../../assets/images/failed-round.png';
 import successImage from '../../assets/images/success-round.png';
-import { useCheckbox } from '../../hooks/useCheckbox';
 import { useInput } from '../../hooks/useInput';
 import { Store } from '../../store/store-reducer';
 import Button from '../UI/Button/Button';
 import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import s from './WalletSend.module.scss';
-import { fetchBackground, validateTokensInput } from '../../utils/utils';
+import { fetchBackground, isPositiveFloatStr } from '../../utils/utils';
 import AssetsSelect from './ui/AssetsSelect/AssetsSelect';
 import AdditionalDetails from './ui/AdditionalDetails/AdditionalDetails';
 
@@ -45,15 +51,35 @@ const WalletSend = () => {
 	const [amountValid, setAmountValid] = useState(false);
 
 	const address = useInput('', { customValidation: true });
-	const amount = useInput('', {
-		isEmpty: true,
-		isAmountCorrect: true,
-	});
+	const amount = useInput(
+		'',
+		{
+			isEmpty: true,
+		},
+		{
+			onChangeFactory:
+				({ setValue }) =>
+				(event) => {
+					const newValue = event.target.value;
+
+					if (
+						newValue !== '' &&
+						!isPositiveFloatStr(newValue, { allowCommaSeparator: true }) &&
+						newValue !== ''
+					) {
+						return;
+					}
+
+					setValue(newValue);
+				},
+		},
+	);
 	const comment = useInput('', { isEmpty: true });
 	const mixin = useInput(10, { isEmpty: true });
 	const fee = useInput(0.01, { isEmpty: true });
-	const isSenderInfo = useCheckbox(false);
-	const isReceiverInfo = useCheckbox(false);
+
+	const amountWithDot =
+		typeof amount.value === 'string' ? amount.value.replace(',', '.') : amount.value;
 
 	const sendTransfer = (
 		destination: string,
@@ -113,15 +139,36 @@ const WalletSend = () => {
 		})();
 	}, [address.value]);
 
+	const checkAvailableBalance = (amount: string | number, asset: AssetProps) => {
+		try {
+			return asset.unlockedBalance !== asset.balance
+				? new Decimal(amount).lessThanOrEqualTo(
+						new Decimal(asset.unlockedBalance).minus(new Decimal(fee.value)),
+					)
+				: true;
+		} catch {
+			return false;
+		}
+	};
+
+	const isAmountAvailable = checkAvailableBalance(amount.value, asset as AssetProps);
+
 	useEffect(() => {
-		const isValid = !!validateTokensInput(amount.value, Number(asset.decimalPoint));
+		let isValid = false;
+
+		try {
+			const isValidZanoAssetAmount = validateTokensInput(
+				amount.value,
+				Number(asset.decimalPoint),
+			).valid;
+
+			isValid = isValidZanoAssetAmount && isAmountAvailable;
+		} catch {
+			isValid = false;
+		}
+
 		setAmountValid(isValid);
 	}, [amount.value, asset]);
-
-	const checkAvailableBalance = (amount: string | number, asset: AssetProps) =>
-		asset.unlockedBalance !== asset.balance
-			? +amount <= asset.unlockedBalance - Number(fee.value)
-			: true;
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Subcomponents
@@ -158,36 +205,26 @@ const WalletSend = () => {
 											setAsset as Dispatch<SetStateAction<{ name: string }>>
 										}
 									/>
-
 									<MyInput
-										type="number"
 										placeholder="Amount to transfer"
 										label="Amount:"
 										inputData={amount as inputDataProps}
-										isError={amount.value ? !amountValid : false}
+										isError={amount.value !== '' ? !amountValid : false}
 									/>
 									<MyInput
 										placeholder="Enter the comment"
 										label="Comment:"
 										inputData={comment as inputDataProps}
 									/>
-									<AdditionalDetails
-										mixin={mixin}
-										fee={fee}
-										isSenderInfo={isSenderInfo}
-										isReceiverInfo={isReceiverInfo}
-									/>
+									<AdditionalDetails mixin={mixin} fee={fee} />
 									<Button
 										onClick={() => setActiveStep(1)}
 										disabled={
 											!submitAddress ||
-											!amount.value ||
+											amount.value === '' ||
 											!amountValid ||
 											!asset.unlockedBalance ||
-											!checkAvailableBalance(
-												amount.value,
-												asset as AssetProps,
-											)
+											!isAmountAvailable
 										}
 									>
 										Send
@@ -204,7 +241,7 @@ const WalletSend = () => {
 								<div style={{ minHeight: '410px' }} className="table">
 									<TableRow
 										label="Amount"
-										value={`${amount?.value} ${asset?.ticker}`}
+										value={`${amountWithDot} ${asset?.ticker}`}
 									/>
 									<TableRow label="From" value={state?.wallet?.address} />
 									<TableRow label="To" value={String(address.value)} />
@@ -216,7 +253,7 @@ const WalletSend = () => {
 									onClick={async () => {
 										const transferStatus = (await sendTransfer(
 											submitAddress,
-											amount.value,
+											new Decimal(amountWithDot).toFixed(),
 											String(comment.value),
 											String(asset.assetId),
 											Number(asset.decimalPoint),

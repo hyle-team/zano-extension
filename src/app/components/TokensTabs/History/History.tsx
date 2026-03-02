@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import Big from 'big.js';
+import Decimal from 'decimal.js';
 import LoadingIcon from '../../../assets/svg/loading.svg';
 import receiveIcon from '../../../assets/svg/receive-colored.svg';
 import sendIcon from '../../../assets/svg/send-colored.svg';
@@ -13,7 +13,7 @@ import { ZANO_ASSET_ID } from '../../../../constants';
 interface HistoryItemProps {
 	transfer: {
 		assetId?: string;
-		amount?: number;
+		amount?: string;
 		incoming?: boolean;
 	};
 	fee: string;
@@ -23,20 +23,38 @@ interface HistoryItemProps {
 const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	const { getAssetById } = useGetAsset();
 
-	if (String(transfer.amount) === fee) return null;
-	const amount = new Big(String(transfer.amount));
-	const fixedFee = new Big(fee);
+	const amount = (() => {
+		try {
+			return transfer.amount !== undefined ? new Decimal(transfer.amount) : undefined;
+		} catch {
+			return undefined;
+		}
+	})();
+	const fixedFee = new Decimal(fee);
 
 	let displayAmount: string;
+	let isFeeOnlyTransfer = false;
 
-	if (transfer.assetId === ZANO_ASSET_ID) {
-		if (!isInitiator) {
+	if (amount === undefined) {
+		displayAmount = 'N/A';
+	} else if (transfer.assetId === ZANO_ASSET_ID) {
+		if (!isInitiator || transfer.incoming) {
 			displayAmount = amount.toFixed();
 		} else {
-			displayAmount = amount.minus(fixedFee).toFixed();
+			const resultAmount = amount.minus(fixedFee);
+
+			if (resultAmount.lte(0)) {
+				isFeeOnlyTransfer = true;
+			}
+
+			displayAmount = resultAmount.toFixed();
 		}
 	} else {
 		displayAmount = amount.toFixed();
+	}
+
+	if (isFeeOnlyTransfer) {
+		return null;
 	}
 
 	return (

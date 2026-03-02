@@ -14,7 +14,7 @@ interface Asset {
 
 interface Transfer {
 	assetId?: string;
-	amount?: number;
+	amount?: string;
 	incoming?: boolean;
 }
 

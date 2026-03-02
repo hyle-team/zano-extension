@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction, useContext, useRef, useState } from 'react';
+import Decimal from 'decimal.js';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';
@@ -80,6 +81,10 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 	};
 	useAwayClick(menuRef, handleAwayClick);
 
+	const unlockedBalance = getUnlockedBalance();
+	const lockedBalance = new Decimal(state.wallet.balance).minus(unlockedBalance ?? 0);
+	const lockedBalanceDisplay = lockedBalance.gt(0) ? lockedBalance.toFixed(2) : undefined;
+
 	return (
 		<div className={s.wallet}>
 			<ModalTransactionStatus />
@@ -101,21 +106,13 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 				</div>
 				<div className={s.balanceWrapper}>
 					<button onClick={flipDisplay} className={s.balance}>
-						{state.displayUsd || getUnlockedBalance() === state.wallet.balance || (
-							<>
-								<img src={lockedIcon} alt="locked icon" />
-							</>
-						)}
 						{renderBalance()}
 					</button>
-					{getUnlockedBalance() !== state.wallet.balance && (
-						<span className={s.tooltipText}>
-							Locked balance:{' '}
-							{(Number(state.wallet.balance) - Number(getUnlockedBalance())).toFixed(
-								2,
-							)}{' '}
-							ZANO
-						</span>
+					{lockedBalanceDisplay !== undefined && (
+						<div className={s.lockedBalanceWrapper}>
+							<img src={lockedIcon} alt="locked icon" />
+							<span className={s.lockedBalanceText}>{lockedBalanceDisplay} ZANO</span>
+						</div>
 					)}
 				</div>
 
