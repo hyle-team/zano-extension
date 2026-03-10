@@ -44,7 +44,16 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 				</>
 			);
 		}
-		return <span>{censorValue(Number(state.wallet.balance).toFixed(2))} ZANO</span>;
+		return (
+			<span>
+				{censorValue(
+					new Decimal(state.wallet.balance)
+						.toDecimalPlaces(6, Decimal.ROUND_DOWN)
+						.toFixed(),
+				)}{' '}
+				ZANO
+			</span>
+		);
 	};
 
 	const getUnlockedBalance = () =>
@@ -83,7 +92,9 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 
 	const unlockedBalance = getUnlockedBalance();
 	const lockedBalance = new Decimal(state.wallet.balance).minus(unlockedBalance ?? 0);
-	const lockedBalanceDisplay = lockedBalance.gt(0) ? lockedBalance.toFixed(2) : undefined;
+	const lockedBalanceDisplay = lockedBalance.gt(0)
+		? lockedBalance.toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed()
+		: undefined;
 
 	return (
 		<div className={s.wallet}>
