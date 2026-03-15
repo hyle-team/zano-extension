@@ -358,40 +358,26 @@ const OuterConfirmation = () => {
 			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
 
 			<div className={styles.confirmation__bottom}>
-				{(isTransferMethod || isBurnMethod) && (
-					<>
-						<div className={styles.confirmation__bottom_row}>
-							<h5 className={styles.label}>
-								Transaction fee <InfoTooltip title="Total network fee" />
-							</h5>
-							<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
-								{fee} ZANO
-							</p>
-						</div>
+				<div className={styles.confirmation__bottom_row}>
+					<h5 className={styles.label}>
+						Transaction fee <InfoTooltip title="Total network fee" />
+					</h5>
+					<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
+						{fee} ZANO
+					</p>
+				</div>
 
-						{isTransferMethod && (
-							<>
-								<div className={styles.divider} />
+				<div className={styles.divider} />
 
-								<div
-									className={`${styles.confirmation__bottom_row} ${styles.total}`}
-								>
-									<h5 className={styles.label}>Total</h5>
-									<p
-										className={`${styles.value} ${notEnoughAmount ? styles.error : ''}`}
-									>
-										{totalAmount}
-									</p>
-								</div>
+				<div className={`${styles.confirmation__bottom_row} ${styles.total}`}>
+					<h5 className={styles.label}>Total</h5>
+					<p className={`${styles.value} ${notEnoughAmount ? styles.error : ''}`}>
+						{totalAmount}
+					</p>
+				</div>
 
-								{(notEnoughFee || notEnoughAmount) && (
-									<div className={styles.confirmation__bottom_error}>
-										Insufficient balance
-									</div>
-								)}
-							</>
-						)}
-					</>
+				{(notEnoughFee || notEnoughAmount) && (
+					<div className={styles.confirmation__bottom_error}>Insufficient balance</div>
 				)}
 
 				<div className={styles.confirmation__bottom_buttons}>
