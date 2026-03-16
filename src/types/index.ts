@@ -44,6 +44,7 @@ export type SwapRequest = {
 		destinationAssetAmount: string;
 		currentAsset: string;
 		currentAssetAmount: string;
+		currentAssetID: string;
 	};
 };
 

@@ -33,10 +33,21 @@ const OuterConfirmation = () => {
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations, assetId } = req;
+	const {
+		id,
+		name,
+		params,
+		method,
+		destinations,
+		assetId,
+		sendingAmount,
+		sendingAsset,
+		sendingAssetId,
+	} = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
+	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST';
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
@@ -105,24 +116,51 @@ const OuterConfirmation = () => {
 			? new Decimal(state.wallet?.balance || 0)
 			: new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
 	const feeBig = new Decimal(fee);
+	const swapAmount = new Decimal(sendingAmount || 0);
 
-	const { notEnoughAmount, notEnoughFee } = useMemo(() => {
+	const sendingBalance =
+		sendingAssetId === ZANO_ASSET_ID
+			? zanoBalance
+			: new Decimal(
+					state.wallet?.assets?.find((a) => a.assetId === sendingAssetId)?.balance || 0,
+				);
+
+	const notEnoughFee = useMemo(() => {
+		return zanoBalance.lessThan(feeBig);
+	}, [zanoBalance, feeBig]);
+
+	const notEnoughAmount = useMemo(() => {
+		if (!isTransferMethod) return false;
+
 		if (assetId === ZANO_ASSET_ID) {
-			const enoughForFee = zanoBalance.greaterThanOrEqualTo(feeBig);
-			const enoughForTotal = zanoBalance.greaterThanOrEqualTo(rawTotalAmount.plus(feeBig));
-
-			return {
-				notEnoughAmount: !enoughForTotal,
-				notEnoughFee: !enoughForFee,
-			};
+			return zanoBalance.lessThan(rawTotalAmount.plus(feeBig));
 		}
-		return {
-			notEnoughAmount: assetBalance.lessThan(rawTotalAmount),
-			notEnoughFee: zanoBalance.lessThan(feeBig),
-		};
-	}, [assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
+
+		return assetBalance.lessThan(rawTotalAmount);
+	}, [isTransferMethod, assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
+
+	const notEnoughSwapAmount = useMemo(() => {
+		if (!isIonicSwapMethod) return false;
+
+		if (sendingAsset?.asset_id === ZANO_ASSET_ID) {
+			return zanoBalance.lessThan(swapAmount.plus(feeBig));
+		}
+
+		return sendingBalance.lessThan(swapAmount);
+	}, [
+		isIonicSwapMethod,
+		sendingAsset?.asset_id,
+		sendingBalance,
+		swapAmount,
+		zanoBalance,
+		feeBig,
+	]);
 
 	const disabled = accepting || denying;
+	const insufficientBalance =
+		notEnoughFee ||
+		(isTransferMethod && notEnoughAmount) ||
+		(isIonicSwapMethod && notEnoughSwapAmount);
 
 	const getConfirmationContent = () => {
 		if (isTransferMethod) {
@@ -358,26 +396,42 @@ const OuterConfirmation = () => {
 			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
 
 			<div className={styles.confirmation__bottom}>
-				<div className={styles.confirmation__bottom_row}>
-					<h5 className={styles.label}>
-						Transaction fee <InfoTooltip title="Total network fee" />
-					</h5>
-					<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
-						{fee} ZANO
-					</p>
-				</div>
+				{(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
+					<>
+						<div className={styles.confirmation__bottom_row}>
+							<h5 className={styles.label}>
+								Transaction fee <InfoTooltip title="Total network fee" />
+							</h5>
+							<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
+								{fee} ZANO
+							</p>
+						</div>
 
-				<div className={styles.divider} />
+						{(isTransferMethod || isIonicSwapMethod) && (
+							<>
+								<div className={styles.divider} />
 
-				<div className={`${styles.confirmation__bottom_row} ${styles.total}`}>
-					<h5 className={styles.label}>Total</h5>
-					<p className={`${styles.value} ${notEnoughAmount ? styles.error : ''}`}>
-						{totalAmount}
-					</p>
-				</div>
+								<div
+									className={`${styles.confirmation__bottom_row} ${styles.total}`}
+								>
+									<h5 className={styles.label}>Total</h5>
+									<p
+										className={`${styles.value} ${(isTransferMethod ? notEnoughAmount : notEnoughSwapAmount) ? styles.error : ''}`}
+									>
+										{isTransferMethod
+											? totalAmount
+											: Number(sendingAmount).toLocaleString()}
+									</p>
+								</div>
 
-				{(notEnoughFee || notEnoughAmount) && (
-					<div className={styles.confirmation__bottom_error}>Insufficient balance</div>
+								{insufficientBalance && (
+									<div className={styles.confirmation__bottom_error}>
+										Insufficient balance
+									</div>
+								)}
+							</>
+						)}
+					</>
 				)}
 
 				<div className={styles.confirmation__bottom_buttons}>
@@ -393,7 +447,7 @@ const OuterConfirmation = () => {
 
 						<Button
 							className={styles.btn}
-							disabled={disabled || notEnoughAmount || notEnoughFee}
+							disabled={disabled || insufficientBalance}
 							onClick={acceptClick}
 						>
 							Confirm
