@@ -33,17 +33,7 @@ const OuterConfirmation = () => {
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex] || {};
-	const {
-		id,
-		name,
-		params,
-		method,
-		destinations,
-		assetId,
-		sendingAmount,
-		sendingAsset,
-		sendingAssetId,
-	} = req;
+	const { id, name, params, method, destinations, assetId, sendingAmount } = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
@@ -113,17 +103,10 @@ const OuterConfirmation = () => {
 
 	const assetBalance =
 		assetId === ZANO_ASSET_ID
-			? new Decimal(state.wallet?.balance || 0)
+			? zanoBalance
 			: new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
 	const feeBig = new Decimal(fee);
 	const swapAmount = new Decimal(sendingAmount || 0);
-
-	const sendingBalance =
-		sendingAssetId === ZANO_ASSET_ID
-			? zanoBalance
-			: new Decimal(
-					state.wallet?.assets?.find((a) => a.assetId === sendingAssetId)?.balance || 0,
-				);
 
 	const notEnoughFee = useMemo(() => {
 		return zanoBalance.lessThan(feeBig);
@@ -142,19 +125,12 @@ const OuterConfirmation = () => {
 	const notEnoughSwapAmount = useMemo(() => {
 		if (!isIonicSwapMethod) return false;
 
-		if (sendingAsset?.asset_id === ZANO_ASSET_ID) {
+		if (assetId === ZANO_ASSET_ID) {
 			return zanoBalance.lessThan(swapAmount.plus(feeBig));
 		}
 
-		return sendingBalance.lessThan(swapAmount);
-	}, [
-		isIonicSwapMethod,
-		sendingAsset?.asset_id,
-		sendingBalance,
-		swapAmount,
-		zanoBalance,
-		feeBig,
-	]);
+		return assetBalance.lessThan(swapAmount);
+	}, [isIonicSwapMethod, assetId, assetBalance, swapAmount, zanoBalance, feeBig]);
 
 	const disabled = accepting || denying;
 	const insufficientBalance =

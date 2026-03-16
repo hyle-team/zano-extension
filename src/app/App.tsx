@@ -414,8 +414,7 @@ function App() {
 						method: 'FINALIZE_IONIC_SWAP_REQUEST',
 						name: 'Ionic Swap',
 						sendingAmount: sendingAmount.toFixed(),
-						sendingAsset,
-						sendingAssetId: swap?.currentAssetID,
+						assetId: swap?.currentAssetID,
 						params: [
 							{
 								key: 'Address',
