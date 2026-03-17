@@ -356,7 +356,7 @@ function App() {
 				const response = await fetchBackground({
 					method: 'GET_ALIAS_CREATE_REQUESTS',
 				});
-				console.log('alias creation requests', response);
+
 				const createRequests = response.data;
 
 				if (createRequests && createRequests.length > 0) {
@@ -438,8 +438,6 @@ function App() {
 					method: 'GET_ACCEPT_IONIC_SWAP_REQUESTS',
 				});
 				const acceptSwapReqs = ionicSwapAcceptRes.data;
-
-				console.log('ACCEPT SWAP', acceptSwapReqs);
 
 				const acceptPageReqs = await Promise.all(
 					acceptSwapReqs.map(async (e: AcceptSwapReq) => {

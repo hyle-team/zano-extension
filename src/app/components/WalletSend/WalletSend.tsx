@@ -126,8 +126,8 @@ const WalletSend = () => {
 			if (String(address.value).startsWith('@')) {
 				const alias = String(address.value).slice(1);
 				const resolvedAddress = await fetchAddress(alias);
-				if (resolvedAddress) {
-					setSubmitAddress(resolvedAddress);
+				if (resolvedAddress.address) {
+					setSubmitAddress(resolvedAddress.address);
 				} else {
 					setSubmitAddress('');
 				}

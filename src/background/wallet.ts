@@ -126,7 +126,7 @@ export const getAliasDetails = async (alias: string) => {
 	const response = await fetchData('get_alias_details', { alias });
 	const data = await response.json();
 	if (data.result.status === 'OK') {
-		return data.result.alias_details.address;
+		return data.result.alias_details;
 	}
 	return '';
 };
@@ -290,11 +290,41 @@ export const ionicSwapAccept = async (swapParams: { hex_raw_proposal: unknown })
 	return data;
 };
 
-export const createAlias = async ({ alias, address }: { address: string; alias: string }) => {
+export const createAlias = async ({
+	alias,
+	address,
+	comment,
+}: {
+	address: string;
+	alias: string;
+	comment?: string;
+}) => {
 	const response = await fetchData('register_alias', {
 		al: {
 			address,
 			alias,
+			comment,
+		},
+	});
+	const data = await response.json();
+
+	return data;
+};
+
+export const updateAlias = async ({
+	alias,
+	address,
+	comment,
+}: {
+	address: string;
+	alias: string;
+	comment?: string;
+}) => {
+	const response = await fetchData('update_alias', {
+		al: {
+			address,
+			alias,
+			comment,
 		},
 	});
 	const data = await response.json();

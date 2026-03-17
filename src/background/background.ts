@@ -18,6 +18,7 @@ import {
 	addAssetToWhitelist,
 	burnAsset,
 	getAsset,
+	updateAlias,
 } from './wallet';
 import { truncateToDecimals } from '../app/utils/utils';
 
@@ -565,6 +566,28 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			break;
 		}
 
+		case 'REGISTER_ALIAS': {
+			createAlias({
+				address: String(request.address),
+				alias: String(request.alias),
+				comment: request.comment,
+			})
+				.then((res) => sendResponse(res))
+				.catch(() => sendResponse({ error: 'Internal error' }));
+			break;
+		}
+
+		case 'UPDATE_ALIAS': {
+			updateAlias({
+				address: String(request.address),
+				alias: String(request.alias),
+				comment: request.comment,
+			})
+				.then((res) => sendResponse(res))
+				.catch(() => sendResponse({ error: 'Internal error' }));
+			break;
+		}
+
 		case 'IONIC_SWAP_ACCEPT': {
 			try {
 				const swapProposalRsp = await getSwapProposalInfo(request.hex_raw_proposal);
@@ -798,7 +821,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 				const aliasExists = await getAliasDetails(request.alias);
 
-				if (aliasExists) {
+				if (aliasExists.address) {
 					throw new Error('Alias already exists');
 				}
 

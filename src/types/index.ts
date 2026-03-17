@@ -238,6 +238,7 @@ export interface RequestType {
 	currentAsset: AssetDataType;
 	destinationAsset: AssetDataType;
 	hex_raw_proposal?: string;
+	address?: string;
 	alias?: string;
 	sender?: string;
 	transfer?: unknown;
@@ -284,3 +285,11 @@ export interface IAsset {
 	full_name: string;
 	decimal_point: number;
 }
+
+export type ValidationsType = {
+	minLength?: number;
+	isEmpty?: boolean;
+	isAmountCorrect?: boolean;
+	customValidation?: boolean;
+	customError?: boolean;
+};

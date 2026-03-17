@@ -11,6 +11,7 @@ export interface inputDataProps {
 	onBlur?: () => void;
 	isDirty?: boolean;
 	isFilled?: boolean;
+	customError?: boolean;
 }
 interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	label?: string;
@@ -20,6 +21,7 @@ interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	isError?: boolean;
 	noValidation?: boolean;
 	type?: string;
+	stroke?: string | null;
 }
 
 const MyInput: React.FC<MyInputProps> = memo((props) => {
@@ -32,10 +34,12 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
 		type,
 		isError,
 		noValidation,
+		stroke,
 		...otherProps
 	} = props;
 
-	const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled } = inputData || {};
+	const { value, onChange, onInput, inputValid, onBlur, isDirty, isFilled, customError } =
+		inputData || {};
 
 	const onInputHandler = (e: ChangeEvent<HTMLInputElement>) => {
 		if (type === 'number' && !noValidation) {
@@ -63,12 +67,15 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
 					value={value}
 					className={classNames('', {
 						[cls.filled]: isFilled && !noActiveBorder,
-						[cls.error]: (isDirty && !inputValid) || isError,
+						[cls.error]:
+							(isDirty && (!inputValid || !!stroke)) || customError || isError,
 						[cls.customError]: isDirty && isValid === false && inputValid,
 					})}
 					{...otherProps}
 				/>
 			</div>
+
+			{stroke && isDirty && <span className={cls.stroke}>{stroke}</span>}
 		</div>
 	);
 });

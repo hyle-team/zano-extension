@@ -3,6 +3,7 @@ import Decimal from 'decimal.js';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';
+import editIcon from '../../assets/svg/edit.svg';
 import settingsIcon from '../../assets/svg/settings.svg';
 import showIcon from '../../assets/svg/show.svg';
 import hideIcon from '../../assets/svg/hide.svg';
@@ -19,6 +20,7 @@ import s from './Wallet.module.scss';
 import NavLink from '../UI/NavLink/NavLink';
 import { classNames } from '../../utils/classNames';
 import { ZANO_ASSET_ID } from '../../../constants';
+import AliasManagePage from '../AliasManagePage';
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
 	const { state, dispatch } = useContext(Store);
@@ -67,13 +69,6 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 		setMenuVisible((prevState) => !prevState);
 	};
 
-	const createAliasHandler = () => {
-		// eslint-disable-next-line no-undef
-		chrome.tabs.create({
-			url: 'https://docs.zano.org/docs/aliases',
-		});
-	};
-
 	const flipBalancesVisibility = () => {
 		if (state.isBalancesHidden) {
 			updateBalancesHidden(dispatch, false);
@@ -100,7 +95,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 		<div className={s.wallet}>
 			<ModalTransactionStatus />
 			<div className={s.infoWallet}>
-				<div>
+				<div className={s.aliasWrapper}>
 					<div
 						className={classNames(s.aliasContent, {
 							[s.active]: state.wallet.alias,
@@ -109,11 +104,23 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 						{state.wallet.alias ? (
 							`@${state.wallet.alias}`
 						) : (
-							<button className={s.aliasCreateBtn} onClick={createAliasHandler}>
+							<NavLink component={AliasManagePage} className={s.aliasCreateBtn}>
 								Create alias
-							</button>
+							</NavLink>
 						)}
 					</div>
+
+					{state.wallet.alias && (
+						<NavLink
+							component={AliasManagePage}
+							props={{ mode: 'edit' }}
+							className="round-button"
+						>
+							<img width={18} height={18} src={editIcon} alt="edit icon" />
+							{/* Tooltip */}
+							<span>Edit alias</span>
+						</NavLink>
+					)}
 				</div>
 				<div className={s.balanceWrapper}>
 					<button onClick={flipDisplay} className={s.balance}>

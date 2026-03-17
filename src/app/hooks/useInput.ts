@@ -1,16 +1,10 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useValidation } from './useValidation';
-
-type Validations = {
-	minLength?: number;
-	isEmpty?: boolean;
-	isAmountCorrect?: boolean;
-	customValidation?: boolean;
-};
+import { ValidationsType } from '../../types';
 
 export const useInput = (
 	initialState: string | number,
-	validations: Validations,
+	validations: ValidationsType,
 	{
 		onChangeFactory,
 	}: {
@@ -43,6 +37,7 @@ export const useInput = (
 
 	return {
 		value,
+		setValue,
 		onChange,
 		onInput,
 		onBlur,

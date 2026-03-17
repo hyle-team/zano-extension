@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
+import { ValidationsType } from '../../types';
 
-type Validations = {
-	minLength?: number;
-	isEmpty?: boolean;
-	isAmountCorrect?: boolean;
-	customValidation?: boolean;
-};
-
-export const useValidation = (value: string | number, validations: Validations) => {
+export const useValidation = (value: string | number, validations: ValidationsType) => {
 	const [isEmpty, setIsEmpty] = useState<boolean>(true);
 	const [minLengthError, setMinLengthError] = useState<boolean>(false);
 	const [amountCorrectError, setAmountCorrectError] = useState<boolean>(false);
 	const [inputValid, setInputValid] = useState<boolean>(false);
+	const [customError, setCustomError] = useState<boolean>(false);
 
 	useEffect(() => {
 		for (const validation in validations) {
@@ -36,6 +31,9 @@ export const useValidation = (value: string | number, validations: Validations) 
 					setAmountCorrectError(!amountCheckResult);
 					break;
 				}
+				case 'customError':
+					setCustomError(validations.customError === true);
+					break;
 				case 'customValidation':
 					setInputValid(true);
 					break;
@@ -58,5 +56,6 @@ export const useValidation = (value: string | number, validations: Validations) 
 		minLengthError,
 		amountCorrectError,
 		inputValid,
+		customError,
 	};
 };
