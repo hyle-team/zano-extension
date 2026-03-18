@@ -22,12 +22,11 @@ const AliasManagePage = ({ mode = 'create' }) => {
 		submit,
 		transactionSuccess,
 		notEnoughFee,
+		errorMsg,
 	} = useAlias({
 		mode,
 		walletAddress: state.wallet.address,
 		walletAlias: state.wallet.alias,
-		balance: state.wallet.balance,
-		lockedBalance: Number(state.wallet.lockedBalance),
 	});
 
 	const displayAlias = aliasInput.value ? `@${aliasInput.value}` : '';
@@ -41,9 +40,16 @@ const AliasManagePage = ({ mode = 'create' }) => {
 						src={transactionSuccess ? successImg : errorImg}
 						alt="transaction"
 					/>
+
 					<p className={styles.main__transactionInfo_text}>
-						{transactionSuccess ? 'Success!' : 'Transaction failed!'}
+						{transactionSuccess
+							? `Alias ${mode === 'create' ? 'created' : 'updated'}!`
+							: 'Transaction failed!'}
 					</p>
+
+					{!transactionSuccess && (
+						<p className={styles.main__transactionInfo_errorMsg}>{errorMsg}</p>
+					)}
 				</div>
 
 				<Button className={styles.main__action} onClick={goBack}>

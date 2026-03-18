@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import Decimal from 'decimal.js';
 import { fetchBackground } from '../../../utils/utils';
 import { RegisterAliasParams } from '../types';
 import { useInput } from '../../../hooks/useInput';
+import { useFeeCheck } from '../../../hooks/useFeeCheck';
 
 enum AliasMethods {
 	REGISTER = 'REGISTER_ALIAS',
@@ -14,29 +14,21 @@ export const useAlias = ({
 	mode,
 	walletAddress,
 	walletAlias,
-	balance,
-	lockedBalance,
 }: {
 	mode: string;
 	walletAddress: string;
 	walletAlias: string;
-	balance: number;
-	lockedBalance: number;
 }) => {
 	const fee = mode === 'create' ? 0.11 : 0.01;
+	const { notEnoughFee } = useFeeCheck(fee);
 
 	const [transactionSuccess, setTransactionSuccess] = useState<null | boolean>(null);
+	const [errorMsg, setErrorMsg] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isChecking, setIsChecking] = useState(false);
 
 	const [isAliasRegistred, setAliasRegistred] = useState(false);
 	const [initialComment, setInitialComment] = useState('');
-
-	const balanceBig = new Decimal(balance || 0);
-	const lockedBig = new Decimal(lockedBalance || 0);
-	const feeBig = new Decimal(fee);
-
-	const zanoBalance = balanceBig.minus(lockedBig);
 
 	const aliasInput = useInput(
 		walletAlias || '',
@@ -56,10 +48,6 @@ export const useAlias = ({
 	const commentInput = useInput('', { isEmpty: false, customValidation: true });
 
 	const isCommentChanged = commentInput.value !== initialComment;
-
-	const notEnoughFee = useMemo(() => {
-		return zanoBalance.lessThan(feeBig);
-	}, [zanoBalance, feeBig]);
 
 	const [debouncedAlias, setDebouncedAlias] = useState(aliasInput.value);
 
@@ -130,7 +118,21 @@ export const useAlias = ({
 				} as RegisterAliasParams);
 			}
 
-			setTransactionSuccess(Boolean(data?.result?.tx_id));
+			if (data?.result?.tx_id) {
+				setTransactionSuccess(true);
+			} else {
+				setTransactionSuccess(false);
+
+				if (data?.error?.code === -7) {
+					setErrorMsg('Not enough balance');
+				} else {
+					const deamonMsg = data?.error?.message;
+
+					setErrorMsg(deamonMsg || 'Unknown error');
+				}
+			}
+
+			console.log(mode, data);
 		} catch (e) {
 			console.log(e);
 			setTransactionSuccess(false);
@@ -182,5 +184,6 @@ export const useAlias = ({
 		isSubmitting,
 		isChecking,
 		notEnoughFee,
+		errorMsg,
 	};
 };

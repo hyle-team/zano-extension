@@ -51,6 +51,14 @@
 			line-height: 100%;
 			color: #1f8feb;
 		}
+
+		&_errorMsg {
+			font-size: 16px;
+			text-align: center;
+			line-height: 140%;
+			width: 100%;
+			word-break: break-all;
+		}
 	}
 
 	&__action {
