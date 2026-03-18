@@ -314,7 +314,6 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				...(apiCredentials || {}),
 				...request.credentials,
 			};
-			sendResponse({ success: true });
 			updateUserData({
 				apiCredentials,
 			}).then(() => {
