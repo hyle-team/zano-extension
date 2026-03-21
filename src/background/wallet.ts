@@ -332,6 +332,13 @@ export const updateAlias = async ({
 	return data;
 };
 
+export const getAliasByAddress = async (address: string) => {
+	const response = await fetchData('get_alias_by_address', address);
+	const data = await response.json();
+
+	return data?.result;
+};
+
 export const transfer = async (
 	assetId = ZANO_ASSET_ID,
 	destination: string | undefined,

@@ -14,6 +14,7 @@ export async function fetchBackground(data: {
 	success?: boolean;
 	credentials?: { port: string };
 	alias?: string;
+	address?: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<any> {
 	return new Promise((resolve, reject) => {
