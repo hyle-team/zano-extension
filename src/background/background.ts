@@ -19,6 +19,7 @@ import {
 	burnAsset,
 	getAsset,
 	updateAlias,
+	getAliasByAddress,
 } from './wallet';
 import { truncateToDecimals } from '../app/utils/utils';
 
@@ -278,6 +279,7 @@ const SELF_ONLY_REQUESTS = [
 	'GET_TRANSFER_REQUEST',
 	'REGISTER_ALIAS',
 	'UPDATE_ALIAS',
+	'GET_ALIAS_BY_ADDRESS',
 ];
 interface Sender {
 	id: string;
@@ -585,6 +587,13 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				alias: String(request.alias),
 				comment: request.comment,
 			})
+				.then((res) => sendResponse(res))
+				.catch(() => sendResponse({ error: 'Internal error' }));
+			break;
+		}
+
+		case 'GET_ALIAS_BY_ADDRESS': {
+			getAliasByAddress(String(request.address))
 				.then((res) => sendResponse(res))
 				.catch(() => sendResponse({ error: 'Internal error' }));
 			break;

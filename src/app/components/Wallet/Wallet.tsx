@@ -1,9 +1,11 @@
 import React, { Dispatch, SetStateAction, useContext, useRef, useState } from 'react';
 import Decimal from 'decimal.js';
+import { styleText } from 'util';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';
 import editIcon from '../../assets/svg/edit.svg';
+import transferIcon from '../../assets/svg/transfer.svg';
 import settingsIcon from '../../assets/svg/settings.svg';
 import showIcon from '../../assets/svg/show.svg';
 import hideIcon from '../../assets/svg/hide.svg';
@@ -21,6 +23,7 @@ import NavLink from '../UI/NavLink/NavLink';
 import { classNames } from '../../utils/classNames';
 import { ZANO_ASSET_ID } from '../../../constants';
 import AliasManagePage from '../AliasManagePage';
+import AliasTransfer from '../AliasTransfer';
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
 	const { state, dispatch } = useContext(Store);
@@ -111,15 +114,28 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 					</div>
 
 					{state.wallet.alias && (
-						<NavLink
-							component={AliasManagePage}
-							props={{ mode: 'edit' }}
-							className="round-button"
-						>
-							<img width={18} height={18} src={editIcon} alt="edit icon" />
-							{/* Tooltip */}
-							<span>Edit alias</span>
-						</NavLink>
+						<div className={s.aliasWrapper__actions}>
+							<NavLink
+								component={AliasManagePage}
+								props={{ mode: 'edit' }}
+								className="round-button"
+							>
+								<img width={18} height={18} src={editIcon} alt="edit icon" />
+								{/* Tooltip */}
+								<span>Edit alias</span>
+							</NavLink>
+
+							<NavLink component={AliasTransfer} className="round-button">
+								<img
+									width={18}
+									height={18}
+									src={transferIcon}
+									alt="transfer icon"
+								/>
+								{/* Tooltip */}
+								<span>Transfer alias</span>
+							</NavLink>
+						</div>
 					)}
 				</div>
 				<div className={s.balanceWrapper}>
