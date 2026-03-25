@@ -12,7 +12,7 @@ import { PermissionType } from '../../../types';
 const permissionMap = {
 	general: {
 		title: 'Wallet address',
-		desc: 'View your address and alias',
+		desc: 'View your address, alias and suggest transactions',
 		icon: walletIcon,
 	},
 	balance: {
