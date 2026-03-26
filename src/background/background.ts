@@ -1,6 +1,15 @@
 import JSONbig from 'json-bigint';
-import { ZANO_ASSET_ID } from '../constants';
-import { BurnAssetDataType, ionicSwapType, RequestType, TransferDataType } from '../types/index';
+import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import {
+	AccessRequestType,
+	BurnAssetDataType,
+	ionicSwapType,
+	RequestType,
+	TransferDataType,
+	GetWalletDataRes,
+	Sender,
+	SendResponse,
+} from '../types/index';
 import {
 	fetchData,
 	getWalletData,
@@ -21,7 +30,8 @@ import {
 	updateAlias,
 	getAliasByAddress,
 } from './wallet';
-import { truncateToDecimals } from '../app/utils/utils';
+import { normalizeOrigin, truncateToDecimals } from '../app/utils/utils';
+import { getPermissions, hasPermission, permissionMiddleware } from '../app/utils/permission';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -252,54 +262,22 @@ function openWindow(): Promise<chrome.windows.Window> {
 	});
 }
 
-// requests that can only be made by the extension frontend
-const SELF_ONLY_REQUESTS = [
-	'SET_API_CREDENTIALS',
-	'VALIDATE_CONNECT_KEY',
-	'GET_PASSWORD',
-	'GET_SIGN_REQUESTS',
-	'FINALIZE_MESSAGE_SIGN',
-	'GET_IONIC_SWAP_REQUESTS',
-	'GET_ALIAS_CREATE_REQUESTS',
-	'FINALIZE_IONIC_SWAP_REQUEST',
-	'GET_ACCEPT_IONIC_SWAP_REQUESTS',
-	'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
-	'FINALIZE_ALIAS_CREATE',
-	'SET_PASSWORD',
-	'SEND_TRANSFER',
-	'EXECUTE_BRIDGING_TRANSFER',
-	'PING_WALLET',
-	'SET_ACTIVE_WALLET',
-	'GET_WALLETS',
-	'FINALIZE_TRANSFER_REQUEST',
-	'GET_ASSETS_WHITELIST_ADD_REQUESTS',
-	'FINALIZE_ASSETS_WHITELIST_ADD_REQUESTS',
-	'GET_BURN_ASSET_REQUESTS',
-	'FINALIZE_BURN_ASSET_REQUEST',
-	'GET_TRANSFER_REQUEST',
-	'REGISTER_ALIAS',
-	'UPDATE_ALIAS',
-	'GET_ALIAS_BY_ADDRESS',
-];
-interface Sender {
-	id: string;
-	name?: string;
-	email?: string;
-	phoneNumber?: string;
-	address?: string;
-	[key: string]: string | undefined;
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	processRequest(request, sender as Sender, sendResponse);
+	(async () => {
+		await processRequest(request, sender as Sender, sendResponse);
+	})();
 	return true;
 });
 
-interface SendResponse {
-	(_response: unknown): void;
-}
+const accessReqs: AccessRequestType[] = [];
+
+const accessReqFinalizers: Record<string, (data: unknown) => void> = {};
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
+	const allowed = await permissionMiddleware(request, sender, sendResponse); // check permission access
+
+	if (!allowed) return;
+
 	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
 	if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
@@ -329,6 +307,115 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				.then((_res) => sendResponse({ data: true }))
 				.catch((_err) => sendResponse({ data: false }));
 			break;
+
+		case 'REQUEST_ACCESS': {
+			if (!sender.origin && !sender.url) {
+				return sendResponse({ error: 'Unknown origin' });
+			}
+
+			const allowed = ['general', 'balance', 'history'];
+			const { permissions } = request;
+
+			if (
+				!Array.isArray(permissions) ||
+				permissions.length === 0 ||
+				permissions.some((p) => !allowed.includes(p.type))
+			) {
+				return sendResponse({
+					error: 'Invalid or empty permissions',
+				});
+			}
+
+			const uniqueTypes = [...new Set(permissions.map((p) => p.type))];
+			const cleanPermissions = uniqueTypes.map((type) => ({ type }));
+
+			const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+			const wallet = await getWalletData();
+			const { address } = wallet;
+
+			const existing = await getPermissions(origin, address);
+			const alreadyApproved = cleanPermissions.every((p) => existing.includes(p.type));
+
+			if (alreadyApproved) {
+				return sendResponse({ success: true });
+			}
+
+			openWindow().then((requestWindow) => {
+				const id = crypto.randomUUID();
+
+				const { hostname } = new URL(origin);
+				const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+
+				accessReqFinalizers[id] = (result) => sendResponse(result);
+
+				accessReqs.push({
+					id,
+					windowId: Number(requestWindow.id),
+					origin,
+					address,
+					hostname,
+					favicon,
+					permissions: cleanPermissions,
+				});
+			});
+
+			break;
+		}
+
+		case 'GET_ACCESS_REQUESTS': {
+			sendResponse({ data: accessReqs });
+			break;
+		}
+
+		case 'FINALIZE_REQUEST_ACCESS': {
+			const { id, success } = request;
+
+			const req = accessReqs.find((r) => r.id === id);
+
+			if (!req) {
+				return sendResponse({ error: 'Request not found' });
+			}
+
+			const finalize = (data: unknown) => {
+				accessReqFinalizers[id]?.(data);
+				delete accessReqFinalizers[id];
+				accessReqs.splice(accessReqs.indexOf(req), 1);
+
+				chrome.windows.remove(req.windowId);
+			};
+
+			if (!success) {
+				finalize({ error: 'User rejected the access request' });
+				return sendResponse({ data: true });
+			}
+
+			const stored = await chrome.storage.local.get('permissions');
+			const map = stored.permissions || {};
+			const origin = normalizeOrigin(req.origin);
+			const newPermissions = req.permissions || [];
+
+			if (!map[origin]) {
+				map[origin] = {};
+			}
+
+			const existing = map[origin][req.address] || [];
+
+			const merged = [
+				...existing,
+				...newPermissions.filter(
+					(p) => !existing.some((e: { type: string }) => e.type === p.type),
+				),
+			];
+
+			map[origin][req.address] = merged;
+
+			await chrome.storage.local.set({ permissions: map });
+
+			finalize({ success: true });
+			sendResponse({ success: true });
+
+			break;
+		}
 
 		case 'SET_ACTIVE_WALLET':
 			fetchData('mw_select_wallet', { wallet_id: request.id })
@@ -366,18 +453,38 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				});
 			break;
 
-		case 'GET_WALLET_DATA':
-			getWalletData() // removed request.id
-				.then((data) => {
-					sendResponse({ data });
-				})
-				.catch((error) => {
-					console.error('Error fetching wallet data:', error);
-					sendResponse({
-						error: 'An error occurred while fetching wallet data',
-					});
+		case 'GET_WALLET_DATA': {
+			try {
+				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+
+				const data = await getWalletData();
+				const perms = await getPermissions(origin, data.address);
+
+				if (isFromExtensionFrontend) {
+					return sendResponse({ data });
+				}
+
+				const filtered: GetWalletDataRes = {
+					address: data.address,
+					alias: data.alias,
+				};
+
+				if (hasPermission(perms, 'balance')) {
+					filtered.balance = data.balance;
+					filtered.assets = data.assets;
+				}
+
+				if (hasPermission(perms, 'history')) {
+					filtered.transactions = data.transactions;
+				}
+
+				return sendResponse({ data: filtered });
+			} catch (e) {
+				return sendResponse({
+					error: 'Failed to get wallet data',
 				});
-			break;
+			}
+		}
 
 		case 'SEND_TRANSFER':
 			transfer(
@@ -479,6 +586,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				}
 
 				const wrongDecimalPoint = destinations.some((dest) => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const [_, dec] = dest.amount.toString().split('.');
 					return dec && dec.length > decimal_point;
 				});
