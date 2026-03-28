@@ -273,7 +273,6 @@ export interface RequestType {
 export interface AccessRequestType {
 	id: string;
 	windowId: number;
-	address: string;
 	origin: string;
 	hostname: string;
 	favicon: string;

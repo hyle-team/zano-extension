@@ -352,7 +352,6 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 					id,
 					windowId: Number(requestWindow.id),
 					origin,
-					address,
 					hostname,
 					favicon,
 					permissions: cleanPermissions,
@@ -389,6 +388,9 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				return sendResponse({ data: true });
 			}
 
+			const wallet = await getWalletData();
+			const { address } = wallet;
+
 			const stored = await chrome.storage.local.get('permissions');
 			const map = stored.permissions || {};
 			const origin = normalizeOrigin(req.origin);
@@ -398,7 +400,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				map[origin] = {};
 			}
 
-			const existing = map[origin][req.address] || [];
+			const existing = map[origin][address] || [];
 
 			const merged = [
 				...existing,
@@ -407,7 +409,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				),
 			];
 
-			map[origin][req.address] = merged;
+			map[origin][address] = merged;
 
 			await chrome.storage.local.set({ permissions: map });
 
