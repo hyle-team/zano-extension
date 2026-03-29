@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Zano Companion",
+  "version": "1.1.10",
+  "description": "A browser extension for Zano wallet app",
+  "permissions": ["storage", "network"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* https://api.coingecko.com https://api.zano.org https://explorer.zano.org;"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "images/zano_16px.png",
+      "48": "images/zano_48px.png",
+      "128": "images/zano_128px.png"
+    }
+  },
+  "background": {
+    "service_worker": "static/js/background.bundle.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["static/js/content.bundle.js"]
+    },
+    {
+      "world": "MAIN",
+      "js": ["static/js/inject.bundle.js"],
+      "matches": ["<all_urls>"],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+    "16": "images/zano_16px.png",
+    "48": "images/zano_48px.png",
+    "128": "images/zano_128px.png"
+  }
+}
