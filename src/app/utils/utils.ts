@@ -83,3 +83,11 @@ export function isPositiveFloatStr(
 	const regExp = allowCommaSeparator ? /^\d+([.,]\d*)?$/ : /^\d+(\.\d*)?$/;
 	return regExp.test(input);
 }
+
+export function normalizeOrigin(origin: string) {
+	try {
+		return new URL(origin).origin;
+	} catch {
+		return origin;
+	}
+}
