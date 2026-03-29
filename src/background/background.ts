@@ -329,10 +329,20 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			const uniqueTypes = [...new Set(permissions.map((p) => p.type))];
 			const cleanPermissions = uniqueTypes.map((type) => ({ type }));
 
+			const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+			const wallet = await getWalletData();
+			const { address } = wallet;
+
+			const existing = await getPermissions(origin, address);
+			const alreadyApproved = cleanPermissions.every((p) => existing.includes(p.type));
+
+			if (alreadyApproved) {
+				return sendResponse({ success: true });
+			}
+
 			openWindow().then((requestWindow) => {
 				const id = crypto.randomUUID();
 
-				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
 				const { hostname } = new URL(origin);
 				const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
 
@@ -378,16 +388,33 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				return sendResponse({ data: true });
 			}
 
+			const wallet = await getWalletData();
+			const { address } = wallet;
+
 			const stored = await chrome.storage.local.get('permissions');
 			const map = stored.permissions || {};
-
 			const origin = normalizeOrigin(req.origin);
-			map[origin] = req.permissions;
+			const newPermissions = req.permissions || [];
+
+			if (!map[origin]) {
+				map[origin] = {};
+			}
+
+			const existing = map[origin][address] || [];
+
+			const merged = [
+				...existing,
+				...newPermissions.filter(
+					(p) => !existing.some((e: { type: string }) => e.type === p.type),
+				),
+			];
+
+			map[origin][address] = merged;
 
 			await chrome.storage.local.set({ permissions: map });
 
-			finalize({ data: true });
-			sendResponse({ data: true });
+			finalize({ success: true });
+			sendResponse({ success: true });
 
 			break;
 		}
@@ -432,9 +459,8 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			try {
 				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
 
-				const perms = await getPermissions(origin);
-
 				const data = await getWalletData();
+				const perms = await getPermissions(origin, data.address);
 
 				if (isFromExtensionFrontend) {
 					return sendResponse({ data });

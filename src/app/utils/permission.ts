@@ -1,12 +1,13 @@
+import { getWalletData } from '../../background/wallet';
 import { METHOD_EXTRA_PERMISSIONS, PUBLIC_METHODS } from '../../constants';
 import { PermissionType, RequestType, Sender, SendResponse } from '../../types';
 import { normalizeOrigin } from './utils';
 
-export async function getPermissions(origin: string): Promise<PermissionType[]> {
+export async function getPermissions(origin: string, address: string): Promise<PermissionType[]> {
 	const stored = await chrome.storage.local.get('permissions');
 	const map = stored.permissions || {};
 
-	return (map[origin] || []).map((p: { type: PermissionType }) => p.type);
+	return (map?.[origin]?.[address] || []).map((p: { type: PermissionType }) => p.type);
 }
 
 export function hasPermission(userPerms: PermissionType[], required: PermissionType) {
@@ -29,7 +30,10 @@ export async function permissionMiddleware(
 
 	const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
 
-	const perms = await getPermissions(origin);
+	const wallet = await getWalletData();
+	const { address } = wallet;
+
+	const perms = await getPermissions(origin, address);
 
 	if (!hasPermission(perms, 'general')) {
 		sendResponse({ error: 'General permission required' });
