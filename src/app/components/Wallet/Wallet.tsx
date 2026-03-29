@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction, useContext, useRef, useState } from 'react';
 import Decimal from 'decimal.js';
-import { styleText } from 'util';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';

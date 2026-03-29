@@ -50,10 +50,12 @@ import {
 	transferType,
 } from '../types';
 import { useFullscreenMac } from './hooks/useFullscreenMac';
+import RequestAccessPage from './components/RequestAccessPage';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
 	const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
+	const [accessOpened, setAccessOpened] = useState(false);
 
 	const [incorrectPassword, setIncorrectPassword] = useState(false);
 	const [loggedIn, setLoggedIn] = useState(false);
@@ -352,6 +354,20 @@ function App() {
 				}
 			}
 
+			async function getAccessRequests() {
+				const res = await fetchBackground({
+					method: 'GET_ACCESS_REQUESTS',
+				});
+
+				const requests = res.data;
+
+				if (requests && requests.length > 0 && !accessOpened) {
+					setAccessOpened(true);
+
+					goTo(RequestAccessPage, { accessRequests: requests });
+				}
+			}
+
 			async function getAliasCreationRequests() {
 				const response = await fetchBackground({
 					method: 'GET_ALIAS_CREATE_REQUESTS',
@@ -563,6 +579,7 @@ function App() {
 				}
 			}
 
+			await getAccessRequests();
 			await getBurnAssetRequests();
 			await getAliasCreationRequests();
 			await getIonicSwapRequests();
