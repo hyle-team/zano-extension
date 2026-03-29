@@ -91,3 +91,10 @@ export function normalizeOrigin(origin: string) {
 		return origin;
 	}
 }
+
+export function raceTimeout<T>(promise: Promise<T>, ms = 2500): Promise<T> {
+	return Promise.race([
+		promise,
+		new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), ms)),
+	]);
+}

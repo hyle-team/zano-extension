@@ -39,4 +39,6 @@ export const METHOD_EXTRA_PERMISSIONS: Record<string, string[]> = {
 	GET_WALLET_BALANCE: ['balance'],
 };
 
-export const PUBLIC_METHODS = ['REQUEST_ACCESS'];
+export const PERMISSION_PUBLIC_METHODS = ['REQUEST_ACCESS'];
+
+export const SYSTEM_PUBLIC_METHODS = ['PING_WALLET', 'SET_PASSWORD', 'GET_PASSWORD'];
