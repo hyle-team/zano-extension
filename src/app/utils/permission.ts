@@ -1,7 +1,7 @@
 import { getWalletData } from '../../background/wallet';
-import { METHOD_EXTRA_PERMISSIONS, PUBLIC_METHODS } from '../../constants';
+import { METHOD_EXTRA_PERMISSIONS, PERMISSION_PUBLIC_METHODS } from '../../constants';
 import { PermissionType, RequestType, Sender, SendResponse } from '../../types';
-import { normalizeOrigin } from './utils';
+import { normalizeOrigin, raceTimeout } from './utils';
 
 export async function getPermissions(origin: string, address: string): Promise<PermissionType[]> {
 	const stored = await chrome.storage.local.get('permissions');
@@ -21,7 +21,7 @@ export async function permissionMiddleware(
 ): Promise<boolean> {
 	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
-	if (PUBLIC_METHODS.includes(request.method) || isFromExtensionFrontend) return true;
+	if (PERMISSION_PUBLIC_METHODS.includes(request.method) || isFromExtensionFrontend) return true;
 
 	if (!sender.origin && !sender.url) {
 		sendResponse({ error: 'Unknown origin' });
@@ -30,8 +30,23 @@ export async function permissionMiddleware(
 
 	const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
 
-	const wallet = await getWalletData();
-	const { address } = wallet;
+	let address;
+
+	try {
+		const wallet = await raceTimeout(getWalletData());
+
+		if (wallet?.address) {
+			address = wallet.address;
+		}
+	} catch {
+		sendResponse({ error: 'Wallet is offline!' });
+		return false;
+	}
+
+	if (!address) {
+		sendResponse({ error: 'Wallet is offline!' });
+		return false;
+	}
 
 	const perms = await getPermissions(origin, address);
 
