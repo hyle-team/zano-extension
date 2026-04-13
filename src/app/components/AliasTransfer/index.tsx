@@ -39,7 +39,7 @@ const AliasTransfer = () => {
 					/>
 
 					<p className={styles.main__transactionInfo_text}>
-						{transactionSuccess ? `Alias transfered!` : 'Transaction failed!'}
+						{transactionSuccess ? `Alias transferred!` : 'Transaction failed!'}
 					</p>
 
 					{!transactionSuccess && (
