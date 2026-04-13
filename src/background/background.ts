@@ -382,9 +382,13 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			};
 			updateUserData({
 				apiCredentials,
-			}).then(() => {
-				sendResponse({ success: true });
-			});
+			})
+				.then(() => {
+					sendResponse({ success: true });
+				})
+				.catch(() => {
+					sendResponse({ error: 'Failed to save credentials' });
+				});
 			break;
 
 		case 'PING_WALLET':
@@ -744,7 +748,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			createAlias({
 				address: String(request.address),
 				alias: String(request.alias),
-				comment: request.comment,
+				comment: request.comment ? String(request.comment) : undefined,
 			})
 				.then((res) => sendResponse(res))
 				.catch(() => sendResponse({ error: 'Internal error' }));
@@ -755,7 +759,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			updateAlias({
 				address: String(request.address),
 				alias: String(request.alias),
-				comment: request.comment,
+				comment: request.comment ? String(request.comment) : undefined,
 			})
 				.then((res) => sendResponse(res))
 				.catch(() => sendResponse({ error: 'Internal error' }));

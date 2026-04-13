@@ -132,7 +132,7 @@ export const useAlias = ({
 				}
 			}
 
-			console.log(mode, data);
+			//
 		} catch (e) {
 			console.log(e);
 			setTransactionSuccess(false);
@@ -145,7 +145,7 @@ export const useAlias = ({
 		if (mode === 'edit') return null;
 		if (aliasInput.isEmpty) return 'This field is required';
 		if (aliasInput.minLengthError) return 'Alias must be minimum 6 symbols';
-		if (isAliasRegistred) return 'Alias name already exits';
+		if (isAliasRegistred) return 'Alias name already exists';
 		return null;
 	}, [aliasInput, isAliasRegistred, mode]);
 
