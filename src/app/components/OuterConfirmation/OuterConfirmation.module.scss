@@ -133,7 +133,7 @@
 		&_row {
 			display: flex;
 			justify-content: space-between;
-			width: calc(var(--app-width) - 20px);
+			width: calc(var(--app-width) - 40px);
 			margin-inline: auto;
 
 			&.total {
@@ -165,7 +165,7 @@
 
 		&_error {
 			margin-inline: auto;
-			width: calc(var(--app-width) - 20px);
+			width: calc(var(--app-width) - 40px);
 			color: #ff6767;
 			font-size: 14px;
 			font-weight: 500;
@@ -187,7 +187,7 @@
 			place-content: center;
 
 			.content {
-				width: calc(var(--app-width) - 20px);
+				width: calc(var(--app-width) - 40px);
 				display: flex;
 				gap: 8px;
 			}
