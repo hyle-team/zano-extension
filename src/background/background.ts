@@ -340,6 +340,10 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				return sendResponse({ success: true });
 			}
 
+			if (accessReqs.some((r) => r.origin === origin)) {
+				return sendResponse({ error: 'Request already pending' });
+			}
+
 			openWindow().then((requestWindow) => {
 				const id = crypto.randomUUID();
 
