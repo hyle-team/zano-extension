@@ -31,17 +31,6 @@ Open the extension and connect your Zano wallet.
 Approve connection requests from supported dApps.
 Sign transactions securely.
 
-## Patch note: Permission system update
-
-After this branch is merged, connecting a dApp will require reviewing the exact access it is requesting before you continue.
-
-- Connection approvals are now permission-based, so a site can request wallet access, balance access, and transaction history access separately.
-- The approval popup now shows the requested permissions before you allow or deny the connection.
-- Permissions are stored per site and per active wallet address, so switching to a different wallet address can trigger a new access request.
-- If a site already has the permissions it needs for the current wallet address, it can reconnect without asking again.
-- If a site requests extra access later, the extension will open a new approval prompt.
-- Transaction and signing approvals are still separate, so a connected site cannot move funds without your explicit confirmation.
-
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.
