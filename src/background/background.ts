@@ -1,5 +1,5 @@
 import JSONbig from 'json-bigint';
-import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import { SELF_ONLY_REQUESTS, SYSTEM_PUBLIC_METHODS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
@@ -31,7 +31,8 @@ import {
 	getAliasByAddress,
 } from './wallet';
 import { normalizeOrigin, truncateToDecimals } from '../app/utils/utils';
-import { getPermissions, hasPermission, permissionMiddleware } from '../app/utils/permission';
+import { getPermissions, hasPermission } from '../app/utils/permission';
+import preprocessRequest from '../app/utils/preprocessRequest';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -213,7 +214,7 @@ async function setUserData(state: UserData): Promise<void> {
 	});
 }
 
-async function getUserData(): Promise<UserData> {
+export async function getUserData(): Promise<UserData> {
 	return new Promise((resolve) => {
 		chrome.storage.local.get('userData', (result) => {
 			resolve(result.userData || defaultUserData);
@@ -274,9 +275,10 @@ const accessReqs: AccessRequestType[] = [];
 const accessReqFinalizers: Record<string, (data: unknown) => void> = {};
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
-	const allowed = await permissionMiddleware(request, sender, sendResponse); // check permission access
-
-	if (!allowed) return;
+	if (!SYSTEM_PUBLIC_METHODS.includes(request.method)) {
+		const ok = await preprocessRequest(request, sender, sendResponse);
+		if (!ok) return;
+	}
 
 	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
