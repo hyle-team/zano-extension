@@ -23,11 +23,8 @@
 		"zano_web3": "^9.2.2"
 	},
 	"scripts": {
-		"start": "react-scripts start",
 		"build": "webpack --mode production",
 		"build:dev": "webpack --mode development --watch",
-		"test": "react-scripts test",
-		"eject": "react-scripts eject",
 		"precommit": "lint-staged",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
 		"format": "prettier --write .",
@@ -37,12 +34,6 @@
 		"*.{js,jsx,ts,tsx,css,scss}": [
 			"eslint --fix",
 			"prettier --write"
-		]
-	},
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
 		]
 	},
 	"browserslist": {
@@ -73,7 +64,7 @@
 		"@types/sha256": "^0.2.2",
 		"babel-loader": "^9.2.1",
 		"clean-webpack-plugin": "^4.0.0",
-		"copy-webpack-plugin": "^11.0.0",
+		"copy-webpack-plugin": "^14.0.0",
 		"css-loader": "^6.11.0",
 		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-config-prettier": "^10.1.5",
@@ -84,7 +75,6 @@
 		"husky": "^9.1.7",
 		"lint-staged": "^16.1.2",
 		"prettier": "^3.5.3",
-		"react-scripts": "5.0.1",
 		"sass": "^1.62.0",
 		"sass-loader": "^13.3.3",
 		"style-loader": "^3.3.4",
