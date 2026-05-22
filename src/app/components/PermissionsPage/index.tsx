@@ -9,6 +9,7 @@ import logoutIcon from '../../assets/svg/logout.svg';
 import shieldOffIcon from '../../assets/svg/shield-off.svg';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import { PermissionsState } from './types';
+import FaviconImg from '../UI/FaviconImg/FaviconImg';
 
 const STORAGE_KEY = 'permissions';
 
@@ -129,13 +130,10 @@ const PermissionsPage = () => {
 									onClick={() => onHandleOpenPopup(site.origin)}
 									className={styles.permissions__item}
 								>
-									<img
+									<FaviconImg
 										className={styles.permissions__item_icon}
 										src={site.favicon}
 										alt={site.hostname}
-										onError={(e) => {
-											e.currentTarget.style.display = 'none';
-										}}
 									/>
 
 									<div className={styles.permissions__item_info}>

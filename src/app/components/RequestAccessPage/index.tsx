@@ -8,6 +8,7 @@ import assetIcon from '../../assets/svg/asset.svg';
 import historyIcon from '../../assets/svg/history.svg';
 import { fetchBackground } from '../../utils/utils';
 import { PermissionType } from '../../../types';
+import FaviconImg from '../UI/FaviconImg/FaviconImg';
 
 const permissionMap = {
 	general: {
@@ -83,7 +84,7 @@ const RequestAccessPage = () => {
 
 			<div className={styles.main__content}>
 				<div className={styles.main__siteInfo}>
-					<img
+					<FaviconImg
 						className={styles.main__siteInfo_icon}
 						src={req.favicon}
 						alt="site favicon"
