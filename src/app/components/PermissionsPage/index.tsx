@@ -33,6 +33,7 @@ const PermissionsPage = () => {
 	const [confirmDisconnectAll, setConfirmDisconnectAll] = useState(false);
 	const [permissions, setPermissions] = useState<PermissionsState>({});
 	const [selectedSite, setSelectedSite] = useState<string | null>(null);
+	const [faviconState, setFaviconState] = useState<Record<string, 'loaded' | 'error'>>({});
 	const [popup, setPopup] = useState(false);
 
 	const onHandleOpenPopup = (origin: string) => {
@@ -130,11 +131,46 @@ const PermissionsPage = () => {
 									onClick={() => onHandleOpenPopup(site.origin)}
 									className={styles.permissions__item}
 								>
-									<FaviconImg
-										className={styles.permissions__item_icon}
-										src={site.favicon}
-										alt={site.hostname}
-									/>
+									<div className={styles.permissions__item_icon_wrapper}>
+										{faviconState[site.origin] !== 'loaded' &&
+											faviconState[site.origin] !== 'error' && (
+												<div
+													className={styles.permissions__item_skeleton}
+												/>
+											)}
+
+										{faviconState[site.origin] === 'error' && (
+											<div className={styles.permissions__item_fallback}>
+												{new URL(site.origin).hostname
+													.replace('www.', '')
+													.split('.')[0]
+													.charAt(0)
+													.toUpperCase()}
+											</div>
+										)}
+
+										<FaviconImg
+											className={`${styles.permissions__item_icon} ${
+												faviconState[site.origin] !== 'loaded'
+													? styles.permissions__item_icon_hidden
+													: ''
+											}`}
+											src={site.favicon}
+											alt={site.hostname}
+											onLoad={() => {
+												setFaviconState((prev) => ({
+													...prev,
+													[site.origin]: 'loaded',
+												}));
+											}}
+											onError={() =>
+												setFaviconState((prev) => ({
+													...prev,
+													[site.origin]: 'error',
+												}))
+											}
+										/>
+									</div>
 
 									<div className={styles.permissions__item_info}>
 										<p className={styles.permissions__item_title}>

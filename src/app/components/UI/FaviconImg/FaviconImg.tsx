@@ -6,11 +6,12 @@ interface FaviconImgProps {
 	src: string;
 	alt: string;
 	className?: string;
+	onLoad?: () => void;
+	onError?: () => void;
 }
 
-const FaviconImg = ({ src, alt, className }: FaviconImgProps) => {
+const FaviconImg = ({ src, alt, className, onLoad, onError }: FaviconImgProps) => {
 	const imgRef = useRef<HTMLImageElement>(null);
-
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
@@ -26,6 +27,15 @@ const FaviconImg = ({ src, alt, className }: FaviconImgProps) => {
 
 	const handleLoad = () => {
 		if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+		onLoad?.();
+	};
+
+	const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+		if (timeoutRef.current) clearTimeout(timeoutRef.current);
+		e.currentTarget.style.display = 'none';
+
+		onError?.();
 	};
 
 	return (
@@ -37,9 +47,7 @@ const FaviconImg = ({ src, alt, className }: FaviconImgProps) => {
 			referrerPolicy="no-referrer"
 			crossOrigin="anonymous"
 			onLoad={handleLoad}
-			onError={(e) => {
-				e.currentTarget.style.display = 'none';
-			}}
+			onError={handleError}
 		/>
 	);
 };
