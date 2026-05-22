@@ -330,6 +330,13 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			const cleanPermissions = uniqueTypes.map((type) => ({ type }));
 
 			const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+
+			const isSecureOrigin =
+				origin.startsWith('https://') || origin.startsWith('http://localhost');
+			if (!isSecureOrigin) {
+				return sendResponse({ error: 'Only HTTPS origins are allowed' });
+			}
+
 			const wallet = await getWalletData();
 			const { address } = wallet;
 
