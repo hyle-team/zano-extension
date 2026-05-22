@@ -116,59 +116,60 @@ const PermissionsPage = () => {
 			<div className={styles.permissions}>
 				<RoutersNav title="Dapp Permissions" />
 
-				<p className={styles.permissions__desc}>
-					Sites connected to your wallet can request your address and prompt transactions.
-					Manage or revoke access at any time.
-				</p>
-
 				{parsedSites.length > 0 ? (
-					<div className={styles.permissions__list}>
-						{parsedSites.map((site) => (
-							<div
-								key={site.origin}
-								onClick={() => onHandleOpenPopup(site.origin)}
-								className={styles.permissions__item}
-							>
-								<img
-									className={styles.permissions__item_icon}
-									src={site.favicon}
-									alt={site.hostname}
-									onError={(e) => {
-										e.currentTarget.style.display = 'none';
-									}}
-								/>
+					<>
+						<p className={styles.permissions__desc}>
+							dApps connected to your Zano wallet will appear here. You can revoke
+							access at any time.
+						</p>
+						<div className={styles.permissions__list}>
+							{parsedSites.map((site) => (
+								<div
+									key={site.origin}
+									onClick={() => onHandleOpenPopup(site.origin)}
+									className={styles.permissions__item}
+								>
+									<img
+										className={styles.permissions__item_icon}
+										src={site.favicon}
+										alt={site.hostname}
+										onError={(e) => {
+											e.currentTarget.style.display = 'none';
+										}}
+									/>
 
-								<div className={styles.permissions__item_info}>
-									<p className={styles.permissions__item_title}>
-										{site.hostname}
-									</p>
+									<div className={styles.permissions__item_info}>
+										<p className={styles.permissions__item_title}>
+											{site.hostname}
+										</p>
 
-									<p className={styles.permissions__item_count}>
-										{site.permissions.length}{' '}
-										{site.permissions.length === 1
-											? 'permission'
-											: 'permissions'}
-									</p>
+										<p className={styles.permissions__item_count}>
+											{site.permissions.length}{' '}
+											{site.permissions.length === 1
+												? 'permission'
+												: 'permissions'}
+										</p>
+									</div>
+
+									<img
+										src={chevronRightIcon}
+										alt="Chevron right"
+										className={styles.permissions__item_chevron}
+									/>
 								</div>
-
-								<img
-									src={chevronRightIcon}
-									alt="Chevron right"
-									className={styles.permissions__item_chevron}
-								/>
-							</div>
-						))}
-					</div>
+							))}
+						</div>
+					</>
 				) : (
 					<div className={styles.permissions__empty}>
 						<div className={styles.permissions__empty_icon}>
 							<img src={shieldOffIcon} alt="Shield off" />
 						</div>
 
-						<p className={styles.permissions__empty_text}>No connected sites</p>
+						<p className={styles.permissions__empty_text}>No connected apps</p>
 
 						<p className={styles.permissions__empty_desc}>
-							Sites you connect your Zano wallet to will appear here. You can revoke
+							dApps connected to your Zano wallet will appear here. You can revoke
 							access at any time.
 						</p>
 					</div>
@@ -187,7 +188,7 @@ const PermissionsPage = () => {
 						) : (
 							<>
 								<p className={styles.permissions__bottom_warning}>
-									Disconnect all {parsedSites.length} sites? They'll need to
+									Disconnect all {parsedSites.length} dApps? They'll need to
 									request access again.
 								</p>
 
@@ -264,7 +265,7 @@ const PermissionsPage = () => {
 									onClick={() => disconnectSite(selectedSiteData.origin)}
 									theme={ButtonThemes.Danger}
 								>
-									Disconnect site
+									Disconnect dApp
 								</Button>
 
 								<Button onClick={onHandleClosePopup} theme={ButtonThemes.Outline}>
