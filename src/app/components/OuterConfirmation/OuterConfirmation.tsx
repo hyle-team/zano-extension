@@ -12,427 +12,437 @@ import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 
 interface ParamsType {
-	key: number;
-	value: string;
+    key: number;
+    value: string;
 }
 
 interface DestionationType {
-	address: string;
-	amount: string;
+    address: string;
+    amount: string;
 }
 
 const OuterConfirmation = () => {
-	const { state } = useContext(Store);
-	const { props } = getCurrent();
-	const { reqs } = props;
+    const { state } = useContext(Store);
+    const { props } = getCurrent();
+    const { reqs } = props;
 
-	const [reqIndex, setReqIndex] = useState(0);
-	const [accepting, setAccepting] = useState(false);
-	const [denying, setDenying] = useState(false);
-	const [showFullItems, setShowFullItems] = useState(false);
-	const [showFullComment, setShowFullComment] = useState(false);
+    const [reqIndex, setReqIndex] = useState(0);
+    const [accepting, setAccepting] = useState(false);
+    const [denying, setDenying] = useState(false);
+    const [showFullItems, setShowFullItems] = useState(false);
+    const [showFullComment, setShowFullComment] = useState(false);
 
-	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations, assetId, sendingAmount } = req;
+    const req = reqs[reqIndex] || {};
+    const { id, name, params, method, destinations, assetId, sendingAmount } = req;
 
-	const isTransferMethod = name?.toLowerCase() === 'transfer';
-	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
-	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST';
+    const isTransferMethod = name?.toLowerCase() === 'transfer';
+    const isBurnMethod = name?.toLowerCase() === 'burn_asset';
+    const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST';
 
-	const isMultipleDestinations = destinations && destinations.length > 0;
+    const isMultipleDestinations = destinations && destinations.length > 0;
 
-	const transactionParams = params
-		? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
-		: {};
+    const transactionParams = params
+        ? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
+        : {};
 
-	const totalAmount = Number(
-		isMultipleDestinations
-			? destinations.reduce(
-					(sum: number, dest: { amount: number }) => sum + Number(dest.amount),
-					0,
-				)
-			: transactionParams.Amount,
-	).toLocaleString();
+    const totalAmount = Number(
+        isMultipleDestinations
+            ? destinations.reduce(
+                  (sum: number, dest: { amount: number }) => sum + Number(dest.amount),
+                  0,
+              )
+            : transactionParams.Amount,
+    ).toLocaleString();
 
-	useEffect(() => {
-		setReqIndex(0);
-	}, [reqs]);
+    useEffect(() => {
+        setReqIndex(0);
+    }, [reqs]);
 
-	function nextRequest() {
-		if (reqIndex < reqs.length - 1) {
-			setReqIndex(reqIndex + 1);
-		} else {
-			goBack();
-		}
-	}
+    function nextRequest() {
+        if (reqIndex < reqs.length - 1) {
+            setReqIndex(reqIndex + 1);
+        } else {
+            goBack();
+        }
+    }
 
-	async function acceptClick() {
-		setAccepting(true);
-		await fetchBackground({ method, id, success: true });
-		setAccepting(false);
-		nextRequest();
-	}
+    async function acceptClick() {
+        setAccepting(true);
+        await fetchBackground({ method, id, success: true });
+        setAccepting(false);
+        nextRequest();
+    }
 
-	async function denyClick() {
-		setDenying(true);
-		await fetchBackground({ method, id, success: false });
-		setDenying(false);
-		nextRequest();
-	}
+    async function denyClick() {
+        setDenying(true);
+        await fetchBackground({ method, id, success: false });
+        setDenying(false);
+        nextRequest();
+    }
 
-	const getConfirmationName = () => {
-		if (isTransferMethod) {
-			return 'Please confirm the transfer details';
-		}
-		if (isBurnMethod) {
-			return 'BURN ASSET';
-		}
-		return name;
-	};
+    const getConfirmationName = () => {
+        if (isTransferMethod) {
+            return 'Please confirm the transfer details';
+        }
+        if (isBurnMethod) {
+            return 'BURN ASSET';
+        }
+        return name;
+    };
 
-	const fee = 0.01;
-	const balance = new Decimal(state.wallet?.balance || 0);
-	const locked = new Decimal(state.wallet?.lockedBalance || 0);
-	const zanoBalance = balance.minus(locked);
-	const rawTotalAmount = isMultipleDestinations
-		? destinations.reduce(
-				(sum: Decimal, dest: { amount: string }) => sum.plus(new Decimal(dest.amount || 0)),
-				new Decimal(0),
-			)
-		: new Decimal(transactionParams.Amount || 0);
+    const fee = 0.01;
+    const balance = new Decimal(state.wallet?.balance || 0);
+    const locked = new Decimal(state.wallet?.lockedBalance || 0);
+    const zanoBalance = balance.minus(locked);
+    const rawTotalAmount = useMemo(() => {
+        return isMultipleDestinations
+            ? destinations.reduce(
+                  (sum: Decimal, dest: { amount: string }) =>
+                      sum.plus(new Decimal(dest.amount || 0)),
+                  new Decimal(0),
+              )
+            : new Decimal(transactionParams.Amount || 0);
+    }, [isMultipleDestinations, destinations, transactionParams.Amount]);
 
-	const assetBalance =
-		assetId === ZANO_ASSET_ID
-			? zanoBalance
-			: new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
-	const feeBig = new Decimal(fee);
-	const swapAmount = new Decimal(sendingAmount || 0);
+    const assetBalance = useMemo(() => {
+        return assetId === ZANO_ASSET_ID
+            ? zanoBalance
+            : new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
+    }, [assetId, zanoBalance, state.wallet?.assets]);
 
-	const notEnoughFee = useMemo(() => {
-		return zanoBalance.lessThan(feeBig);
-	}, [zanoBalance, feeBig]);
+    const feeBig = useMemo(() => {
+        return new Decimal(fee);
+    }, [fee]);
 
-	const notEnoughAmount = useMemo(() => {
-		if (!isTransferMethod) return false;
+    const swapAmount = useMemo(() => {
+        return new Decimal(sendingAmount || 0);
+    }, [sendingAmount]);
 
-		if (assetId === ZANO_ASSET_ID) {
-			return zanoBalance.lessThan(rawTotalAmount.plus(feeBig));
-		}
+    const notEnoughFee = useMemo(() => {
+        return zanoBalance.lessThan(feeBig);
+    }, [zanoBalance, feeBig]);
 
-		return assetBalance.lessThan(rawTotalAmount);
-	}, [isTransferMethod, assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
+    const notEnoughAmount = useMemo(() => {
+        if (!isTransferMethod) return false;
 
-	const notEnoughSwapAmount = useMemo(() => {
-		if (!isIonicSwapMethod) return false;
+        if (assetId === ZANO_ASSET_ID) {
+            return zanoBalance.lessThan(rawTotalAmount.plus(feeBig));
+        }
 
-		if (assetId === ZANO_ASSET_ID) {
-			return zanoBalance.lessThan(swapAmount.plus(feeBig));
-		}
+        return assetBalance.lessThan(rawTotalAmount);
+    }, [isTransferMethod, assetId, zanoBalance, assetBalance, rawTotalAmount, feeBig]);
 
-		return assetBalance.lessThan(swapAmount);
-	}, [isIonicSwapMethod, assetId, assetBalance, swapAmount, zanoBalance, feeBig]);
+    const notEnoughSwapAmount = useMemo(() => {
+        if (!isIonicSwapMethod) return false;
 
-	const disabled = accepting || denying;
-	const insufficientBalance =
-		notEnoughFee ||
-		(isTransferMethod && notEnoughAmount) ||
-		(isIonicSwapMethod && notEnoughSwapAmount);
+        if (assetId === ZANO_ASSET_ID) {
+            return zanoBalance.lessThan(swapAmount.plus(feeBig));
+        }
 
-	const getConfirmationContent = () => {
-		if (isTransferMethod) {
-			return (
-				<>
-					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>From</h5>
-							<p>{transactionParams?.From}</p>
-						</div>
-						<div className={styles.row}>
-							<h5>Asset</h5>
-							<p className={styles.asset}>
-								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
-								{transactionParams?.Asset}
-							</p>
-						</div>
-						<div className={styles.row}>
-							<h5>Amount</h5>
-							<p>{totalAmount}</p>
-						</div>
+        return assetBalance.lessThan(swapAmount);
+    }, [isIonicSwapMethod, assetId, assetBalance, swapAmount, zanoBalance, feeBig]);
 
-						<div className={styles.col}>
-							<h5>Comment</h5>
-							<p>
-								{transactionParams?.Comment?.length > 60 && !showFullComment ? (
-									<>
-										{transactionParams?.Comment?.slice(0, 60)}...
-										<button
-											className={styles.commentBtn}
-											onClick={() => setShowFullComment(true)}
-										>
-											Show more
-										</button>
-									</>
-								) : (
-									<>
-										{transactionParams?.Comment}
-										{showFullComment && (
-											<button
-												className={`${styles.commentBtn} ${styles.less}`}
-												onClick={() => setShowFullComment(false)}
-											>
-												Show less
-											</button>
-										)}
-									</>
-								)}
-							</p>
-						</div>
-					</div>
+    const disabled = accepting || denying;
+    const insufficientBalance =
+        notEnoughFee ||
+        (isTransferMethod && notEnoughAmount) ||
+        (isIonicSwapMethod && notEnoughSwapAmount);
 
-					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>To</h5>
-							<p>
-								{isMultipleDestinations ? (
-									<>{destinations?.length} addresses</>
-								) : (
-									transactionParams?.To
-								)}
-							</p>
-						</div>
+    const getConfirmationContent = () => {
+        if (isTransferMethod) {
+            return (
+                <>
+                    <div className={styles.confirmation__block}>
+                        <div className={styles.row}>
+                            <h5>From</h5>
+                            <p>{transactionParams?.From}</p>
+                        </div>
+                        <div className={styles.row}>
+                            <h5>Asset</h5>
+                            <p className={styles.asset}>
+                                <WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
+                                {transactionParams?.Asset}
+                            </p>
+                        </div>
+                        <div className={styles.row}>
+                            <h5>Amount</h5>
+                            <p>{totalAmount}</p>
+                        </div>
 
-						{!isMultipleDestinations && (
-							<div className={styles.row}>
-								<h5>Amount</h5>
-								<p>{totalAmount}</p>
-							</div>
-						)}
-					</div>
+                        <div className={styles.col}>
+                            <h5>Comment</h5>
+                            <p>
+                                {transactionParams?.Comment?.length > 60 && !showFullComment ? (
+                                    <>
+                                        {transactionParams?.Comment?.slice(0, 60)}...
+                                        <button
+                                            className={styles.commentBtn}
+                                            onClick={() => setShowFullComment(true)}
+                                        >
+                                            Show more
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        {transactionParams?.Comment}
+                                        {showFullComment && (
+                                            <button
+                                                className={`${styles.commentBtn} ${styles.less}`}
+                                                onClick={() => setShowFullComment(false)}
+                                            >
+                                                Show less
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </p>
+                        </div>
+                    </div>
 
-					{isMultipleDestinations && (
-						<>
-							<button
-								onClick={() => setShowFullItems((prev) => !prev)}
-								className={styles.confirmation__showAddressesBtn}
-							>
-								Show addresses{' '}
-								<img
-									style={{ transform: `rotate(${showFullItems ? '180deg' : 0})` }}
-									width={18}
-									src={arrowIcon}
-									alt="arrow"
-								/>
-							</button>
+                    <div className={styles.confirmation__block}>
+                        <div className={styles.row}>
+                            <h5>To</h5>
+                            <p>
+                                {isMultipleDestinations ? (
+                                    <>{destinations?.length} addresses</>
+                                ) : (
+                                    transactionParams?.To
+                                )}
+                            </p>
+                        </div>
 
-							{showFullItems &&
-								destinations?.map((item: DestionationType, idx: number) => (
-									<div
-										className={styles.confirmation__destinationWrapper}
-										key={idx}
-									>
-										<p className={styles.title}>RECIPIENT {idx + 1}</p>
+                        {!isMultipleDestinations && (
+                            <div className={styles.row}>
+                                <h5>Amount</h5>
+                                <p>{totalAmount}</p>
+                            </div>
+                        )}
+                    </div>
 
-										<div className={styles.confirmation__block}>
-											<div className={styles.row}>
-												<h5>To</h5>
-												<p>{item.address}</p>
-											</div>
+                    {isMultipleDestinations && (
+                        <>
+                            <button
+                                onClick={() => setShowFullItems((prev) => !prev)}
+                                className={styles.confirmation__showAddressesBtn}
+                            >
+                                Show addresses{' '}
+                                <img
+                                    style={{ transform: `rotate(${showFullItems ? '180deg' : 0})` }}
+                                    width={18}
+                                    src={arrowIcon}
+                                    alt="arrow"
+                                />
+                            </button>
 
-											<div className={styles.row}>
-												<h5>Amount</h5>
-												<p>{item.amount}</p>
-											</div>
-										</div>
-									</div>
-								))}
-						</>
-					)}
-				</>
-			);
-		}
-		if (isBurnMethod) {
-			const {
-				assetId,
-				burnAmount,
-				nativeAmount,
-				pointTxToAddress,
-				serviceEntries,
-			}: BurnAssetDataType = params[0];
+                            {showFullItems &&
+                                destinations?.map((item: DestionationType, idx: number) => (
+                                    <div
+                                        className={styles.confirmation__destinationWrapper}
+                                        key={idx}
+                                    >
+                                        <p className={styles.title}>RECIPIENT {idx + 1}</p>
 
-			return (
-				<>
-					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>Asset</h5>
-							<p className={styles.asset}>
-								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
-								{shortenAddress(assetId, 6, 6)}
-							</p>
-						</div>
-						<div className={styles.row}>
-							<h5>Burn Amount</h5>
-							<p>{burnAmount}</p>
-						</div>
+                                        <div className={styles.confirmation__block}>
+                                            <div className={styles.row}>
+                                                <h5>To</h5>
+                                                <p>{item.address}</p>
+                                            </div>
 
-						{typeof nativeAmount === 'string' && (
-							<div className={styles.row}>
-								<h5>Native Amount</h5>
-								<p>{nativeAmount}</p>
-							</div>
-						)}
+                                            <div className={styles.row}>
+                                                <h5>Amount</h5>
+                                                <p>{item.amount}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                        </>
+                    )}
+                </>
+            );
+        }
+        if (isBurnMethod) {
+            const {
+                assetId,
+                burnAmount,
+                nativeAmount,
+                pointTxToAddress,
+                serviceEntries,
+            }: BurnAssetDataType = params[0];
 
-						{pointTxToAddress && (
-							<div className={styles.row}>
-								<h5>Send Tx To</h5>
-								<p>{shortenAddress(pointTxToAddress, 6, 6)}</p>
-							</div>
-						)}
-					</div>
+            return (
+                <>
+                    <div className={styles.confirmation__block}>
+                        <div className={styles.row}>
+                            <h5>Asset</h5>
+                            <p className={styles.asset}>
+                                <WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
+                                {shortenAddress(assetId, 6, 6)}
+                            </p>
+                        </div>
+                        <div className={styles.row}>
+                            <h5>Burn Amount</h5>
+                            <p>{burnAmount}</p>
+                        </div>
 
-					{serviceEntries && (
-						<button
-							onClick={() => setShowFullItems((prev) => !prev)}
-							className={styles.confirmation__showAddressesBtn}
-						>
-							Show service entries{' '}
-							<img
-								style={{ transform: `rotate(${showFullItems ? '180deg' : 0})` }}
-								width={18}
-								src={arrowIcon}
-								alt="arrow"
-							/>
-						</button>
-					)}
+                        {typeof nativeAmount === 'string' && (
+                            <div className={styles.row}>
+                                <h5>Native Amount</h5>
+                                <p>{nativeAmount}</p>
+                            </div>
+                        )}
 
-					{showFullItems &&
-						serviceEntries?.map((item, idx) => {
-							const dataLength = serviceEntries?.length || 1;
+                        {pointTxToAddress && (
+                            <div className={styles.row}>
+                                <h5>Send Tx To</h5>
+                                <p>{shortenAddress(pointTxToAddress, 6, 6)}</p>
+                            </div>
+                        )}
+                    </div>
 
-							return (
-								<div className={styles.confirmation__destinationWrapper} key={idx}>
-									{dataLength > 1 && (
-										<p className={styles.title}>Service Entries {idx + 1}</p>
-									)}
+                    {serviceEntries && (
+                        <button
+                            onClick={() => setShowFullItems((prev) => !prev)}
+                            className={styles.confirmation__showAddressesBtn}
+                        >
+                            Show service entries{' '}
+                            <img
+                                style={{ transform: `rotate(${showFullItems ? '180deg' : 0})` }}
+                                width={18}
+                                src={arrowIcon}
+                                alt="arrow"
+                            />
+                        </button>
+                    )}
 
-									<div className={styles.confirmation__block}>
-										<div className={styles.row}>
-											<h5>Body</h5>
-											<p>{shortenAddress(item.body, 6, 6)}</p>
-										</div>
-										<div className={styles.row}>
-											<h5>Flags</h5>
-											<p>{item.flags}</p>
-										</div>
-										<div className={styles.row}>
-											<h5>Instruction</h5>
-											<p>{item.instruction}</p>
-										</div>
-										{item.security && (
-											<div className={styles.row}>
-												<h5>Security</h5>
-												<p>{shortenAddress(item.security, 6, 6)}</p>
-											</div>
-										)}
-										<div className={styles.row}>
-											<h5>Service Id</h5>
-											<p>{item.service_id}</p>
-										</div>
-									</div>
-								</div>
-							);
-						})}
-				</>
-			);
-		}
+                    {showFullItems &&
+                        serviceEntries?.map((item, idx) => {
+                            const dataLength = serviceEntries?.length || 1;
 
-		return (
-			<div>
-				<div className={styles.confirmation__block}>
-					{Array.isArray(params) &&
-						params?.map((item: ParamsType, idx: number) => (
-							<div key={idx} className={styles.row}>
-								<h5>{item.key}</h5>
-								<p>{item.value}</p>
-							</div>
-						))}
-				</div>
-			</div>
-		);
-	};
+                            return (
+                                <div className={styles.confirmation__destinationWrapper} key={idx}>
+                                    {dataLength > 1 && (
+                                        <p className={styles.title}>Service Entries {idx + 1}</p>
+                                    )}
 
-	if (!req) {
-		return <div>No request found.</div>;
-	}
+                                    <div className={styles.confirmation__block}>
+                                        <div className={styles.row}>
+                                            <h5>Body</h5>
+                                            <p>{shortenAddress(item.body, 6, 6)}</p>
+                                        </div>
+                                        <div className={styles.row}>
+                                            <h5>Flags</h5>
+                                            <p>{item.flags}</p>
+                                        </div>
+                                        <div className={styles.row}>
+                                            <h5>Instruction</h5>
+                                            <p>{item.instruction}</p>
+                                        </div>
+                                        {item.security && (
+                                            <div className={styles.row}>
+                                                <h5>Security</h5>
+                                                <p>{shortenAddress(item.security, 6, 6)}</p>
+                                            </div>
+                                        )}
+                                        <div className={styles.row}>
+                                            <h5>Service Id</h5>
+                                            <p>{item.service_id}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                </>
+            );
+        }
 
-	return (
-		<div className={styles.confirmation}>
-			<h3 className={styles.confirmation__title}>Request Confirmation</h3>
-			<h5 className={styles.confirmation__subtitle}>{getConfirmationName()}</h5>
+        return (
+            <div>
+                <div className={styles.confirmation__block}>
+                    {Array.isArray(params) &&
+                        params?.map((item: ParamsType, idx: number) => (
+                            <div key={idx} className={styles.row}>
+                                <h5>{item.key}</h5>
+                                <p>{item.value}</p>
+                            </div>
+                        ))}
+                </div>
+            </div>
+        );
+    };
 
-			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
+    if (!req) {
+        return <div>No request found.</div>;
+    }
 
-			<div className={styles.confirmation__bottom}>
-				{(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
-					<>
-						<div className={styles.confirmation__bottom_row}>
-							<h5 className={styles.label}>
-								Transaction fee <InfoTooltip title="Total network fee" />
-							</h5>
-							<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
-								{fee} ZANO
-							</p>
-						</div>
+    return (
+        <div className={styles.confirmation}>
+            <h3 className={styles.confirmation__title}>Request Confirmation</h3>
+            <h5 className={styles.confirmation__subtitle}>{getConfirmationName()}</h5>
 
-						{(isTransferMethod || isIonicSwapMethod) && (
-							<>
-								<div className={styles.divider} />
+            <div className={styles.confirmation__content}>{getConfirmationContent()}</div>
 
-								<div
-									className={`${styles.confirmation__bottom_row} ${styles.total}`}
-								>
-									<h5 className={styles.label}>Total</h5>
-									<p
-										className={`${styles.value} ${(isTransferMethod ? notEnoughAmount : notEnoughSwapAmount) ? styles.error : ''}`}
-									>
-										{isTransferMethod
-											? totalAmount
-											: Number(sendingAmount).toLocaleString()}
-									</p>
-								</div>
+            <div className={styles.confirmation__bottom}>
+                {(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
+                    <>
+                        <div className={styles.confirmation__bottom_row}>
+                            <h5 className={styles.label}>
+                                Transaction fee <InfoTooltip title="Total network fee" />
+                            </h5>
+                            <p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
+                                {fee} ZANO
+                            </p>
+                        </div>
 
-								{insufficientBalance && (
-									<div className={styles.confirmation__bottom_error}>
-										Insufficient balance
-									</div>
-								)}
-							</>
-						)}
-					</>
-				)}
+                        {(isTransferMethod || isIonicSwapMethod) && (
+                            <>
+                                <div className={styles.divider} />
 
-				<div className={styles.confirmation__bottom_buttons}>
-					<div className={styles.content}>
-						<Button
-							className={styles.btn}
-							disabled={disabled}
-							theme={ButtonThemes.Outline}
-							onClick={denyClick}
-						>
-							Cancel
-						</Button>
+                                <div
+                                    className={`${styles.confirmation__bottom_row} ${styles.total}`}
+                                >
+                                    <h5 className={styles.label}>Total</h5>
+                                    <p
+                                        className={`${styles.value} ${(isTransferMethod ? notEnoughAmount : notEnoughSwapAmount) ? styles.error : ''}`}
+                                    >
+                                        {isTransferMethod
+                                            ? totalAmount
+                                            : Number(sendingAmount).toLocaleString()}
+                                    </p>
+                                </div>
 
-						<Button
-							className={styles.btn}
-							disabled={disabled || insufficientBalance}
-							onClick={acceptClick}
-						>
-							Confirm
-						</Button>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+                                {insufficientBalance && (
+                                    <div className={styles.confirmation__bottom_error}>
+                                        Insufficient balance
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </>
+                )}
+
+                <div className={styles.confirmation__bottom_buttons}>
+                    <div className={styles.content}>
+                        <Button
+                            className={styles.btn}
+                            disabled={disabled}
+                            theme={ButtonThemes.Outline}
+                            onClick={denyClick}
+                        >
+                            Cancel
+                        </Button>
+
+                        <Button
+                            className={styles.btn}
+                            disabled={disabled || insufficientBalance}
+                            onClick={acceptClick}
+                        >
+                            Confirm
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default OuterConfirmation;

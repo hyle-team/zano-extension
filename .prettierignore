@@ -1,5 +1,11 @@
 node_modules
 build
 dist
+coverage
+.next
+.env
+*.lock
+submodules/
+migrations/
 public
 **/*.js

@@ -11,102 +11,102 @@ import errorImg from '../../assets/images/failed-round.png';
 import { useAlias } from './hook/useAlias';
 
 const AliasManagePage = ({ mode = 'create' }) => {
-	const { state } = useContext(Store);
+    const { state } = useContext(Store);
 
-	const {
-		fee,
-		aliasInput,
-		commentInput,
-		aliasError,
-		isDisabled,
-		submit,
-		transactionSuccess,
-		notEnoughFee,
-		errorMsg,
-	} = useAlias({
-		mode,
-		walletAddress: state.wallet.address,
-		walletAlias: state.wallet.alias,
-	});
+    const {
+        fee,
+        aliasInput,
+        commentInput,
+        aliasError,
+        isDisabled,
+        submit,
+        transactionSuccess,
+        notEnoughFee,
+        errorMsg,
+    } = useAlias({
+        mode,
+        walletAddress: state.wallet.address,
+        walletAlias: state.wallet.alias,
+    });
 
-	const displayAlias = aliasInput.value ? `@${aliasInput.value}` : '';
+    const displayAlias = aliasInput.value ? `@${aliasInput.value}` : '';
 
-	if (transactionSuccess !== null) {
-		return (
-			<div className={styles.main}>
-				<div className={styles.main__transactionInfo}>
-					<img
-						className={styles.main__transactionInfo_img}
-						src={transactionSuccess ? successImg : errorImg}
-						alt="transaction"
-					/>
+    if (transactionSuccess !== null) {
+        return (
+            <div className={styles.main}>
+                <div className={styles.main__transactionInfo}>
+                    <img
+                        className={styles.main__transactionInfo_img}
+                        src={transactionSuccess ? successImg : errorImg}
+                        alt="transaction"
+                    />
 
-					<p className={styles.main__transactionInfo_text}>
-						{transactionSuccess
-							? `Alias ${mode === 'create' ? 'created' : 'updated'}!`
-							: 'Transaction failed!'}
-					</p>
+                    <p className={styles.main__transactionInfo_text}>
+                        {transactionSuccess
+                            ? `Alias ${mode === 'create' ? 'created' : 'updated'}!`
+                            : 'Transaction failed!'}
+                    </p>
 
-					{!transactionSuccess && (
-						<p className={styles.main__transactionInfo_errorMsg}>{errorMsg}</p>
-					)}
-				</div>
+                    {!transactionSuccess && (
+                        <p className={styles.main__transactionInfo_errorMsg}>{errorMsg}</p>
+                    )}
+                </div>
 
-				<Button className={styles.main__action} onClick={goBack}>
-					OK
-				</Button>
-			</div>
-		);
-	}
+                <Button className={styles.main__action} onClick={goBack}>
+                    OK
+                </Button>
+            </div>
+        );
+    }
 
-	return (
-		<main className={styles.main}>
-			<RoutersNav title={`${mode === 'create' ? 'Create' : 'Edit'} Alias`} />
+    return (
+        <main className={styles.main}>
+            <RoutersNav title={`${mode === 'create' ? 'Create' : 'Edit'} Alias`} />
 
-			<div className={styles.main__content}>
-				<div className={styles.main__address}>
-					<p className={styles.main__address_title}>Address</p>
-					<p className={styles.main__address_value}>{state.wallet.address}</p>
-				</div>
+            <div className={styles.main__content}>
+                <div className={styles.main__address}>
+                    <p className={styles.main__address_title}>Address</p>
+                    <p className={styles.main__address_value}>{state.wallet.address}</p>
+                </div>
 
-				<MyInput
-					disabled={mode === 'edit'}
-					noActiveBorder={mode === 'edit'}
-					placeholder="Enter alias"
-					label="Alias"
-					stroke={aliasError}
-					inputData={{
-						...aliasInput,
-						value: displayAlias,
-					}}
-				/>
+                <MyInput
+                    disabled={mode === 'edit'}
+                    noActiveBorder={mode === 'edit'}
+                    placeholder="Enter alias"
+                    label="Alias"
+                    stroke={aliasError}
+                    inputData={{
+                        ...aliasInput,
+                        value: displayAlias,
+                    }}
+                />
 
-				<MyInput
-					maxLength={255}
-					placeholder="Enter the comment"
-					label="Comment"
-					inputData={commentInput as inputDataProps}
-					noActiveBorder
-				/>
+                <MyInput
+                    maxLength={255}
+                    placeholder="Enter the comment"
+                    label="Comment"
+                    inputData={commentInput as inputDataProps}
+                    noActiveBorder
+                />
 
-				<div className={styles.main__bottom}>
-					<div className={styles.fee}>
-						<h5 className={styles.fee__label}>
-							Alias fee <InfoTooltip title="Total network fee" />
-						</h5>
+                <div className={styles.main__bottom}>
+                    <div className={styles.fee}>
+                        <h5 className={styles.fee__label}>
+                            Alias fee <InfoTooltip title="Total network fee" />
+                        </h5>
 
-						<p className={`${styles.fee__value} ${notEnoughFee ? styles.error : ''}`}>
-							{fee} ZANO
-						</p>
-					</div>
+                        <p className={`${styles.fee__value} ${notEnoughFee ? styles.error : ''}`}>
+                            {fee} ZANO
+                        </p>
+                    </div>
 
-					<Button disabled={isDisabled} onClick={submit}>
-						{mode === 'create' ? 'Create' : 'Edit'} alias
-					</Button>
-				</div>
-			</div>
-		</main>
-	);
+                    <Button disabled={isDisabled} onClick={submit}>
+                        {mode === 'create' ? 'Create' : 'Edit'} alias
+                    </Button>
+                </div>
+            </div>
+        </main>
+    );
 };
 
 export default AliasManagePage;
