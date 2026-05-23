@@ -2,9 +2,9 @@ import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from
 import { popToTop } from 'react-chrome-extension-router';
 import Decimal from 'decimal.js';
 import {
-	validateTokensInput,
-	// @ts-expect-error - Disabling TS error while importing /shared submodule
-	// due to global tsconfig "moduleResolution" prop is set to "node"
+    validateTokensInput,
+    // @ts-expect-error - Disabling TS error while importing /shared submodule
+    // due to global tsconfig "moduleResolution" prop is set to "node"
 } from 'zano_web3/shared';
 
 import failedImage from '../../assets/images/failed-round.png';
@@ -20,300 +20,293 @@ import AssetsSelect from './ui/AssetsSelect/AssetsSelect';
 import AdditionalDetails from './ui/AdditionalDetails/AdditionalDetails';
 
 interface FetchBackgroundParams {
-	method: string;
-	assetId: string;
-	destination: string;
-	amount: string | number;
-	comment: string;
-	decimalPoint: number;
-	password?: string;
-	id?: number;
-	success?: boolean;
-	credentials?: {
-		port: string;
-	};
+    method: string;
+    assetId: string;
+    destination: string;
+    amount: string | number;
+    comment: string;
+    decimalPoint: number;
+    password?: string;
+    id?: number;
+    success?: boolean;
+    credentials?: {
+        port: string;
+    };
 }
 
 export interface AssetProps {
-	unlockedBalance: number;
-	balance: number;
+    unlockedBalance: number;
+    balance: number;
 }
 
 const WalletSend = () => {
-	const { state } = useContext(Store);
-	const [activeStep, setActiveStep] = useState(0);
-	const [transactionSuccess, setTransactionSuccess] = useState(false);
-	const [txId, setTxId] = useState('');
+    const { state } = useContext(Store);
+    const [activeStep, setActiveStep] = useState(0);
+    const [transactionSuccess, setTransactionSuccess] = useState(false);
+    const [txId, setTxId] = useState('');
 
-	// Form data
-	const [asset, setAsset] = useState(state.wallet.assets[0]);
-	const [submitAddress, setSubmitAddress] = useState('');
-	const [amountValid, setAmountValid] = useState(false);
+    // Form data
+    const [asset, setAsset] = useState(state.wallet.assets[0]);
+    const [submitAddress, setSubmitAddress] = useState('');
+    const [amountValid, setAmountValid] = useState(false);
 
-	const address = useInput('', { customValidation: true });
-	const amount = useInput(
-		'',
-		{
-			isEmpty: true,
-		},
-		{
-			onChangeFactory:
-				({ setValue }) =>
-				(event) => {
-					const newValue = event.target.value;
+    const address = useInput('', { customValidation: true });
+    const amount = useInput(
+        '',
+        {
+            isEmpty: true,
+        },
+        {
+            onChangeFactory:
+                ({ setValue }) =>
+                (event) => {
+                    const newValue = event.target.value;
 
-					if (
-						newValue !== '' &&
-						!isPositiveFloatStr(newValue, { allowCommaSeparator: true }) &&
-						newValue !== ''
-					) {
-						return;
-					}
+                    if (
+                        newValue !== '' &&
+                        !isPositiveFloatStr(newValue, { allowCommaSeparator: true }) &&
+                        newValue !== ''
+                    ) {
+                        return;
+                    }
 
-					setValue(newValue);
-				},
-		},
-	);
-	const comment = useInput('', { isEmpty: true });
-	const mixin = useInput(10, { isEmpty: true });
-	const fee = useInput(0.01, { isEmpty: true });
+                    setValue(newValue);
+                },
+        },
+    );
+    const comment = useInput('', { isEmpty: true });
+    const mixin = useInput(10, { isEmpty: true });
+    const fee = useInput(0.01, { isEmpty: true });
 
-	const amountWithDot =
-		typeof amount.value === 'string' ? amount.value.replace(',', '.') : amount.value;
+    const amountWithDot =
+        typeof amount.value === 'string' ? amount.value.replace(',', '.') : amount.value;
 
-	const sendTransfer = (
-		destination: string,
-		amount: string | number,
-		comment: string,
-		assetId: string,
-		decimalPoint: number,
-	) =>
-		new Promise(async (resolve, reject) => {
-			try {
-				const response = await fetchBackground({
-					method: 'SEND_TRANSFER',
-					assetId,
-					destination,
-					amount,
-					comment,
-					decimalPoint,
-				} as FetchBackgroundParams);
+    const sendTransfer = async (
+        destination: string,
+        amount: string | number,
+        comment: string,
+        assetId: string,
+        decimalPoint: number,
+    ) => {
+        const response = await fetchBackground({
+            method: 'SEND_TRANSFER',
+            assetId,
+            destination,
+            amount,
+            comment,
+            decimalPoint,
+        } as FetchBackgroundParams);
 
-				if (response.data) {
-					resolve(response.data);
-				} else if (response.error) {
-					reject(response.error);
-				} else {
-					reject(new Error('No data or error received in response.'));
-				}
-			} catch (err) {
-				reject(err);
-			}
-		});
+        if (response.data) {
+            return response.data;
+        }
 
-	const openExplorer = (txId: string) => {
-		// eslint-disable-next-line no-undef
-		chrome.tabs.create({
-			url: `https://testnet-explorer.zano.org/block/${txId}`,
-		});
-	};
+        throw response.error || new Error('No data or error received in response.');
+    };
 
-	const fetchAddress = async (alias: string) =>
-		fetchBackground({ method: 'GET_ALIAS_DETAILS', alias });
+    const openExplorer = (txId: string) => {
+        // eslint-disable-next-line no-undef
+        chrome.tabs.create({
+            url: `https://testnet-explorer.zano.org/block/${txId}`,
+        });
+    };
 
-	useEffect(() => {
-		(async () => {
-			if (String(address.value).startsWith('@')) {
-				const alias = String(address.value).slice(1);
-				const resolvedAddress = await fetchAddress(alias);
-				if (resolvedAddress.address) {
-					setSubmitAddress(resolvedAddress.address);
-				} else {
-					setSubmitAddress('');
-				}
-			} else if (String(address.value).length === 97) {
-				setSubmitAddress(String(address.value));
-			} else {
-				setSubmitAddress('');
-			}
-		})();
-	}, [address.value]);
+    const fetchAddress = async (alias: string) =>
+        fetchBackground({ method: 'GET_ALIAS_DETAILS', alias });
 
-	const checkAvailableBalance = (amount: string | number, asset: AssetProps) => {
-		try {
-			return asset.unlockedBalance !== asset.balance
-				? new Decimal(amount).lessThanOrEqualTo(
-						new Decimal(asset.unlockedBalance).minus(new Decimal(fee.value)),
-					)
-				: true;
-		} catch {
-			return false;
-		}
-	};
+    useEffect(() => {
+        (async () => {
+            if (String(address.value).startsWith('@')) {
+                const alias = String(address.value).slice(1);
+                const resolvedAddress = await fetchAddress(alias);
+                if (resolvedAddress.address) {
+                    setSubmitAddress(resolvedAddress.address);
+                } else {
+                    setSubmitAddress('');
+                }
+            } else if (String(address.value).length === 97) {
+                setSubmitAddress(String(address.value));
+            } else {
+                setSubmitAddress('');
+            }
+        })();
+    }, [address.value]);
 
-	const isAmountAvailable = checkAvailableBalance(amount.value, asset as AssetProps);
+    const checkAvailableBalance = (amount: string | number, asset: AssetProps) => {
+        try {
+            return asset.unlockedBalance !== asset.balance
+                ? new Decimal(amount).lessThanOrEqualTo(
+                      new Decimal(asset.unlockedBalance).minus(new Decimal(fee.value)),
+                  )
+                : true;
+        } catch {
+            return false;
+        }
+    };
 
-	useEffect(() => {
-		let isValid = false;
+    const isAmountAvailable = checkAvailableBalance(amount.value, asset as AssetProps);
 
-		try {
-			const isValidZanoAssetAmount = validateTokensInput(
-				amount.value,
-				Number(asset.decimalPoint),
-			).valid;
+    useEffect(() => {
+        let isValid = false;
 
-			isValid = isValidZanoAssetAmount && isAmountAvailable;
-		} catch {
-			isValid = false;
-		}
+        try {
+            const isValidZanoAssetAmount = validateTokensInput(
+                amount.value,
+                Number(asset.decimalPoint),
+            ).valid;
 
-		setAmountValid(isValid);
-	}, [amount.value, asset]);
+            isValid = isValidZanoAssetAmount && isAmountAvailable;
+        } catch {
+            isValid = false;
+        }
 
-	//-------------------------------------------------------------------------------------------------------------------
-	// Subcomponents
-	const TableRow = ({ label, value }: { label: string; value: string }) => (
-		<div className="table__row">
-			<div className="table__label">{label}:</div>
-			<div className="table__value">{value}</div>
-		</div>
-	);
+        setAmountValid(isValid);
+    }, [amount.value, asset]);
 
-	return (
-		<>
-			{(() => {
-				console.log('activeStep', activeStep);
-				console.log('address', address);
+    //-------------------------------------------------------------------------------------------------------------------
+    // Subcomponents
+    const TableRow = ({ label, value }: { label: string; value: string }) => (
+        <div className="table__row">
+            <div className="table__label">{label}:</div>
+            <div className="table__value">{value}</div>
+        </div>
+    );
 
-				switch (activeStep) {
-					// Send form
-					case 0:
-						return (
-							<div>
-								<RoutersNav title="Send" />
-								<div className={s.sendForm}>
-									<MyInput
-										placeholder="Address or alias"
-										label="Address"
-										inputData={address as inputDataProps}
-										isValid={!!submitAddress}
-									/>
+    return (
+        <>
+            {(() => {
+                console.log('activeStep', activeStep);
+                console.log('address', address);
 
-									<AssetsSelect
-										value={asset}
-										setValue={
-											setAsset as Dispatch<SetStateAction<{ name: string }>>
-										}
-									/>
-									<MyInput
-										placeholder="Amount to transfer"
-										label="Amount:"
-										inputData={amount as inputDataProps}
-										isError={amount.value !== '' ? !amountValid : false}
-									/>
-									<MyInput
-										placeholder="Enter the comment"
-										label="Comment:"
-										inputData={comment as inputDataProps}
-									/>
-									<AdditionalDetails mixin={mixin} fee={fee} />
-									<Button
-										onClick={() => setActiveStep(1)}
-										disabled={
-											!submitAddress ||
-											amount.value === '' ||
-											!amountValid ||
-											!asset.unlockedBalance ||
-											!isAmountAvailable
-										}
-									>
-										Send
-									</Button>
-								</div>
-							</div>
-						);
-					// Confirm
-					case 1:
-						return (
-							<div>
-								<RoutersNav onClick={() => setActiveStep(0)} title="Confirm" />
+                switch (activeStep) {
+                    // Send form
+                    case 0:
+                        return (
+                            <div>
+                                <RoutersNav title="Send" />
+                                <div className={s.sendForm}>
+                                    <MyInput
+                                        placeholder="Address or alias"
+                                        label="Address"
+                                        inputData={address as inputDataProps}
+                                        isValid={!!submitAddress}
+                                    />
 
-								<div style={{ minHeight: '410px' }} className="table">
-									<TableRow
-										label="Amount"
-										value={`${amountWithDot} ${asset?.ticker}`}
-									/>
-									<TableRow label="From" value={state?.wallet?.address} />
-									<TableRow label="To" value={String(address.value)} />
-									<TableRow label="Comment" value={String(comment?.value)} />
-									<TableRow label="Fee" value={String(fee?.value)} />
-								</div>
+                                    <AssetsSelect
+                                        value={asset}
+                                        setValue={
+                                            setAsset as Dispatch<SetStateAction<{ name: string }>>
+                                        }
+                                    />
+                                    <MyInput
+                                        placeholder="Amount to transfer"
+                                        label="Amount:"
+                                        inputData={amount as inputDataProps}
+                                        isError={amount.value !== '' ? !amountValid : false}
+                                    />
+                                    <MyInput
+                                        placeholder="Enter the comment"
+                                        label="Comment:"
+                                        inputData={comment as inputDataProps}
+                                    />
+                                    <AdditionalDetails mixin={mixin} fee={fee} />
+                                    <Button
+                                        onClick={() => setActiveStep(1)}
+                                        disabled={
+                                            !submitAddress ||
+                                            amount.value === '' ||
+                                            !amountValid ||
+                                            !asset.unlockedBalance ||
+                                            !isAmountAvailable
+                                        }
+                                    >
+                                        Send
+                                    </Button>
+                                </div>
+                            </div>
+                        );
+                    // Confirm
+                    case 1:
+                        return (
+                            <div>
+                                <RoutersNav onClick={() => setActiveStep(0)} title="Confirm" />
 
-								<Button
-									onClick={async () => {
-										const transferStatus = (await sendTransfer(
-											submitAddress,
-											new Decimal(amountWithDot).toFixed(),
-											String(comment.value),
-											String(asset.assetId),
-											Number(asset.decimalPoint),
-										)) as { result?: { tx_hash: string } };
+                                <div style={{ minHeight: '410px' }} className="table">
+                                    <TableRow
+                                        label="Amount"
+                                        value={`${amountWithDot} ${asset?.ticker}`}
+                                    />
+                                    <TableRow label="From" value={state?.wallet?.address} />
+                                    <TableRow label="To" value={String(address.value)} />
+                                    <TableRow label="Comment" value={String(comment?.value)} />
+                                    <TableRow label="Fee" value={String(fee?.value)} />
+                                </div>
 
-										if (transferStatus.result) {
-											setTxId(transferStatus.result.tx_hash);
-											setTransactionSuccess(true);
-										}
-										setActiveStep(2);
-									}}
-								>
-									Confirm
-								</Button>
-							</div>
-						);
-					// Transaction status
-					case 2:
-						return (
-							<div>
-								<RoutersNav
-									onClick={transactionSuccess ? 'none' : () => setActiveStep(1)}
-									title="Transaction"
-								/>
+                                <Button
+                                    onClick={async () => {
+                                        const transferStatus = (await sendTransfer(
+                                            submitAddress,
+                                            new Decimal(amountWithDot).toFixed(),
+                                            String(comment.value),
+                                            String(asset.assetId),
+                                            Number(asset.decimalPoint),
+                                        )) as { result?: { tx_hash: string } };
 
-								<div className={s.transactionContent}>
-									<div className={s.transactionIcon}>
-										<img
-											src={transactionSuccess ? successImage : failedImage}
-											alt="transaction status icon"
-										/>
-									</div>
-									<div className={s.transactionText}>
-										{transactionSuccess ? (
-											<div>
-												Sent in <span>{txId}</span>
-											</div>
-										) : (
-											'Sending failed'
-										)}
-									</div>
-									{transactionSuccess && (
-										<button
-											className={s.link}
-											onClick={() => openExplorer(txId)}
-										>
-											See details
-										</button>
-									)}
-								</div>
+                                        if (transferStatus.result) {
+                                            setTxId(transferStatus.result.tx_hash);
+                                            setTransactionSuccess(true);
+                                        }
+                                        setActiveStep(2);
+                                    }}
+                                >
+                                    Confirm
+                                </Button>
+                            </div>
+                        );
+                    // Transaction status
+                    case 2:
+                        return (
+                            <div>
+                                <RoutersNav
+                                    onClick={transactionSuccess ? 'none' : () => setActiveStep(1)}
+                                    title="Transaction"
+                                />
 
-								<Button onClick={() => popToTop()}>Close</Button>
-							</div>
-						);
-					default:
-						return <></>;
-				}
-			})()}
-		</>
-	);
+                                <div className={s.transactionContent}>
+                                    <div className={s.transactionIcon}>
+                                        <img
+                                            src={transactionSuccess ? successImage : failedImage}
+                                            alt="transaction status icon"
+                                        />
+                                    </div>
+                                    <div className={s.transactionText}>
+                                        {transactionSuccess ? (
+                                            <div>
+                                                Sent in <span>{txId}</span>
+                                            </div>
+                                        ) : (
+                                            'Sending failed'
+                                        )}
+                                    </div>
+                                    {transactionSuccess && (
+                                        <button
+                                            className={s.link}
+                                            onClick={() => openExplorer(txId)}
+                                        >
+                                            See details
+                                        </button>
+                                    )}
+                                </div>
+
+                                <Button onClick={() => popToTop()}>Close</Button>
+                            </div>
+                        );
+                    default:
+                        return <></>;
+                }
+            })()}
+        </>
+    );
 };
 
 export default WalletSend;

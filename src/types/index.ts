@@ -2,294 +2,327 @@ export type dispatchType = () => void;
 export type destinationsType = { address: string; amount: number }[];
 
 export type transferType = {
-	id?: string;
-	transfer: {
-		sender: string;
-		destination: string;
-		destinations: destinationsType;
-		amount: string;
-		asset: {
-			ticker: string;
-		};
-		assetId: string;
-		comment?: string;
-	};
+    id?: string;
+    transfer: {
+        sender: string;
+        destination: string;
+        destinations: destinationsType;
+        amount: string;
+        asset: {
+            ticker: string;
+        };
+        assetId: string;
+        comment?: string;
+    };
 };
 
 type serviceEntriesType = {
-	body: string;
-	flags: number;
-	instruction: string;
-	security?: string;
-	service_id: string;
+    body: string;
+    flags: number;
+    instruction: string;
+    security?: string;
+    service_id: string;
 };
 
 export type BurnAssetRequestType = {
-	method: string;
-	assetId: string;
-	amount: string;
-	destinationAddress: string;
-	destinationChainId: string;
-	burnAmount: string;
-	nativeAmount?: number;
-	pointTxToAddress?: string;
-	serviceEntries?: serviceEntriesType[];
+    method: string;
+    assetId: string;
+    amount: string;
+    destinationAddress: string;
+    destinationChainId: string;
+    burnAmount: string;
+    nativeAmount?: number;
+    pointTxToAddress?: string;
+    serviceEntries?: serviceEntriesType[];
 };
 
 export type SwapRequest = {
-	id: string;
-	swap: {
-		destinationAddress: string;
-		destinationAsset: string;
-		destinationAssetAmount: string;
-		currentAsset: string;
-		currentAssetAmount: string;
-		currentAssetID: string;
-	};
+    id: string;
+    swap: {
+        destinationAddress: string;
+        destinationAsset: string;
+        destinationAssetAmount: string;
+        currentAsset: string;
+        currentAssetAmount: string;
+        currentAssetID: string;
+    };
 };
 
 export type SwapProposal = {
-	to_finalizer: { amount: Big }[];
-	to_initiator: { amount: Big }[];
+    to_finalizer: { amount: Big }[];
+    to_initiator: { amount: Big }[];
 };
 
 export type Asset = {
-	decimal_point: number;
-	[key: string]: unknown;
+    decimal_point: number;
+    [key: string]: unknown;
 };
 
 export type AcceptSwapReq = {
-	id: string;
-	hex_raw_proposal: string;
-	swapProposal: SwapProposal;
-	receivingAsset: Asset;
-	sendingAsset: Asset;
+    id: string;
+    hex_raw_proposal: string;
+    swapProposal: SwapProposal;
+    receivingAsset: Asset;
+    sendingAsset: Asset;
 };
 
 export type AssetWhitelistReq = {
-	id: string;
-	asset_id: string;
-	asset_name: string;
+    id: string;
+    asset_id: string;
+    asset_name: string;
 };
 
 export interface BurnAssetRequest {
-	params: {
-		assetId: string;
-		burnAmount: number;
-		nativeAmount?: number;
-		pointTxToAddress?: string;
-		serviceEntries?: serviceEntriesType[];
-	};
+    params: {
+        assetId: string;
+        burnAmount: number;
+        nativeAmount?: number;
+        pointTxToAddress?: string;
+        serviceEntries?: serviceEntriesType[];
+    };
 }
 
 export interface BurnAssetDataType {
-	assetId: string;
-	burnAmount: string;
-	nativeAmount?: string;
-	pointTxToAddress?: string;
-	serviceEntries?: serviceEntriesType[];
+    assetId: string;
+    burnAmount: string;
+    nativeAmount?: string;
+    pointTxToAddress?: string;
+    serviceEntries?: serviceEntriesType[];
 }
 
 export interface BurnAssetParamsType {
-	asset_id: string;
-	burn_amount: string;
-	native_amount?: string;
-	point_tx_to_address?: string;
-	service_entries?: serviceEntriesType[];
+    asset_id: string;
+    burn_amount: string;
+    native_amount?: string;
+    point_tx_to_address?: string;
+    service_entries?: serviceEntriesType[];
 }
 
 export interface ionicSwapType {
-	destinationAssetID: string;
-	destinationAssetAmount: string;
-	destinationAsset: {
-		decimal_point: number;
-	};
-	currentAssetID: string;
-	currentAssetAmount: string;
-	currentAsset: {
-		decimal_point: number;
-	};
-	expirationTimestamp: string;
-	destinationAddress: string;
+    destinationAssetID: string;
+    destinationAssetAmount: string;
+    destinationAsset: {
+        decimal_point: number;
+    };
+    currentAssetID: string;
+    currentAssetAmount: string;
+    currentAsset: {
+        decimal_point: number;
+    };
+    expirationTimestamp: string;
+    destinationAddress: string;
 }
 
 interface AssetInfo {
-	full_name: string;
-	ticker: string;
-	asset_id: string;
-	decimal_point: number;
+    full_name: string;
+    ticker: string;
+    asset_id: string;
+    decimal_point: number;
 }
 
 interface BalanceItem {
-	asset_info: AssetInfo;
-	total: string;
-	unlocked: string;
+    asset_info: AssetInfo;
+    total: string;
+    unlocked: string;
 }
 
 export interface ParsedBalance {
-	result: {
-		balances: BalanceItem[];
-	};
+    result: {
+        balances: BalanceItem[];
+    };
 }
 
 export interface ParsedAddress {
-	result: {
-		address: string;
-	};
+    result: {
+        address: string;
+    };
 }
 
 interface TransferRaw {
-	amount: string;
-	asset_id: string;
-	is_income: boolean;
+    amount: string;
+    asset_id: string;
+    is_income: boolean;
 }
 
 export interface TransactionRaw {
-	tx_hash: string;
-	tx_blob_size: number;
-	timestamp: number;
-	height: number;
-	payment_id: string;
-	comment?: string;
-	fee: string;
-	remote_addresses: string[];
-	is_service: boolean;
-	subtransfers: TransferRaw[];
-	employed_entries?: {
-		spent?: { index: number }[];
-	};
+    tx_hash: string;
+    tx_blob_size: number;
+    timestamp: number;
+    height: number;
+    payment_id: string;
+    comment?: string;
+    fee: string;
+    remote_addresses: string[];
+    is_service: boolean;
+    subtransfers: TransferRaw[];
+    employed_entries?: {
+        spent?: { index: number }[];
+    };
 }
 
 export interface Transaction {
-	isConfirmed: boolean;
-	txHash: string;
-	blobSize: number;
-	timestamp: number;
-	height: number;
-	paymentId: string;
-	comment?: string;
-	fee: string;
-	addresses: string[];
-	isInitiator: boolean;
-	transfers: {
-		amount: string;
-		assetId: string;
-		incoming: boolean;
-	}[];
+    isConfirmed: boolean;
+    txHash: string;
+    blobSize: number;
+    timestamp: number;
+    height: number;
+    paymentId: string;
+    comment?: string;
+    fee: string;
+    addresses: string[];
+    isInitiator: boolean;
+    transfers: {
+        amount: string;
+        assetId: string;
+        incoming: boolean;
+    }[];
 }
 
 export interface WalletAsset {
-	name: string;
-	ticker: string;
-	assetId: string;
-	decimalPoint: number;
-	balance: string;
-	unlockedBalance: string;
+    name: string;
+    ticker: string;
+    assetId: string;
+    decimalPoint: number;
+    balance: string;
+    unlockedBalance: string;
 }
 
 interface AssetInfo {
-	asset_id: string;
-	full_name: string;
-	ticker: string;
-	decimal_point: number;
+    asset_id: string;
+    full_name: string;
+    ticker: string;
+    decimal_point: number;
 }
 
 interface Balance {
-	total: string;
-	unlocked: string;
-	asset_info: AssetInfo;
+    total: string;
+    unlocked: string;
+    asset_info: AssetInfo;
 }
 
 interface WalletWI {
-	address: string;
-	balances: Balance[];
-	is_watch_only?: boolean;
+    address: string;
+    balances: Balance[];
+    is_watch_only?: boolean;
 }
 
 export interface WalletRaw {
-	wallet_id: string;
-	wi: WalletWI;
+    wallet_id: string;
+    wi: WalletWI;
 }
 
 export interface WalletDataResponse {
-	result: {
-		wallets: WalletRaw[];
-	};
+    result: {
+        wallets: WalletRaw[];
+    };
 }
 
 interface AssetDataType {
-	asset_id: string;
-	ticker: string;
-	full_name: string;
-	decimal_point: number;
+    asset_id: string;
+    ticker: string;
+    full_name: string;
+    decimal_point: number;
 }
 
+export type PermissionType = 'general' | 'balance' | 'history';
+
 export interface RequestType {
-	method: string;
-	credentials: object;
-	id: string;
-	assetId: string;
-	destination: string;
-	amount: string;
-	decimalPoint: number;
-	success: boolean;
-	destinationAssetID: string;
-	currentAssetID: string;
-	currentAsset: AssetDataType;
-	destinationAsset: AssetDataType;
-	hex_raw_proposal?: string;
-	address?: string;
-	alias?: string;
-	sender?: string;
-	transfer?: unknown;
-	swapProposal?: unknown;
-	password?: string;
-	key?: string;
-	aliasDetails?: unknown;
-	signReqs?: unknown[];
-	windowId?: number;
-	message?: string;
-	timeout?: number;
-	destinationChainId?: string;
-	destinationAddress?: string;
-	receivingAsset?: unknown;
-	sendingAsset?: unknown;
-	asset?: AssetDataType;
-	asset_id?: string;
-	asset_name?: string;
-	comment: string;
-	burnAmount: string;
-	nativeAmount?: string;
-	pointTxToAddress?: string;
-	serviceEntries?: serviceEntriesType[];
-	destinations?: destinationsType;
-	destinationAssetAmount?: string;
-	currentAssetAmount?: string;
+    method: string;
+    credentials: object;
+    id: string;
+    assetId: string;
+    destination: string;
+    amount: string;
+    decimalPoint: number;
+    success: boolean;
+    destinationAssetID: string;
+    currentAssetID: string;
+    currentAsset: AssetDataType;
+    destinationAsset: AssetDataType;
+    hex_raw_proposal?: string;
+    address?: string;
+    alias?: string;
+    sender?: string;
+    transfer?: unknown;
+    swapProposal?: unknown;
+    password?: string;
+    key?: string;
+    aliasDetails?: unknown;
+    signReqs?: unknown[];
+    windowId?: number;
+    message?: string;
+    timeout?: number;
+    destinationChainId?: string;
+    destinationAddress?: string;
+    receivingAsset?: unknown;
+    sendingAsset?: unknown;
+    asset?: AssetDataType;
+    asset_id?: string;
+    asset_name?: string;
+    comment: string;
+    burnAmount: string;
+    nativeAmount?: string;
+    pointTxToAddress?: string;
+    serviceEntries?: serviceEntriesType[];
+    destinations?: destinationsType;
+    destinationAssetAmount?: string;
+    currentAssetAmount?: string;
+    permissions?: { type: PermissionType }[];
+}
+
+export interface AccessRequestType {
+    id: string;
+    windowId: number;
+    origin: string;
+    hostname: string;
+    favicon: string;
+    permissions?: { type: PermissionType }[];
 }
 
 export interface TransferDataType {
-	destination: string;
-	amount: string;
-	decimalPoint: number;
-	comment?: string;
-	destinations: { address: string; amount: number }[];
-	assetId: string;
-	asset: {
-		decimal_point: number;
-	};
+    destination: string;
+    amount: string;
+    decimalPoint: number;
+    comment?: string;
+    destinations: { address: string; amount: number }[];
+    assetId: string;
+    asset: {
+        decimal_point: number;
+    };
 }
 
 export interface IAsset {
-	asset_id: string;
-	ticker: string;
-	full_name: string;
-	decimal_point: number;
+    asset_id: string;
+    ticker: string;
+    full_name: string;
+    decimal_point: number;
 }
 
 export type ValidationsType = {
-	minLength?: number;
-	isEmpty?: boolean;
-	isAmountCorrect?: boolean;
-	customValidation?: boolean;
-	customError?: boolean;
+    minLength?: number;
+    isEmpty?: boolean;
+    isAmountCorrect?: boolean;
+    customValidation?: boolean;
+    customError?: boolean;
 };
+
+export interface GetWalletDataRes {
+    address: string;
+    alias: string;
+    balance?: string;
+    transactions?: Transaction[];
+    assets?: WalletAsset[];
+}
+
+export interface Sender {
+    id: string;
+    name?: string;
+    email?: string;
+    phoneNumber?: string;
+    address?: string;
+    [key: string]: string | undefined;
+}
+
+export interface SendResponse {
+    (_response: unknown): void;
+}

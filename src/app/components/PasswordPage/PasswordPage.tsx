@@ -5,41 +5,41 @@ import MyInput from '../UI/MyInput/MyInput';
 import Button from '../UI/Button/Button';
 
 interface PasswordPageProps {
-	onConfirm: (password: string) => void;
-	incorrectPassword: boolean;
-	setIncorrectPassword: (value: boolean) => void;
+    onConfirm: (password: string) => void;
+    incorrectPassword: boolean;
+    setIncorrectPassword: (value: boolean) => void;
 }
 
 function PasswordPage(props: PasswordPageProps) {
-	const { onConfirm, incorrectPassword, setIncorrectPassword } = props;
+    const { onConfirm, incorrectPassword, setIncorrectPassword } = props;
 
-	const [password, setPassword] = useState('');
+    const [password, setPassword] = useState('');
 
-	function onInputChange(event: ChangeEvent<HTMLInputElement>) {
-		setIncorrectPassword(false);
-		setPassword(event.currentTarget.value);
-	}
+    function onInputChange(event: ChangeEvent<HTMLInputElement>) {
+        setIncorrectPassword(false);
+        setPassword(event.currentTarget.value);
+    }
 
-	function onButtonClick() {
-		if (onConfirm) onConfirm(password);
-	}
+    function onButtonClick() {
+        if (onConfirm) onConfirm(password);
+    }
 
-	return (
-		<div className={s.passwordPage}>
-			<img className={s.logoImage} src={logo} alt="Zano" />
-			<p>Enter your password</p>
-			<div className={s.inputPanel}>
-				<MyInput
-					placeholder="Password"
-					type="password"
-					inputData={{ value: password, isDirty: !!incorrectPassword }}
-					onChange={onInputChange}
-					onKeyDown={(event) => (event.key === 'Enter' ? onButtonClick() : undefined)}
-				/>
-				<Button onClick={onButtonClick}>Enter</Button>
-			</div>
-		</div>
-	);
+    return (
+        <div className={s.passwordPage}>
+            <img className={s.logoImage} src={logo} alt="Zano" />
+            <p>Enter your password</p>
+            <div className={s.inputPanel}>
+                <MyInput
+                    placeholder="Password"
+                    type="password"
+                    inputData={{ value: password, isDirty: !!incorrectPassword }}
+                    onChange={onInputChange}
+                    onKeyDown={(event) => (event.key === 'Enter' ? onButtonClick() : undefined)}
+                />
+                <Button onClick={onButtonClick}>Enter</Button>
+            </div>
+        </div>
+    );
 }
 
 export default PasswordPage;

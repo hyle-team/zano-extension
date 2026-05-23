@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction, useContext, useRef, useState } from 'react';
 import Decimal from 'decimal.js';
-import { styleText } from 'util';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';
@@ -9,6 +8,7 @@ import transferIcon from '../../assets/svg/transfer.svg';
 import settingsIcon from '../../assets/svg/settings.svg';
 import showIcon from '../../assets/svg/show.svg';
 import hideIcon from '../../assets/svg/hide.svg';
+import dappIcon from '../../assets/svg/dapp.svg';
 import lockedIcon from '../../assets/svg/lockedIcon.svg';
 import checkIcon from '../../assets/svg/check-icon.svg';
 import useAwayClick from '../../hooks/useAwayClick';
@@ -24,183 +24,188 @@ import { classNames } from '../../utils/classNames';
 import { ZANO_ASSET_ID } from '../../../constants';
 import AliasManagePage from '../AliasManagePage';
 import AliasTransfer from '../AliasTransfer';
+import PermissionsPage from '../PermissionsPage';
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
-	const { state, dispatch } = useContext(Store);
-	const { copied, copyToClipboard } = useCopy();
-	const { censorValue } = useCensorDigits();
-	const [menuVisible, setMenuVisible] = useState(false);
+    const { state, dispatch } = useContext(Store);
+    const { copied, copyToClipboard } = useCopy();
+    const { censorValue } = useCensorDigits();
+    const [menuVisible, setMenuVisible] = useState(false);
 
-	const renderBalance = () => {
-		const fiatBalance = (Number(state.wallet.balance) * state.priceData.price).toFixed(2);
+    const renderBalance = () => {
+        const fiatBalance = (Number(state.wallet.balance) * state.priceData.price).toFixed(2);
 
-		if (state.displayUsd) {
-			return (
-				<>
-					<span>${censorValue(fiatBalance)}</span>
-					<span
-						style={{
-							color: state.priceData.change > 0 ? '#16D1D6' : '#FFCBCB',
-						}}
-						className={s.percentChange}
-					>
-						{state.priceData.change}%
-					</span>
-				</>
-			);
-		}
-		return (
-			<span>
-				{censorValue(
-					new Decimal(state.wallet.balance)
-						.toDecimalPlaces(6, Decimal.ROUND_DOWN)
-						.toFixed(),
-				)}{' '}
-				ZANO
-			</span>
-		);
-	};
+        if (state.displayUsd) {
+            return (
+                <>
+                    <span>${censorValue(fiatBalance)}</span>
+                    <span
+                        style={{
+                            color: state.priceData.change > 0 ? '#16D1D6' : '#FFCBCB',
+                        }}
+                        className={s.percentChange}
+                    >
+                        {state.priceData.change}%
+                    </span>
+                </>
+            );
+        }
+        return (
+            <span>
+                {censorValue(
+                    new Decimal(state.wallet.balance)
+                        .toDecimalPlaces(6, Decimal.ROUND_DOWN)
+                        .toFixed(),
+                )}{' '}
+                ZANO
+            </span>
+        );
+    };
 
-	const getUnlockedBalance = () =>
-		state.wallet.assets.find((asset) => asset.assetId === ZANO_ASSET_ID)?.unlockedBalance;
+    const getUnlockedBalance = () =>
+        state.wallet.assets.find((asset) => asset.assetId === ZANO_ASSET_ID)?.unlockedBalance;
 
-	const flipDisplay = () => {
-		updateDisplay(dispatch as DispatchFunction, !state.displayUsd as never);
-	};
+    const flipDisplay = () => {
+        updateDisplay(dispatch as DispatchFunction, !state.displayUsd as never);
+    };
 
-	const flipMenu = () => {
-		setMenuVisible((prevState) => !prevState);
-	};
+    const flipMenu = () => {
+        setMenuVisible((prevState) => !prevState);
+    };
 
-	const flipBalancesVisibility = () => {
-		if (state.isBalancesHidden) {
-			updateBalancesHidden(dispatch, false);
-		} else {
-			updateBalancesHidden(dispatch, true);
-		}
-		flipMenu();
-	};
+    const flipBalancesVisibility = () => {
+        if (state.isBalancesHidden) {
+            updateBalancesHidden(dispatch, false);
+        } else {
+            updateBalancesHidden(dispatch, true);
+        }
+        flipMenu();
+    };
 
-	// Function and hook to close menu if click away
-	const menuRef = useRef(null);
-	const handleAwayClick = () => {
-		setMenuVisible(false);
-	};
-	useAwayClick(menuRef, handleAwayClick);
+    // Function and hook to close menu if click away
+    const menuRef = useRef(null);
+    const handleAwayClick = () => {
+        setMenuVisible(false);
+    };
+    useAwayClick(menuRef, handleAwayClick);
 
-	const unlockedBalance = getUnlockedBalance();
-	const lockedBalance = new Decimal(state.wallet.balance).minus(unlockedBalance ?? 0);
-	const lockedBalanceDisplay = lockedBalance.gt(0)
-		? lockedBalance.toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed()
-		: undefined;
+    const unlockedBalance = getUnlockedBalance();
+    const lockedBalance = new Decimal(state.wallet.balance).minus(unlockedBalance ?? 0);
+    const lockedBalanceDisplay = lockedBalance.gt(0)
+        ? lockedBalance.toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed()
+        : undefined;
 
-	return (
-		<div className={s.wallet}>
-			<ModalTransactionStatus />
-			<div className={s.infoWallet}>
-				<div className={s.aliasWrapper}>
-					<div
-						className={classNames(s.aliasContent, {
-							[s.active]: state.wallet.alias,
-						})}
-					>
-						{state.wallet.alias ? (
-							`@${state.wallet.alias}`
-						) : (
-							<NavLink component={AliasManagePage} className={s.aliasCreateBtn}>
-								Create alias
-							</NavLink>
-						)}
-					</div>
+    return (
+        <div className={s.wallet}>
+            <ModalTransactionStatus />
+            <div className={s.infoWallet}>
+                <div className={s.aliasWrapper}>
+                    <div
+                        className={classNames(s.aliasContent, {
+                            [s.active]: state.wallet.alias,
+                        })}
+                    >
+                        {state.wallet.alias ? (
+                            `@${state.wallet.alias}`
+                        ) : (
+                            <NavLink component={AliasManagePage} className={s.aliasCreateBtn}>
+                                Create alias
+                            </NavLink>
+                        )}
+                    </div>
 
-					{state.wallet.alias && (
-						<div className={s.aliasWrapper__actions}>
-							<NavLink
-								component={AliasManagePage}
-								props={{ mode: 'edit' }}
-								className="round-button"
-							>
-								<img width={18} height={18} src={editIcon} alt="edit icon" />
-								{/* Tooltip */}
-								<span>Edit alias</span>
-							</NavLink>
+                    {state.wallet.alias && (
+                        <div className={s.aliasWrapper__actions}>
+                            <NavLink
+                                component={AliasManagePage}
+                                props={{ mode: 'edit' }}
+                                className="round-button"
+                            >
+                                <img width={18} height={18} src={editIcon} alt="edit icon" />
+                                {/* Tooltip */}
+                                <span>Edit alias</span>
+                            </NavLink>
 
-							<NavLink component={AliasTransfer} className="round-button">
-								<img
-									width={18}
-									height={18}
-									src={transferIcon}
-									alt="transfer icon"
-								/>
-								{/* Tooltip */}
-								<span>Transfer alias</span>
-							</NavLink>
-						</div>
-					)}
-				</div>
-				<div className={s.balanceWrapper}>
-					<button onClick={flipDisplay} className={s.balance}>
-						{renderBalance()}
-					</button>
-					{lockedBalanceDisplay !== undefined && (
-						<div className={s.lockedBalanceWrapper}>
-							<img src={lockedIcon} alt="locked icon" />
-							<span className={s.lockedBalanceText}>{lockedBalanceDisplay} ZANO</span>
-						</div>
-					)}
-				</div>
+                            <NavLink component={AliasTransfer} className="round-button">
+                                <img
+                                    width={18}
+                                    height={18}
+                                    src={transferIcon}
+                                    alt="transfer icon"
+                                />
+                                {/* Tooltip */}
+                                <span>Transfer alias</span>
+                            </NavLink>
+                        </div>
+                    )}
+                </div>
+                <div className={s.balanceWrapper}>
+                    <button onClick={flipDisplay} className={s.balance}>
+                        {renderBalance()}
+                    </button>
+                    {lockedBalanceDisplay !== undefined && (
+                        <div className={s.lockedBalanceWrapper}>
+                            <img src={lockedIcon} alt="locked icon" />
+                            <span className={s.lockedBalanceText}>{lockedBalanceDisplay} ZANO</span>
+                        </div>
+                    )}
+                </div>
 
-				<div className={s.infoAddress}>
-					<span>{state.wallet.address}</span>
-				</div>
-			</div>
+                <div className={s.infoAddress}>
+                    <span>{state.wallet.address}</span>
+                </div>
+            </div>
 
-			<div className={s.actionsWallet}>
-				<div ref={menuRef} className={s.actionsSettings}>
-					<button onClick={flipMenu} className="round-button">
-						<img src={dotsIcon} alt="dots icon" />
-						{/* Tooltip */}
-						<span>options</span>
-					</button>
+            <div className={s.actionsWallet}>
+                <div ref={menuRef} className={s.actionsSettings}>
+                    <button onClick={flipMenu} className="round-button">
+                        <img src={dotsIcon} alt="dots icon" />
+                        {/* Tooltip */}
+                        <span>options</span>
+                    </button>
 
-					{menuVisible && (
-						<div className={s.settings}>
-							<div className={s.settingsBtn} onClick={() => setConnectOpened(true)}>
-								<img src={settingsIcon} alt="settings icon" />
-								Settings
-							</div>
-							<button onClick={flipBalancesVisibility} className={s.settingsBtn}>
-								<img
-									src={state.isBalancesHidden ? showIcon : hideIcon}
-									alt="show or hide icon"
-								/>
-								{state.isBalancesHidden ? 'Show values' : 'Hide values'}
-							</button>
-						</div>
-					)}
-				</div>
+                    {menuVisible && (
+                        <div className={s.settings}>
+                            <div className={s.settingsBtn} onClick={() => setConnectOpened(true)}>
+                                <img src={settingsIcon} alt="settings icon" />
+                                Settings
+                            </div>
+                            <button onClick={flipBalancesVisibility} className={s.settingsBtn}>
+                                <img
+                                    src={state.isBalancesHidden ? showIcon : hideIcon}
+                                    alt="show or hide icon"
+                                />
+                                {state.isBalancesHidden ? 'Show values' : 'Hide values'}
+                            </button>
+                            <NavLink component={PermissionsPage} className={s.settingsBtn}>
+                                <img src={dappIcon} alt="dapp icon" />
+                                Dapps
+                            </NavLink>
+                        </div>
+                    )}
+                </div>
 
-				<NavLink component={WalletSend} className="round-button">
-					<img src={sendIcon} alt="send icon" />
-					{/* Tooltip */}
-					<span>send</span>
-				</NavLink>
+                <NavLink component={WalletSend} className="round-button">
+                    <img src={sendIcon} alt="send icon" />
+                    {/* Tooltip */}
+                    <span>send</span>
+                </NavLink>
 
-				<button
-					onClick={() => copyToClipboard(state.wallet.address)}
-					className="round-button"
-				>
-					{copied ? (
-						<img src={checkIcon} alt="copy icon" />
-					) : (
-						<img src={copyIcon} alt="copy icon" />
-					)}
-					{/* Tooltip */}
-					{copied ? <span>copied!</span> : <span>copy address</span>}
-				</button>
-			</div>
-		</div>
-	);
+                <button
+                    onClick={() => copyToClipboard(state.wallet.address)}
+                    className="round-button"
+                >
+                    {copied ? (
+                        <img src={checkIcon} alt="copy icon" />
+                    ) : (
+                        <img src={copyIcon} alt="copy icon" />
+                    )}
+                    {/* Tooltip */}
+                    {copied ? <span>copied!</span> : <span>copy address</span>}
+                </button>
+            </div>
+        </div>
+    );
 };
 
 export default Wallet;
