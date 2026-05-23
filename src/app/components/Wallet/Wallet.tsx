@@ -179,7 +179,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 							</button>
 							<NavLink component={PermissionsPage} className={s.settingsBtn}>
 								<img src={dappIcon} alt="dapp icon" />
-								Dapps
+								dApps
 							</NavLink>
 						</div>
 					)}
