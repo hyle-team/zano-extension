@@ -292,9 +292,7 @@ function App() {
 					const transferParams = [
 						{
 							key: 'From',
-							value: transfer.sender
-								? Formatters.walletAddress(transfer.sender)
-								: '???',
+							value: transfer.sender || '???',
 						},
 						{
 							key: 'Amount',
@@ -309,9 +307,7 @@ function App() {
 					if (!transfer.destinations || transfer.destinations.length === 0) {
 						transferParams.push({
 							key: 'To',
-							value: transfer.destination
-								? Formatters.walletAddress(transfer.destination)
-								: '???',
+							value: transfer.destination || '???',
 						});
 					}
 
@@ -322,7 +318,7 @@ function App() {
 					const destinations =
 						transfer.destinations?.map(
 							(d: { address: string; amount: number }, _index: number) => ({
-								address: Formatters.walletAddress(d.address),
+								address: d.address,
 								amount: d.amount,
 							}),
 						) || [];
