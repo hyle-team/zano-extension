@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './styles.module.scss';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import chevronRightIcon from '../../assets/svg/chevron-right.svg';
@@ -10,6 +10,7 @@ import shieldOffIcon from '../../assets/svg/shield-off.svg';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import { PermissionsState } from './types';
 import FaviconImg from '../UI/FaviconImg/FaviconImg';
+import { Store } from '../../store/store-reducer';
 
 const STORAGE_KEY = 'permissions';
 
@@ -29,6 +30,8 @@ const permissionMap: Record<string, { info: string; icon: string }> = {
 };
 
 const PermissionsPage = () => {
+	const { state } = useContext(Store);
+	const walletAddress = state.wallet.address;
 	const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [confirmDisconnectAll, setConfirmDisconnectAll] = useState(false);
 	const [permissions, setPermissions] = useState<PermissionsState>({});
@@ -68,15 +71,33 @@ const PermissionsPage = () => {
 	};
 
 	const disconnectAll = async () => {
-		await chrome.storage.local.remove(STORAGE_KEY);
-		setPermissions({});
+		const updated = { ...permissions };
+
+		Object.keys(updated).forEach((origin) => {
+			delete updated[origin][walletAddress];
+
+			if (Object.keys(updated[origin]).length === 0) {
+				delete updated[origin];
+			}
+		});
+
+		await savePermissions(updated);
+
 		setConfirmDisconnectAll(false);
 		setSelectedSite(null);
 	};
 
 	const disconnectSite = async (origin: string) => {
 		const updated = { ...permissions };
-		delete updated[origin];
+
+		if (!updated[origin]) return;
+
+		delete updated[origin][walletAddress];
+
+		if (Object.keys(updated[origin]).length === 0) {
+			delete updated[origin];
+		}
+
 		await savePermissions(updated);
 		onHandleClosePopup();
 	};
@@ -94,21 +115,23 @@ const PermissionsPage = () => {
 	}, []);
 
 	const parsedSites = useMemo(() => {
-		return Object.entries(permissions).map(([origin, wallets]) => {
-			const permissionsList = Object.values(wallets).flat();
+		return Object.entries(permissions)
+			.map(([origin, wallets]) => {
+				const currentWalletPermissions = wallets[walletAddress] || [];
 
-			const uniquePermissions = [
-				...new Map(permissionsList.map((p) => [p.type, p])).values(),
-			];
+				const uniquePermissions = [
+					...new Map(currentWalletPermissions.map((p) => [p.type, p])).values(),
+				];
 
-			return {
-				origin,
-				hostname: new URL(origin).host,
-				favicon: `${origin}/favicon.ico`,
-				permissions: uniquePermissions,
-			};
-		});
-	}, [permissions]);
+				return {
+					origin,
+					hostname: new URL(origin).host,
+					favicon: `${origin}/favicon.ico`,
+					permissions: uniquePermissions,
+				};
+			})
+			.filter((site) => site.permissions.length > 0);
+	}, [permissions, walletAddress]);
 
 	const totalPermissions = parsedSites.reduce((acc, site) => acc + site.permissions.length, 0);
 	const selectedSiteData = parsedSites.find((site) => site.origin === selectedSite);
@@ -222,7 +245,7 @@ const PermissionsPage = () => {
 						) : (
 							<>
 								<p className={styles.permissions__bottom_warning}>
-									Disconnect all {parsedSites.length} dApps? They'll need to
+									Disconnect all {parsedSites.length} dApps? They&apos;ll need to
 									request access again.
 								</p>
 
