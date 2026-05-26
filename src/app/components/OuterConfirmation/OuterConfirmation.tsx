@@ -10,7 +10,6 @@ import { BurnAssetDataType } from '../../../types';
 import { ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
-import ExpandableAddress from '../UI/ExpandableAddress/ExpandableAddress';
 
 interface ParamsType {
 	key: number;
@@ -144,9 +143,9 @@ const OuterConfirmation = () => {
 			return (
 				<>
 					<div className={styles.confirmation__block}>
-						<div className={styles.col}>
+						<div className={styles.row}>
 							<h5>From</h5>
-							<ExpandableAddress value={transactionParams?.From} />
+							<p>{transactionParams?.From}</p>
 						</div>
 						<div className={styles.row}>
 							<h5>Asset</h5>
@@ -191,17 +190,16 @@ const OuterConfirmation = () => {
 					</div>
 
 					<div className={styles.confirmation__block}>
-						{isMultipleDestinations ? (
-							<div className={styles.row}>
-								<h5>To</h5>
-								<p>{destinations?.length} addresses</p>
-							</div>
-						) : (
-							<div className={styles.col}>
-								<h5>To</h5>
-								<ExpandableAddress value={transactionParams?.To} />
-							</div>
-						)}
+						<div className={styles.row}>
+							<h5>To</h5>
+							<p>
+								{isMultipleDestinations ? (
+									<>{destinations?.length} addresses</>
+								) : (
+									transactionParams?.To
+								)}
+							</p>
+						</div>
 
 						{!isMultipleDestinations && (
 							<div className={styles.row}>
@@ -235,9 +233,9 @@ const OuterConfirmation = () => {
 										<p className={styles.title}>RECIPIENT {idx + 1}</p>
 
 										<div className={styles.confirmation__block}>
-											<div className={styles.col}>
+											<div className={styles.row}>
 												<h5>To</h5>
-												<ExpandableAddress value={item.address} />
+												<p>{item.address}</p>
 											</div>
 
 											<div className={styles.row}>
