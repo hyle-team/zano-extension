@@ -10,6 +10,7 @@ import { BurnAssetDataType } from '../../../types';
 import { ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
+import ExpandableAddress from './ui/ExpandableAddress/ExpandableAddress';
 
 interface ParamsType {
 	key: number;
@@ -143,10 +144,7 @@ const OuterConfirmation = () => {
 			return (
 				<>
 					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>From</h5>
-							<p>{transactionParams?.From}</p>
-						</div>
+						<ExpandableAddress label="From" value={transactionParams?.From ?? ''} />
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p className={styles.asset}>
@@ -190,22 +188,19 @@ const OuterConfirmation = () => {
 					</div>
 
 					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>To</h5>
-							<p>
-								{isMultipleDestinations ? (
-									<>{destinations?.length} addresses</>
-								) : (
-									transactionParams?.To
-								)}
-							</p>
-						</div>
-
-						{!isMultipleDestinations && (
+						{isMultipleDestinations ? (
 							<div className={styles.row}>
-								<h5>Amount</h5>
-								<p>{totalAmount}</p>
+								<h5>To</h5>
+								<p>{destinations?.length} addresses</p>
 							</div>
+						) : (
+							<>
+								<ExpandableAddress label="To" value={transactionParams?.To ?? ''} />
+								<div className={styles.row}>
+									<h5>Amount</h5>
+									<p>{totalAmount}</p>
+								</div>
+							</>
 						)}
 					</div>
 
@@ -233,10 +228,7 @@ const OuterConfirmation = () => {
 										<p className={styles.title}>RECIPIENT {idx + 1}</p>
 
 										<div className={styles.confirmation__block}>
-											<div className={styles.row}>
-												<h5>To</h5>
-												<p>{item.address}</p>
-											</div>
+											<ExpandableAddress label="To" value={item.address} />
 
 											<div className={styles.row}>
 												<h5>Amount</h5>

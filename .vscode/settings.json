@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
     "zano"
-  ]
+  ],
+  "js/ts.tsdk.path": "node_modules\\typescript\\lib"
 }
