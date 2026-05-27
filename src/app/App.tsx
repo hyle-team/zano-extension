@@ -39,7 +39,6 @@ import ConnectPage from './components/ConnectPage/ConnectPage';
 import ConnectKeyUtils from './utils/ConnectKeyUtils';
 import { defaultPort } from './config/config';
 import OuterConfirmation from './components/OuterConfirmation/OuterConfirmation';
-import Formatters from './utils/formatters';
 import swapModalStyles from './styles/SwapModal.module.scss';
 import {
 	AcceptSwapReq,
@@ -486,8 +485,9 @@ function App() {
 							name: 'Accept Ionic Swap',
 							params: [
 								{
+									format: ParamsTypeFormat.EXPANDABLE,
 									key: 'Hex Proposal',
-									value: Formatters.walletAddress(hex_raw_proposal),
+									value: hex_raw_proposal ?? '???',
 								},
 								{
 									key: 'Sending',
@@ -521,8 +521,9 @@ function App() {
 							name: 'Confirm adding asset to whitelist',
 							params: [
 								{
+									format: ParamsTypeFormat.EXPANDABLE,
 									key: 'Asset id',
-									value: Formatters.walletAddress(request.asset_id),
+									value: request.asset_id ?? '???',
 								},
 								{
 									key: 'Asset name',
