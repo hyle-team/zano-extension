@@ -344,7 +344,7 @@ const OuterConfirmation = () => {
 				<div className={styles.confirmation__block}>
 					{Array.isArray(params) &&
 						params?.map((item: ParamsType, idx: number) => {
-							if (item.format === ParamsTypeFormat.ADDRESS) {
+							if (item.format === ParamsTypeFormat.EXPANDABLE) {
 								return (
 									<ExpandableParam
 										key={idx}

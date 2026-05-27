@@ -414,7 +414,7 @@ function App() {
 						assetId: swap?.currentAssetID,
 						params: [
 							{
-								format: ParamsTypeFormat.ADDRESS,
+								format: ParamsTypeFormat.EXPANDABLE,
 								key: 'Address',
 								value: swapParams.address ?? '???',
 							},

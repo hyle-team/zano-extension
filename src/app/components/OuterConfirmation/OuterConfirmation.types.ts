@@ -1,3 +1,3 @@
 export enum ParamsTypeFormat {
-	ADDRESS = 'ADDRESS',
+	EXPANDABLE = 'EXPANDABLE',
 }
