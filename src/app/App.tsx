@@ -50,6 +50,7 @@ import {
 	transferType,
 } from '../types';
 import { useFullscreenMac } from './hooks/useFullscreenMac';
+import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
@@ -413,10 +414,9 @@ function App() {
 						assetId: swap?.currentAssetID,
 						params: [
 							{
+								format: ParamsTypeFormat.ADDRESS,
 								key: 'Address',
-								value: swapParams.address
-									? Formatters.walletAddress(swapParams.address)
-									: '???',
+								value: swapParams.address ?? '???',
 							},
 							{
 								key: 'Sending',

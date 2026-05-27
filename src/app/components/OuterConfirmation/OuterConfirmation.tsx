@@ -11,9 +11,11 @@ import { ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableAddress from './ui/ExpandableAddress/ExpandableAddress';
+import { ParamsTypeFormat } from './OuterConfirmation.types';
 
 interface ParamsType {
-	key: number;
+	format?: ParamsTypeFormat;
+	key: string;
 	value: string;
 }
 
@@ -341,12 +343,26 @@ const OuterConfirmation = () => {
 			<div>
 				<div className={styles.confirmation__block}>
 					{Array.isArray(params) &&
-						params?.map((item: ParamsType, idx: number) => (
-							<div key={idx} className={styles.row}>
-								<h5>{item.key}</h5>
-								<p>{item.value}</p>
-							</div>
-						))}
+						params?.map((item: ParamsType, idx: number) => {
+							if (item.format === ParamsTypeFormat.ADDRESS) {
+								return (
+									<ExpandableAddress
+										key={idx}
+										label={item.key}
+										value={item.value}
+										prefixLength={10}
+										suffixLength={10}
+									/>
+								);
+							}
+
+							return (
+								<div key={idx} className={styles.row}>
+									<h5>{item.key}</h5>
+									<p>{item.value}</p>
+								</div>
+							);
+						})}
 				</div>
 			</div>
 		);
