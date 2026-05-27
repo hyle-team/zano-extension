@@ -10,7 +10,7 @@ import { BurnAssetDataType } from '../../../types';
 import { ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
-import ExpandableAddress from './ui/ExpandableAddress/ExpandableAddress';
+import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
 import { ParamsTypeFormat } from './OuterConfirmation.types';
 
 interface ParamsType {
@@ -146,7 +146,7 @@ const OuterConfirmation = () => {
 			return (
 				<>
 					<div className={styles.confirmation__block}>
-						<ExpandableAddress label="From" value={transactionParams?.From ?? ''} />
+						<ExpandableParam label="From" value={transactionParams?.From ?? ''} />
 						<div className={styles.row}>
 							<h5>Asset</h5>
 							<p className={styles.asset}>
@@ -197,7 +197,7 @@ const OuterConfirmation = () => {
 							</div>
 						) : (
 							<>
-								<ExpandableAddress label="To" value={transactionParams?.To ?? ''} />
+								<ExpandableParam label="To" value={transactionParams?.To ?? ''} />
 								<div className={styles.row}>
 									<h5>Amount</h5>
 									<p>{totalAmount}</p>
@@ -230,7 +230,7 @@ const OuterConfirmation = () => {
 										<p className={styles.title}>RECIPIENT {idx + 1}</p>
 
 										<div className={styles.confirmation__block}>
-											<ExpandableAddress label="To" value={item.address} />
+											<ExpandableParam label="To" value={item.address} />
 
 											<div className={styles.row}>
 												<h5>Amount</h5>
@@ -346,7 +346,7 @@ const OuterConfirmation = () => {
 						params?.map((item: ParamsType, idx: number) => {
 							if (item.format === ParamsTypeFormat.ADDRESS) {
 								return (
-									<ExpandableAddress
+									<ExpandableParam
 										key={idx}
 										label={item.key}
 										value={item.value}

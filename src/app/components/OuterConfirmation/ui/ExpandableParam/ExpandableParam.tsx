@@ -1,18 +1,18 @@
 import React, { memo, useState } from 'react';
-import cls from './ExpandableAddress.module.scss';
+import cls from './ExpandableParam.module.scss';
 import chevronIcon from '../../../../assets/svg/arrow-blue.svg';
 import copyIcon from '../../../../assets/svg/copy.svg';
 import checkIcon from '../../../../assets/svg/check-icon.svg';
 import { useCopy } from '../../../../hooks/useCopy';
 
-interface ExpandableAddressProps {
+interface ExpandableParamProps {
 	label: string;
 	value: string;
 	prefixLength?: number;
 	suffixLength?: number;
 }
 
-export const ExpandableAddress = memo((props: ExpandableAddressProps) => {
+export const ExpandableParam = memo((props: ExpandableParamProps) => {
 	const { label, value, prefixLength = 12, suffixLength = 12 } = props;
 	const [expanded, setExpanded] = useState(false);
 	const { copyToClipboard, copied } = useCopy();
@@ -55,10 +55,10 @@ export const ExpandableAddress = memo((props: ExpandableAddressProps) => {
 						type="button"
 						className={cls.copyBtn}
 						onClick={() => copyToClipboard(value)}
-						aria-label={copied ? 'copied' : 'copy address'}
+						aria-label={copied ? 'copied' : 'copy'}
 					>
 						<img src={copied ? checkIcon : copyIcon} alt="" width={18} height={18} />
-						<span className={cls.tooltip}>{copied ? 'copied!' : 'copy address'}</span>
+						<span className={cls.tooltip}>{copied ? 'copied!' : 'copy'}</span>
 					</button>
 				</div>
 			)}
@@ -66,4 +66,4 @@ export const ExpandableAddress = memo((props: ExpandableAddressProps) => {
 	);
 });
 
-export default ExpandableAddress;
+export default ExpandableParam;
