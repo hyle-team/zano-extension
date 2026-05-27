@@ -12,6 +12,8 @@ import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
 import { ParamsTypeFormat } from './OuterConfirmation.types';
+import { ExpandableAssetId } from './ui/ExpandableAssetId/ExpandableAssetId';
+import { CopyableParam } from './ui/CopyableParam/CopyableParam';
 
 interface ParamsType {
 	format?: ParamsTypeFormat;
@@ -256,13 +258,7 @@ const OuterConfirmation = () => {
 			return (
 				<>
 					<div className={styles.confirmation__block}>
-						<div className={styles.row}>
-							<h5>Asset</h5>
-							<p className={styles.asset}>
-								<WhitelistIconImage width={18} height={18} asset={{ assetId }} />{' '}
-								{shortenAddress(assetId, 6, 6)}
-							</p>
-						</div>
+						<ExpandableAssetId label="Asset" value={assetId} />
 						<div className={styles.row}>
 							<h5>Burn Amount</h5>
 							<p>{burnAmount}</p>
@@ -276,10 +272,12 @@ const OuterConfirmation = () => {
 						)}
 
 						{pointTxToAddress && (
-							<div className={styles.row}>
-								<h5>Send Tx To</h5>
-								<p>{shortenAddress(pointTxToAddress, 6, 6)}</p>
-							</div>
+							<ExpandableParam
+								label="Send Tx To"
+								value={pointTxToAddress}
+								prefixLength={8}
+								suffixLength={8}
+							/>
 						)}
 					</div>
 
@@ -352,6 +350,18 @@ const OuterConfirmation = () => {
 										value={item.value}
 										prefixLength={10}
 										suffixLength={10}
+									/>
+								);
+							}
+
+							if (item.format === ParamsTypeFormat.COPYABLE) {
+								return (
+									<CopyableParam
+										key={idx}
+										label={item.key}
+										value={item.value}
+										prefixLength={8}
+										suffixLength={8}
 									/>
 								);
 							}

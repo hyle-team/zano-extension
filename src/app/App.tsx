@@ -485,7 +485,7 @@ function App() {
 							name: 'Accept Ionic Swap',
 							params: [
 								{
-									format: ParamsTypeFormat.EXPANDABLE,
+									format: ParamsTypeFormat.COPYABLE,
 									key: 'Hex Proposal',
 									value: hex_raw_proposal ?? '???',
 								},
