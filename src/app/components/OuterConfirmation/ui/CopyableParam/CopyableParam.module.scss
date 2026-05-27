@@ -68,32 +68,3 @@
 	flex-shrink: 0;
 	display: block;
 }
-
-.tooltip {
-	position: absolute;
-	z-index: 10;
-	bottom: calc(100% + 2px);
-	right: 6px;
-	padding: 4px 10px;
-	border-radius: 5px;
-	font-size: 14px;
-	font-weight: 300;
-	line-height: 1.2;
-	white-space: nowrap;
-	color: #ffffff;
-	background: rgba(20, 65, 130, 1);
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-
-	&::after {
-		content: '';
-		position: absolute;
-		bottom: -3px;
-		right: 12px;
-		width: 6px;
-		height: 6px;
-		background: rgba(20, 65, 130, 1);
-		transform: rotate(45deg);
-	}
-}

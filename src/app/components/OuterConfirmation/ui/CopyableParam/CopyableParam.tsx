@@ -39,7 +39,6 @@ export const CopyableParam = memo((props: CopyableParamProps) => {
 						width={14}
 						height={14}
 					/>
-					<span className={cls.tooltip}>{copied ? 'copied!' : 'copy'}</span>
 				</button>
 			</div>
 		</div>
