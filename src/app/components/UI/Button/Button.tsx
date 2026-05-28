@@ -6,6 +6,8 @@ interface ThemeProps {
 	Primary: 'primary';
 	Outline: 'outline';
 	Clear: 'clear';
+	Danger: 'danger';
+	Red: 'red';
 }
 
 interface ButtonBaseProps {
@@ -19,6 +21,8 @@ export const ButtonThemes: ThemeProps = {
 	Primary: 'primary',
 	Outline: 'outline',
 	Clear: 'clear',
+	Danger: 'danger',
+	Red: 'red',
 };
 
 type ButtonProps = ButtonBaseProps &

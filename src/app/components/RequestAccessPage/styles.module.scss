@@ -1,0 +1,141 @@
+@import 'src/app/styles/variables';
+
+.main {
+	height: calc($appHeight - 72px);
+	display: flex;
+	flex-direction: column;
+
+	&__title {
+		text-align: center;
+		font-size: 22px;
+		font-weight: 500;
+
+		:global(.app-fullscreen) & {
+			font-size: 25px;
+		}
+	}
+
+	&__subtitle {
+		margin-top: 4px;
+		text-align: center;
+		color: #b6b6c4;
+		font-size: 16px;
+		font-weight: 400;
+
+		:global(.app-fullscreen) & {
+			font-size: 18px;
+		}
+	}
+
+	&__content {
+		margin-top: 12px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__siteInfo {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding-inline: 16px;
+		padding-block: 12px;
+		border-top-left-radius: 8px;
+		border-top-right-radius: 8px;
+		border-bottom: 1px solid #273666;
+		background-color: rgba(31, 143, 235, 0.15);
+
+		&_icon {
+			width: 38px;
+			height: 38px;
+		}
+
+		&_origin {
+			font-size: 18px;
+			font-weight: 600;
+		}
+	}
+
+	&__permissions {
+		padding-inline: 16px;
+		padding-block: 12px;
+		border-bottom-right-radius: 8px;
+		border-bottom-left-radius: 8px;
+		background-color: #0f2055;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		&_title {
+			font-size: 16px;
+			font-weight: 500;
+			color: #b6b6c4;
+		}
+
+		&_list {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+
+			.item {
+				background-color: rgba(31, 143, 235, 0.15);
+				padding-block: 12px;
+				padding-inline: 16px;
+				border-radius: 16px;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+
+				&__text {
+					display: flex;
+					flex-direction: column;
+					gap: 8px;
+				}
+
+				&__title {
+					font-size: 16px;
+					font-weight: 600;
+				}
+
+				&__desc {
+					font-size: 14px;
+					font-weight: 400;
+					opacity: 0.7;
+				}
+			}
+		}
+	}
+
+	&__bottom {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		z-index: 3;
+		background-color: #0f2055;
+		border-top: 1px solid #273666;
+		width: 100%;
+		padding: 16px;
+		padding-top: 12px;
+
+		&_info {
+			max-width: calc(var(--app-width) - 20px);
+			width: 100%;
+			margin-inline: auto;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-size: 14px;
+			font-weight: 400;
+			color: #b6b6c4;
+		}
+
+		&_actions {
+			max-width: calc(var(--app-width) - 20px);
+			width: 100%;
+			margin-inline: auto;
+			margin-top: 16px;
+			display: flex;
+			gap: 8px;
+		}
+	}
+}

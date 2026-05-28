@@ -224,6 +224,8 @@ interface AssetDataType {
 	decimal_point: number;
 }
 
+export type PermissionType = 'general' | 'balance' | 'history';
+
 export interface RequestType {
 	method: string;
 	credentials: object;
@@ -265,6 +267,16 @@ export interface RequestType {
 	destinations?: destinationsType;
 	destinationAssetAmount?: string;
 	currentAssetAmount?: string;
+	permissions?: { type: PermissionType }[];
+}
+
+export interface AccessRequestType {
+	id: string;
+	windowId: number;
+	origin: string;
+	hostname: string;
+	favicon: string;
+	permissions?: { type: PermissionType }[];
 }
 
 export interface TransferDataType {
@@ -293,3 +305,24 @@ export type ValidationsType = {
 	customValidation?: boolean;
 	customError?: boolean;
 };
+
+export interface GetWalletDataRes {
+	address: string;
+	alias: string;
+	balance?: string;
+	transactions?: Transaction[];
+	assets?: WalletAsset[];
+}
+
+export interface Sender {
+	id: string;
+	name?: string;
+	email?: string;
+	phoneNumber?: string;
+	address?: string;
+	[key: string]: string | undefined;
+}
+
+export interface SendResponse {
+	(_response: unknown): void;
+}

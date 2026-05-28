@@ -1,0 +1,283 @@
+.permissions {
+	padding-bottom: 150px;
+
+	&__desc {
+		margin-top: -10px;
+		font-size: 12px;
+		opacity: 0.5;
+		line-height: 140%;
+		text-align: center;
+	}
+
+	&__list {
+		width: 100%;
+		margin-top: 15px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__item {
+		user-select: none;
+		cursor: pointer;
+		display: flex;
+		padding: 12px;
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		border: 1px solid #273666;
+		background-color: rgba(31, 143, 235, 0.15);
+		transition: 0.3s background-color ease;
+
+		&:hover {
+			background-color: rgba(31, 143, 235, 0.2);
+		}
+
+		&_icon_wrapper {
+			position: relative;
+			width: 32px;
+			height: 32px;
+		}
+
+		&_icon {
+			display: block;
+			width: 32px;
+			height: 32px;
+			object-fit: contain;
+			opacity: 1;
+			transition: opacity 0.2s ease;
+
+			&_hidden {
+				opacity: 0;
+			}
+		}
+
+		&_skeleton {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			animation: pulse 1.2s infinite;
+			background: rgba(255, 255, 255, 0.08);
+			z-index: 1;
+		}
+
+		&_fallback {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			background: rgba(255, 255, 255, 0.08);
+			font-size: 14px;
+			font-weight: 600;
+		}
+
+		&_info {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			min-width: 0;
+		}
+
+		&_title {
+			font-weight: 500;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		&_count {
+			font-size: 12px;
+			opacity: 0.5;
+			line-height: 140%;
+		}
+
+		&_chevron {
+			margin-left: auto;
+		}
+	}
+
+	&__empty {
+		padding-block: 40px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+
+		&_icon {
+			background-color: #0f2055;
+			width: 56px;
+			height: 56px;
+			border-radius: 50%;
+			display: grid;
+			place-content: center;
+			margin-bottom: 28px;
+		}
+
+		&_text {
+			margin-bottom: 6px;
+			font-weight: 600;
+		}
+
+		&_desc {
+			max-width: 220px;
+			font-size: 12px;
+			line-height: 140%;
+			opacity: 0.5;
+		}
+	}
+
+	&__bottom {
+		width: 100%;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		padding-inline: 16px;
+		padding-top: 12px;
+		padding-bottom: 24px;
+		border-top: 1px solid #273666;
+		background-color: #0f2055;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		z-index: 5;
+
+		&_warning {
+			text-align: center;
+			font-size: 12px;
+			line-height: 140%;
+			color: #ff6767;
+			font-weight: 500;
+		}
+
+		&_actions {
+			display: flex;
+			gap: 8px;
+
+			.btn {
+				width: 100%;
+			}
+		}
+
+		&_info {
+			text-align: center;
+			font-size: 12px;
+			opacity: 0.5;
+			line-height: 140%;
+		}
+	}
+}
+
+.popup {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	inset: 0;
+	background-color: #0009;
+	backdrop-filter: blur(4px);
+	z-index: 1000;
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	transition: 0.3s all ease;
+
+	&.visible {
+		opacity: 1;
+		pointer-events: all;
+		visibility: visible;
+
+		.popup__content {
+			transform: translateY(0);
+		}
+	}
+
+	&__content {
+		min-width: 100%;
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		transition: 0.4s all ease;
+		transform: translateY(300px);
+		padding: 20px;
+		padding-bottom: 24px;
+		background-color: #0f2055;
+		border-top: 1px solid #273666;
+		border-top-left-radius: 16px;
+		border-top-right-radius: 16px;
+	}
+
+	&__item {
+		width: 40px;
+		height: 4px;
+		margin-inline: auto;
+		margin-bottom: 20px;
+		background-color: #ffffff26;
+		border-radius: 9999px;
+	}
+
+	&__title {
+		font-size: 16px;
+		font-weight: 600;
+		line-height: 160%;
+	}
+
+	&__desc {
+		margin-top: 4px;
+		font-size: 12px;
+		line-height: 140%;
+		opacity: 0.5;
+	}
+
+	&__list {
+		margin-top: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+
+		&_item {
+			border-radius: 8px;
+			padding-inline: 12px;
+			padding-block: 10px;
+			border: 1px solid #273666;
+			background-color: rgba(31, 143, 235, 0.15);
+			display: flex;
+			align-items: center;
+			gap: 10px;
+
+			.icon {
+				width: 20px;
+				height: 20px;
+			}
+
+			.info {
+				font-size: 14px;
+				line-height: 120%;
+			}
+		}
+	}
+
+	&__actions {
+		margin-top: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+}
+
+@keyframes pulse {
+	0% {
+		opacity: 0.5;
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0.5;
+	}
+}

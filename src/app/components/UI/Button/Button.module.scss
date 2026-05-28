@@ -13,12 +13,14 @@
 	text-align: center;
 	color: #ffffff;
 	transition: all 0.2s ease 0s;
+
 	img {
 		width: 18px;
 		flex: 0 0 18px;
 		height: 18px;
 		max-width: 100%;
 	}
+
 	&[disabled] {
 		opacity: 0.5;
 		pointer-events: none;
@@ -28,6 +30,7 @@
 .primary {
 	color: #fff;
 	background-color: #1f8feb;
+
 	@media (any-hover: hover) {
 		&:hover,
 		&:focus {
@@ -39,6 +42,7 @@
 .outline {
 	background: transparent;
 	border: 2px solid #1f8feb;
+
 	@media (any-hover: hover) {
 		&:hover,
 		&:focus {
@@ -51,9 +55,32 @@
 	min-width: auto;
 	height: auto;
 	padding: 0;
+
 	svg {
 		font-size: 16px;
 		flex: 0 0 16px;
 		color: #fff;
+	}
+}
+
+.danger {
+	color: #ff6767;
+	background-color: #ff676726;
+	border: 1px solid #ff67674d;
+
+	@media (any-hover: hover) {
+		&:hover,
+		&:focus {
+			background-color: #ff676740;
+		}
+	}
+}
+
+.red {
+	background-color: #ff6767;
+
+	&:hover,
+	&:focus {
+		filter: brightness(110%);
 	}
 }

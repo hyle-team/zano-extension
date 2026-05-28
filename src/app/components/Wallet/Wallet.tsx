@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction, useContext, useRef, useState } from 'react';
 import Decimal from 'decimal.js';
-import { styleText } from 'util';
 import copyIcon from '../../assets/svg/copy.svg';
 import dotsIcon from '../../assets/svg/dots.svg';
 import sendIcon from '../../assets/svg/send.svg';
@@ -9,6 +8,7 @@ import transferIcon from '../../assets/svg/transfer.svg';
 import settingsIcon from '../../assets/svg/settings.svg';
 import showIcon from '../../assets/svg/show.svg';
 import hideIcon from '../../assets/svg/hide.svg';
+import dappIcon from '../../assets/svg/dapp.svg';
 import lockedIcon from '../../assets/svg/lockedIcon.svg';
 import checkIcon from '../../assets/svg/check-icon.svg';
 import useAwayClick from '../../hooks/useAwayClick';
@@ -24,6 +24,7 @@ import { classNames } from '../../utils/classNames';
 import { ZANO_ASSET_ID } from '../../../constants';
 import AliasManagePage from '../AliasManagePage';
 import AliasTransfer from '../AliasTransfer';
+import PermissionsPage from '../PermissionsPage';
 
 const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateAction<boolean>> }) => {
 	const { state, dispatch } = useContext(Store);
@@ -176,6 +177,10 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 								/>
 								{state.isBalancesHidden ? 'Show values' : 'Hide values'}
 							</button>
+							<NavLink component={PermissionsPage} className={s.settingsBtn}>
+								<img src={dappIcon} alt="dapp icon" />
+								dApps
+							</NavLink>
 						</div>
 					)}
 				</div>
