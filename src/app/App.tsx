@@ -610,9 +610,9 @@ function App() {
 			<PasswordPage
 				incorrectPassword={incorrectPassword}
 				setIncorrectPassword={setIncorrectPassword}
-				onConfirm={(password) => {
+				onConfirm={async (password) => {
 					console.log(password, comparePasswords(password));
-					if (comparePasswords(password)) {
+					if (await comparePasswords(password)) {
 						updateLoading(dispatch as dispatchType, true);
 
 						setTimeout(() => {
@@ -676,7 +676,7 @@ function App() {
 								const password = inputPassword || (await getSessionPassword());
 								if (!password) return;
 
-								setPassword(password);
+								await setPassword(password);
 
 								if (connectKey) {
 									ConnectKeyUtils.setConnectData(
