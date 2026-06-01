@@ -698,8 +698,6 @@ function App() {
 
 					return (
 						<ConnectPage
-							incorrectPassword={incorrectPassword}
-							setIncorrectPassword={setIncorrectPassword}
 							passwordExists={passwordExists()}
 							setConnectOpened={setConnectOpened}
 							onConfirm={async (inputPassword, connectKey, walletPort) => {
