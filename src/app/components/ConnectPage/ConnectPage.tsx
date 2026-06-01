@@ -44,8 +44,20 @@ export default function ConnectPage({
 			if (!passwordExists) return;
 			const password = await getSessionPassword();
 			if (!password) return;
-			const connectData = ConnectKeyUtils.getConnectData(password);
-			if (connectData?.port) setWalletPort(connectData.port);
+			const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+			if (!getConnectDataResult.success) {
+				console.error(
+					'Failed to get connect data. Error code:',
+					getConnectDataResult.error,
+				);
+
+				return;
+			}
+
+			const { connectData } = getConnectDataResult;
+
+			setWalletPort(connectData.port);
 		}
 		getExistingPort();
 	}, [passwordExists]);
