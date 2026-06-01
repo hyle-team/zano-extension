@@ -289,7 +289,8 @@ function App() {
 	}, [dispatch]);
 
 	const appConnected = !!(
-		state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
+		(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()) &&
+		passwordExists()
 	);
 
 	useEffect(() => {
@@ -622,7 +623,16 @@ function App() {
 				incorrectPassword={incorrectPassword}
 				setIncorrectPassword={setIncorrectPassword}
 				onConfirm={async (password) => {
-					if (await comparePasswords(password)) {
+					const compareResult = await comparePasswords(password);
+
+					if (!compareResult.success) {
+						console.error('Error comparing passwords:', compareResult.error);
+						return;
+					}
+
+					const correctPassword = compareResult.doesPasswordMatch;
+
+					if (correctPassword) {
 						updateLoading(dispatch as dispatchType, true);
 
 						setTimeout(() => {
