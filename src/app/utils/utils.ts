@@ -58,7 +58,7 @@ export const scrypt = async ({
 	saltBuffer: Uint8Array;
 }): Promise<Uint8Array> => {
 	const hashBuffer = await NobleHashesScrypt.scryptAsync(str, saltBuffer, {
-		N: 2 ** 16,
+		N: 2 ** 14,
 		r: 8,
 		p: 1,
 		dkLen: 32,
