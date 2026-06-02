@@ -8,7 +8,7 @@ import { setConnectData } from '../../store/actions';
 import { Store } from '../../store/store-reducer';
 import ConnectKeyUtils from '../../utils/ConnectKeyUtils';
 import { defaultPort } from '../../config/config';
-import { getFirstFailedPasswordRule } from '../../utils/passwordValidation';
+import { getFirstFailedPasswordRule } from './helpers/passwordValidation';
 
 interface ConnectPageProps {
 	onConfirm?: (password?: string, keyValue?: string, walletPort?: string) => void;
@@ -119,10 +119,12 @@ export default function ConnectPage({
 		setKeyIncorrect(false);
 	}
 
-	const passwordFieldErrorMessage = passwordValidationErrorMessage;
-	const passwordRepeatFieldErrorMessage = passwordsDoNotMatch
+	const passwordMatchingErrorMessage = passwordsDoNotMatch
 		? PASSWORDS_DO_NOT_MATCH_MESSAGE
 		: null;
+
+	const passwordFieldErrorMessage =
+		passwordValidationErrorMessage ?? passwordMatchingErrorMessage;
 
 	return (
 		<div className={s.connect}>
@@ -159,18 +161,16 @@ export default function ConnectPage({
 								value: password,
 								isDirty: !!passwordFieldErrorMessage,
 							}}
-							stroke={passwordFieldErrorMessage}
 							onChange={(event) => onPasswordInput(event, false)}
-							preserveStrokeLabelSpace
 						/>
 						<MyInput
 							type="password"
 							placeholder="Repeat password"
 							inputData={{
 								value: passwordRepeat,
-								isDirty: !!passwordRepeatFieldErrorMessage,
+								isDirty: !!passwordFieldErrorMessage,
 							}}
-							stroke={passwordRepeatFieldErrorMessage}
+							stroke={passwordFieldErrorMessage}
 							onChange={(event) => onPasswordInput(event, true)}
 							preserveStrokeLabelSpace
 						/>
