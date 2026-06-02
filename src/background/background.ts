@@ -430,6 +430,28 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			break;
 		}
 
+		case 'GET_PERMISSIONS': {
+			try {
+				if (!sender.origin && !sender.url) {
+					return sendResponse({ error: 'Unknown origin' });
+				}
+
+				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+				const wallet = await getWalletData();
+				const permissions = await getPermissions(origin, wallet.address);
+
+				sendResponse({
+					data: permissions,
+				});
+			} catch {
+				sendResponse({
+					error: 'Failed to get permissions',
+				});
+			}
+
+			break;
+		}
+
 		case 'SET_ACTIVE_WALLET':
 			fetchData('mw_select_wallet', { wallet_id: request.id })
 				.then((response) => response.json())
