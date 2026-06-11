@@ -264,7 +264,12 @@ function openWindow(): Promise<chrome.windows.Window> {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	(async () => {
-		await processRequest(request, sender as Sender, sendResponse);
+		try {
+			await processRequest(request, sender as Sender, sendResponse);
+		} catch (error) {
+			console.error('Unhandled error in processRequest:', error);
+			sendResponse({ error: 'UNHANDLED_ERROR' });
+		}
 	})();
 	return true;
 });
@@ -274,18 +279,18 @@ const accessReqs: AccessRequestType[] = [];
 const accessReqFinalizers: Record<string, (data: unknown) => void> = {};
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
+	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+
+	if (!isFromExtensionFrontend) {
+		await recoverApiCredentials();
+	}
+
 	const allowed = await permissionMiddleware(request, sender, sendResponse); // check permission access
 
 	if (!allowed) return;
 
-	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
-
 	if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
 		return sendResponse({ error: 'Unauthorized request' });
-	}
-
-	if (!isFromExtensionFrontend) {
-		await recoverApiCredentials();
 	}
 
 	switch (request.method) {
