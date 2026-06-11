@@ -51,9 +51,9 @@ export async function permissionMiddleware(
 	const requestPermissionsResponse = await requestAccess(requiredPermissions);
 
 	if (!requestPermissionsResponse?.success) {
-		sendResponse({
-			error: 'Permission denied',
-		});
+		const errorMessage = requestPermissionsResponse?.error;
+
+		sendResponse({ error: errorMessage });
 		return false;
 	}
 
