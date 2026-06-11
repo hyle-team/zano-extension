@@ -326,3 +326,9 @@ export interface Sender {
 export interface SendResponse {
 	(_response: unknown): void;
 }
+
+export interface RequestResponse {
+	error?: string;
+	data?: unknown;
+	success?: boolean;
+}

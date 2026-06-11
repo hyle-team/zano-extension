@@ -4,6 +4,7 @@ import {
 	AccessRequestType,
 	BurnAssetDataType,
 	ionicSwapType,
+	PermissionType,
 	RequestType,
 	TransferDataType,
 	GetWalletDataRes,
@@ -32,6 +33,7 @@ import {
 } from './wallet';
 import { normalizeOrigin, truncateToDecimals } from '../app/utils/utils';
 import { getPermissions, hasPermission, permissionMiddleware } from '../app/utils/permission';
+import { RequestResponse } from '../types';
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -42,11 +44,6 @@ interface PopupRequest {
 	windowId?: number;
 	finalizer?: (data: unknown) => void;
 	[key: string]: unknown;
-}
-
-interface RequestResponse {
-	error?: string;
-	data?: unknown;
 }
 
 interface ErrorMessages {
@@ -276,16 +273,100 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const accessReqs: AccessRequestType[] = [];
 
-const accessReqFinalizers: Record<string, (data: unknown) => void> = {};
+const accessReqFinalizers: Record<string, (data: RequestResponse) => void> = {};
+
+async function requestAccess(
+	request: { permissions?: { type: PermissionType }[] },
+	sender: Sender,
+): Promise<RequestResponse> {
+	if (!sender.origin && !sender.url) {
+		return { error: 'Unknown origin' };
+	}
+
+	const allowedPermissions: PermissionType[] = ['general', 'balance', 'history'];
+	const { permissions } = request;
+
+	if (
+		!Array.isArray(permissions) ||
+		permissions.length === 0 ||
+		permissions.some((permission) => !allowedPermissions.includes(permission.type))
+	) {
+		return {
+			error: 'Invalid or empty permissions',
+		};
+	}
+
+	const uniqueTypes = [...new Set(permissions.map((permission) => permission.type))];
+	const cleanPermissions = uniqueTypes.map((type) => ({ type }));
+
+	const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
+
+	const isSecureOrigin = origin.startsWith('https://') || origin.startsWith('http://localhost');
+	if (!isSecureOrigin) {
+		return { error: 'Only HTTPS origins are allowed' };
+	}
+
+	const wallet = await getWalletData();
+	const { address } = wallet;
+
+	const existing = await getPermissions(origin, address);
+	const alreadyApproved = cleanPermissions.every((permission) =>
+		existing.includes(permission.type),
+	);
+
+	if (alreadyApproved) {
+		return { success: true };
+	}
+
+	if (accessReqs.some((pendingRequest) => pendingRequest.origin === origin)) {
+		return { error: 'Request already pending' };
+	}
+
+	return new Promise((resolve) => {
+		openWindow()
+			.then((requestWindow) => {
+				const id = crypto.randomUUID();
+
+				const { hostname } = new URL(origin);
+				const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+
+				accessReqFinalizers[id] = (result) => resolve(result);
+
+				accessReqs.push({
+					id,
+					windowId: Number(requestWindow.id),
+					origin,
+					hostname,
+					favicon,
+					permissions: cleanPermissions,
+				});
+			})
+			.catch((error) => {
+				console.error('Error opening access request window:', error);
+				resolve({ error: 'Failed to open access request window' });
+			});
+	});
+}
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
-	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+	const isFromExtensionFrontend = !!sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
 	if (!isFromExtensionFrontend) {
 		await recoverApiCredentials();
 	}
 
-	const allowed = await permissionMiddleware(request, sender, sendResponse); // check permission access
+	const allowed = await permissionMiddleware(
+		request,
+		sender,
+		sendResponse,
+		(requiredPermissions) =>
+			requestAccess(
+				{
+					permissions: requiredPermissions.map((type) => ({ type })),
+				},
+				sender,
+			),
+	);
 
 	if (!allowed) return;
 
@@ -314,66 +395,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			break;
 
 		case 'REQUEST_ACCESS': {
-			if (!sender.origin && !sender.url) {
-				return sendResponse({ error: 'Unknown origin' });
-			}
-
-			const allowed = ['general', 'balance', 'history'];
-			const { permissions } = request;
-
-			if (
-				!Array.isArray(permissions) ||
-				permissions.length === 0 ||
-				permissions.some((p) => !allowed.includes(p.type))
-			) {
-				return sendResponse({
-					error: 'Invalid or empty permissions',
-				});
-			}
-
-			const uniqueTypes = [...new Set(permissions.map((p) => p.type))];
-			const cleanPermissions = uniqueTypes.map((type) => ({ type }));
-
-			const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
-
-			const isSecureOrigin =
-				origin.startsWith('https://') || origin.startsWith('http://localhost');
-			if (!isSecureOrigin) {
-				return sendResponse({ error: 'Only HTTPS origins are allowed' });
-			}
-
-			const wallet = await getWalletData();
-			const { address } = wallet;
-
-			const existing = await getPermissions(origin, address);
-			const alreadyApproved = cleanPermissions.every((p) => existing.includes(p.type));
-
-			if (alreadyApproved) {
-				return sendResponse({ success: true });
-			}
-
-			if (accessReqs.some((r) => r.origin === origin)) {
-				return sendResponse({ error: 'Request already pending' });
-			}
-
-			openWindow().then((requestWindow) => {
-				const id = crypto.randomUUID();
-
-				const { hostname } = new URL(origin);
-				const favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
-
-				accessReqFinalizers[id] = (result) => sendResponse(result);
-
-				accessReqs.push({
-					id,
-					windowId: Number(requestWindow.id),
-					origin,
-					hostname,
-					favicon,
-					permissions: cleanPermissions,
-				});
-			});
-
+			sendResponse(await requestAccess(request, sender));
 			break;
 		}
 
@@ -391,7 +413,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				return sendResponse({ error: 'Request not found' });
 			}
 
-			const finalize = (data: unknown) => {
+			const finalize = (data: RequestResponse) => {
 				accessReqFinalizers[id]?.(data);
 				delete accessReqFinalizers[id];
 				accessReqs.splice(accessReqs.indexOf(req), 1);
@@ -519,7 +541,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				}
 
 				return sendResponse({ data: filtered });
-			} catch (e) {
+			} catch {
 				return sendResponse({
 					error: 'Failed to get wallet data',
 				});

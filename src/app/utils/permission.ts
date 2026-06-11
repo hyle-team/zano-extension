@@ -2,6 +2,7 @@ import { getWalletData } from '../../background/wallet';
 import { METHOD_EXTRA_PERMISSIONS, PUBLIC_METHODS } from '../../constants';
 import { PermissionType, RequestType, Sender, SendResponse } from '../../types';
 import { normalizeOrigin } from './utils';
+import { RequestResponse } from '../../types';
 
 export async function getPermissions(origin: string, address: string): Promise<PermissionType[]> {
 	const stored = await chrome.storage.local.get('permissions');
@@ -18,6 +19,7 @@ export async function permissionMiddleware(
 	request: RequestType,
 	sender: Sender,
 	sendResponse: SendResponse,
+	requestAccess: (requiredPermissions: PermissionType[]) => Promise<RequestResponse>,
 ): Promise<boolean> {
 	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
 
@@ -35,20 +37,24 @@ export async function permissionMiddleware(
 
 	const perms = await getPermissions(origin, address);
 
-	if (!hasPermission(perms, 'general')) {
-		sendResponse({ error: 'General permission required' });
-		return false;
+	const requiredPermissions: PermissionType[] = [
+		'general',
+		...((METHOD_EXTRA_PERMISSIONS[request.method] ?? []) as PermissionType[]),
+	];
+
+	const ok = requiredPermissions.every((permission) => hasPermission(perms, permission));
+
+	if (ok) {
+		return true;
 	}
 
-	const extra = METHOD_EXTRA_PERMISSIONS[request.method];
+	const requestPermissionsResponse = await requestAccess(requiredPermissions);
 
-	if (extra) {
-		const ok = extra.every((p) => hasPermission(perms, p as PermissionType));
-
-		if (!ok) {
-			sendResponse({ error: 'Permission denied' });
-			return false;
-		}
+	if (!requestPermissionsResponse?.success) {
+		sendResponse({
+			error: 'Permission denied',
+		});
+		return false;
 	}
 
 	return true;
