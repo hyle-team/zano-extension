@@ -1,26 +1,41 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import arrowIcon from '../../assets/svg/arrow-shevron.svg';
-import { useCensorDigits } from '../../hooks/useCensorDigits';
+import checkIcon from '../../assets/svg/check-icon-blue.svg';
+import copyBlueIcon from '../../assets/svg/copy-blue.svg';
+import { useCopy } from '../../hooks/useCopy';
 import { Store } from '../../store/store-reducer';
 import { updateActiveWalletId, updateLoading } from '../../store/actions';
-import Formatters from '../../utils/formatters';
 import s from './Header.module.scss';
-import { fetchBackground } from '../../utils/utils';
+import { fetchBackground, shortenAddress } from '../../utils/utils';
 
 const Header = () => {
 	const { dispatch, state } = useContext(Store);
-	const { censorValue } = useCensorDigits();
+	const { copyToClipboard } = useCopy();
 	const [dropdownOpen, setDropdownOpen] = useState(false);
+	const [copiedWalletAddress, setCopiedWalletAddress] = useState<string | null>(null);
+	const copyFeedbackTimeoutRef = useRef<number | null>(null);
 
-	const toggleDropdown = () => {
-		if (dropdownOpen) {
-			setDropdownOpen(false);
-			document.body.style.overflow = 'auto';
-		} else {
-			setDropdownOpen(true);
-			document.body.style.overflow = 'hidden';
-		}
-	};
+	useEffect(() => {
+		document.body.style.overflow = dropdownOpen ? 'hidden' : '';
+
+		return () => {
+			document.body.style.overflow = '';
+		};
+	}, [dropdownOpen]);
+
+	useEffect(
+		() => () => {
+			if (copyFeedbackTimeoutRef.current !== null) {
+				window.clearTimeout(copyFeedbackTimeoutRef.current);
+			}
+		},
+		[],
+	);
+
+	const toggleDropdown = () => setDropdownOpen((currentState) => !currentState);
+
+	const formatWalletAddress = (address: string) =>
+		address.length > 14 ? shortenAddress(address, 6, 6) : address;
 
 	const switchWallet = (id: number | undefined) => {
 		// eslint-disable-next-line no-undef
@@ -37,18 +52,76 @@ const Header = () => {
 			setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
 		});
 
-		toggleDropdown();
+		setDropdownOpen(false);
+	};
+
+	const handleWalletKeyDown = (
+		event: React.KeyboardEvent<HTMLDivElement>,
+		id: number | undefined,
+	) => {
+		if (event.key !== 'Enter' && event.key !== ' ') {
+			return;
+		}
+
+		event.preventDefault();
+		switchWallet(id);
+	};
+
+	const copyAlias = (alias: string, walletAddress: string) => {
+		copyToClipboard(`@${alias}`);
+		setCopiedWalletAddress(walletAddress);
+
+		if (copyFeedbackTimeoutRef.current !== null) {
+			window.clearTimeout(copyFeedbackTimeoutRef.current);
+		}
+
+		copyFeedbackTimeoutRef.current = window.setTimeout(() => {
+			setCopiedWalletAddress(null);
+			copyFeedbackTimeoutRef.current = null;
+		}, 3000);
+	};
+
+	const handleAliasCopy = (
+		event: React.MouseEvent<HTMLButtonElement>,
+		alias: string,
+		walletAddress: string,
+	) => {
+		event.stopPropagation();
+		copyAlias(alias, walletAddress);
+	};
+
+	const handleAliasCopyKeyDown = (
+		event: React.KeyboardEvent<HTMLButtonElement>,
+		alias: string,
+		walletAddress: string,
+	) => {
+		if (event.key !== 'Enter' && event.key !== ' ') {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+		copyAlias(alias, walletAddress);
 	};
 
 	return (
 		<header className={s.header}>
-			<button onClick={toggleDropdown} className={s.dropdownButton}>
-				<span>
-					{state.wallet.alias
-						? state.wallet.alias
-						: Formatters.walletAddress(state.wallet.address)}
+			<button
+				type="button"
+				onClick={toggleDropdown}
+				className={s.dropdownButton}
+				aria-expanded={dropdownOpen}
+				aria-label="Toggle wallets list"
+			>
+				<span className={s.dropdownButtonLabel} title={state.wallet.address}>
+					{formatWalletAddress(state.wallet.address)}
 				</span>
-				<img src={arrowIcon} alt="arrow icon" />
+				<img
+					src={arrowIcon}
+					alt=""
+					aria-hidden="true"
+					className={`${s.dropdownButtonIcon} ${dropdownOpen ? s.dropdownButtonIconOpen : ''}`}
+				/>
 			</button>
 
 			<div className={s.headerStatus}>
@@ -58,26 +131,73 @@ const Header = () => {
 
 			{dropdownOpen && (
 				<div onClick={toggleDropdown} className={s.dropdown}>
-					<div onClick={(e) => e.stopPropagation()} className={s.dropdownList}>
-						{state.walletsList.map((wallet) => (
-							<button
-								key={wallet.address}
-								className={s.dropdownTitle}
-								onClick={() => switchWallet(wallet.wallet_id)}
-							>
-								<div>
-									{wallet.alias
-										? wallet.alias
-										: Formatters.walletAddress(wallet.address)}
+					<div onClick={(event) => event.stopPropagation()} className={s.dropdownList}>
+						{state.walletsList.map((wallet) => {
+							const isActiveWallet = wallet.address === state.wallet.address;
+							const aliasLabel = wallet.alias ? `@${wallet.alias}` : '';
+							const isCopySuccessful = copiedWalletAddress === wallet.address;
+
+							return (
+								<div
+									key={wallet.address}
+									className={`${s.dropdownItem} ${isActiveWallet ? s.dropdownItemActive : ''}`}
+									onClick={() => switchWallet(wallet.wallet_id)}
+									onKeyDown={(event) =>
+										handleWalletKeyDown(event, wallet.wallet_id)
+									}
+									role="button"
+									tabIndex={0}
+								>
+									<span className={s.dropdownAddress} title={wallet.address}>
+										{formatWalletAddress(wallet.address)}
+									</span>
 									{wallet.alias && (
-										<span>{Formatters.walletAddress(wallet.address)}</span>
+										<div className={s.dropdownMeta}>
+											<button
+												type="button"
+												className={s.dropdownCopyButton}
+												onClick={(event) =>
+													handleAliasCopy(
+														event,
+														wallet.alias,
+														wallet.address,
+													)
+												}
+												onKeyDown={(event) =>
+													handleAliasCopyKeyDown(
+														event,
+														wallet.alias,
+														wallet.address,
+													)
+												}
+												aria-label={
+													isCopySuccessful
+														? `${aliasLabel} copied successfully`
+														: `Copy ${aliasLabel}`
+												}
+											>
+												{isCopySuccessful ? (
+													<img
+														src={checkIcon}
+														alt=""
+														aria-hidden="true"
+													/>
+												) : (
+													<img
+														src={copyBlueIcon}
+														alt=""
+														aria-hidden="true"
+													/>
+												)}
+											</button>
+											<span className={s.dropdownAlias} title={aliasLabel}>
+												{aliasLabel}
+											</span>
+										</div>
 									)}
 								</div>
-								<div className={s.dropdownBalance}>
-									{censorValue(Number(wallet.balance).toFixed(2))} ZANO
-								</div>
-							</button>
-						))}
+							);
+						})}
 					</div>
 				</div>
 			)}
