@@ -1,7 +1,7 @@
 import { getWalletData } from '../../background/wallet';
 import { METHOD_EXTRA_PERMISSIONS, PUBLIC_METHODS } from '../../constants';
 import { PermissionType, RequestType, Sender, SendResponse } from '../../types';
-import { normalizeOrigin } from './utils';
+import { isExtensionFrontend, normalizeOrigin } from './utils';
 import { RequestResponse } from '../../types';
 
 export async function getPermissions(origin: string, address: string): Promise<PermissionType[]> {
@@ -21,7 +21,7 @@ export async function permissionMiddleware(
 	sendResponse: SendResponse,
 	requestAccess: (requiredPermissions: PermissionType[]) => Promise<RequestResponse>,
 ): Promise<boolean> {
-	const isFromExtensionFrontend = sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+	const isFromExtensionFrontend = isExtensionFrontend(sender);
 
 	if (PUBLIC_METHODS.includes(request.method) || isFromExtensionFrontend) return true;
 

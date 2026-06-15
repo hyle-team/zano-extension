@@ -31,7 +31,12 @@ import {
 	updateAlias,
 	getAliasByAddress,
 } from './wallet';
-import { normalizeOrigin, truncateToDecimals } from '../app/utils/utils';
+import {
+	isExtensionFrontend,
+	isSecureOrigin,
+	normalizeOrigin,
+	truncateToDecimals,
+} from '../app/utils/utils';
 import { getPermissions, hasPermission, permissionMiddleware } from '../app/utils/permission';
 import { RequestResponse } from '../types';
 
@@ -301,8 +306,7 @@ async function requestAccess(
 
 	const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
 
-	const isSecureOrigin = origin.startsWith('https://') || origin.startsWith('http://localhost');
-	if (!isSecureOrigin) {
+	if (!isSecureOrigin(origin)) {
 		return { error: 'Only HTTPS origins are allowed' };
 	}
 
@@ -349,7 +353,7 @@ async function requestAccess(
 }
 
 async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
-	const isFromExtensionFrontend = !!sender.url && sender.url.includes(chrome.runtime.getURL('/'));
+	const isFromExtensionFrontend = isExtensionFrontend(sender);
 
 	if (!isFromExtensionFrontend) {
 		await recoverApiCredentials();

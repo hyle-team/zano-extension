@@ -2,6 +2,7 @@
 import Big from 'big.js';
 import Decimal from 'decimal.js';
 import sha256 from 'sha256';
+import { Sender } from '../../types';
 
 interface BackgroundResponse {
 	password: string;
@@ -89,5 +90,30 @@ export function normalizeOrigin(origin: string) {
 		return new URL(origin).origin;
 	} catch {
 		return origin;
+	}
+}
+
+// A message is from the extension's own UI only when its sender URL parses to the
+// extension origin (chrome-extension://<id>). Content scripts share the extension id
+// but carry the web page's origin, so substring/id checks are not a trust boundary.
+export function isExtensionFrontend(sender: Sender): boolean {
+	if (!sender.url) return false;
+	try {
+		return new URL(sender.url).origin === new URL(chrome.runtime.getURL('/')).origin;
+	} catch {
+		return false;
+	}
+}
+
+// Only HTTPS, or HTTP on an explicit loopback host, is treated as a secure origin.
+// A prefix check like startsWith('http://localhost') wrongly admits http://localhost.evil.com.
+export function isSecureOrigin(origin: string): boolean {
+	try {
+		const { protocol, hostname } = new URL(origin);
+		const isLoopback =
+			hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+		return protocol === 'https:' || (protocol === 'http:' && isLoopback);
+	} catch {
+		return false;
 	}
 }
