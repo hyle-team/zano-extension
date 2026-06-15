@@ -2,7 +2,6 @@
 import Big from 'big.js';
 import Decimal from 'decimal.js';
 import sha256 from 'sha256';
-import { Sender } from '../../types';
 
 interface BackgroundResponse {
 	password: string;
@@ -96,7 +95,7 @@ export function normalizeOrigin(origin: string) {
 // A message is from the extension's own UI only when its sender URL parses to the
 // extension origin (chrome-extension://<id>). Content scripts share the extension id
 // but carry the web page's origin, so substring/id checks are not a trust boundary.
-export function isExtensionFrontend(sender: Sender): boolean {
+export function isExtensionFrontend(sender: chrome.runtime.MessageSender): boolean {
 	if (!sender.url) return false;
 	try {
 		return new URL(sender.url).origin === new URL(chrome.runtime.getURL('/')).origin;

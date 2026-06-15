@@ -1,6 +1,6 @@
 import { getWalletData } from '../../background/wallet';
 import { METHOD_EXTRA_PERMISSIONS, PUBLIC_METHODS } from '../../constants';
-import { PermissionType, RequestType, Sender, SendResponse } from '../../types';
+import { PermissionType, RequestType, SendResponse } from '../../types';
 import { isExtensionFrontend, normalizeOrigin } from './utils';
 import { RequestResponse } from '../../types';
 
@@ -17,7 +17,7 @@ export function hasPermission(userPerms: PermissionType[], required: PermissionT
 
 export async function permissionMiddleware(
 	request: RequestType,
-	sender: Sender,
+	sender: chrome.runtime.MessageSender,
 	sendResponse: SendResponse,
 	requestAccess: (requiredPermissions: PermissionType[]) => Promise<RequestResponse>,
 ): Promise<boolean> {

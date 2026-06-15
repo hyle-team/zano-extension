@@ -314,15 +314,6 @@ export interface GetWalletDataRes {
 	assets?: WalletAsset[];
 }
 
-export interface Sender {
-	id: string;
-	name?: string;
-	email?: string;
-	phoneNumber?: string;
-	address?: string;
-	[key: string]: string | undefined;
-}
-
 export interface SendResponse {
 	(_response: unknown): void;
 }

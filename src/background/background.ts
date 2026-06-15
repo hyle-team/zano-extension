@@ -8,7 +8,6 @@ import {
 	RequestType,
 	TransferDataType,
 	GetWalletDataRes,
-	Sender,
 	SendResponse,
 } from '../types/index';
 import {
@@ -267,7 +266,7 @@ function openWindow(): Promise<chrome.windows.Window> {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	(async () => {
 		try {
-			await processRequest(request, sender as Sender, sendResponse);
+			await processRequest(request, sender, sendResponse);
 		} catch (error) {
 			console.error('Unhandled error in processRequest:', error);
 			sendResponse({ error: 'UNHANDLED_ERROR' });
@@ -282,7 +281,7 @@ const accessReqFinalizers: Record<string, (data: RequestResponse) => void> = {};
 
 async function requestAccess(
 	request: { permissions?: { type: PermissionType }[] },
-	sender: Sender,
+	sender: chrome.runtime.MessageSender,
 ): Promise<RequestResponse> {
 	if (!sender.origin && !sender.url) {
 		return { error: 'Unknown origin' };
@@ -352,7 +351,11 @@ async function requestAccess(
 	});
 }
 
-async function processRequest(request: RequestType, sender: Sender, sendResponse: SendResponse) {
+async function processRequest(
+	request: RequestType,
+	sender: chrome.runtime.MessageSender,
+	sendResponse: SendResponse,
+) {
 	const isFromExtensionFrontend = isExtensionFrontend(sender);
 
 	if (!isFromExtensionFrontend) {
