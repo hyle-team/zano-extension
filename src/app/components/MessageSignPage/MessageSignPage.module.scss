@@ -29,14 +29,18 @@
 		flex-direction: column;
 		gap: 10px;
 
-		.messageTitle {
+		.messageBlockTitle {
 			font-size: 14px;
 			opacity: 0.7;
+		}
+
+		.messageBlockText {
+			word-break: break-word;
 		}
 	}
 
 	.buttonsContainer {
-		margin-top: 80px;
+		margin-top: 40px;
 		width: 100%;
 		display: flex;
 		gap: 10px;
