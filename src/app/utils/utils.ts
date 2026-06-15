@@ -95,10 +95,13 @@ export function normalizeOrigin(origin: string) {
 // A message is from the extension's own UI only when its sender URL parses to the
 // extension origin (chrome-extension://<id>). Content scripts share the extension id
 // but carry the web page's origin, so substring/id checks are not a trust boundary.
+
+const EXTENSION_ORIGIN = new URL(chrome.runtime.getURL('/')).origin;
+
 export function isExtensionFrontend(sender: chrome.runtime.MessageSender): boolean {
-	if (!sender.url) return false;
+	if (!sender.url || sender.id !== chrome.runtime.id) return false;
 	try {
-		return new URL(sender.url).origin === new URL(chrome.runtime.getURL('/')).origin;
+		return new URL(sender.url).origin === EXTENSION_ORIGIN;
 	} catch {
 		return false;
 	}
