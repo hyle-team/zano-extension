@@ -1,0 +1,37 @@
+{
+  "scan": { "roots": ["src"], "extensions": [".ts", ".tsx"] },
+  "forbid": [
+    {
+      "label": "Extension-UI check must compare origins, not substring-match a URL",
+      "pattern": "\\.includes\\(\\s*chrome\\.runtime\\.getURL",
+      "advice": "Use isExtensionFrontend(): a web page can put the extension id in its own URL, so substring matching is forgeable."
+    },
+    {
+      "label": "Do not substring-match trust fields on the message sender",
+      "pattern": "sender\\.(url|origin)\\.includes\\(",
+      "advice": "Compare parsed origins (isExtensionFrontend), not substrings of sender.url/origin."
+    },
+    {
+      "label": "Localhost gate must be an exact loopback host check, not a prefix",
+      "pattern": "\\.startsWith\\([^)]*http://localhost",
+      "advice": "Use isSecureOrigin(): startsWith('http://localhost') also admits http://localhost.evil.com."
+    }
+  ],
+  "require": [
+    {
+      "label": "Frontend trust gate present in permission middleware",
+      "file": "src/app/utils/permission.ts",
+      "pattern": "isExtensionFrontend"
+    },
+    {
+      "label": "Frontend trust gate present in background worker",
+      "file": "src/background/background.ts",
+      "pattern": "isExtensionFrontend"
+    },
+    {
+      "label": "SELF_ONLY_REQUESTS gate present in background worker",
+      "file": "src/background/background.ts",
+      "pattern": "SELF_ONLY_REQUESTS"
+    }
+  ]
+}

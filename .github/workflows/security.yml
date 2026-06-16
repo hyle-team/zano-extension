@@ -18,8 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Security pattern guard
-        run: bash scripts/security-guard.sh
+        run: node scripts/security-guard.mjs
 
   # Detects whether an Anthropic key is configured, so the AI job can self-skip
   # when it isn't (e.g. before the secret is added, or on forked PRs where
