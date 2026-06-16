@@ -57,10 +57,14 @@ export default function MessageSignPage() {
 			</p>
 			<p className={styles.subtext}>You sign:</p>
 			<div className={styles.messageBlock}>
-				<p className={styles.messageBlockTitle}>Message:</p>
-				<p className={styles.messageBlockText}>{signRequest?.message}</p>
-				<p className={styles.messageBlockTitle}>Origin:</p>
-				<p className={styles.messageBlockText}>{signRequest?.origin}</p>
+				<div className={styles.messageBlockItem}>
+					<p className={styles.messageBlockTitle}>Message:</p>
+					<p className={styles.messageBlockText}>{signRequest?.message}</p>
+				</div>
+				<div className={styles.messageBlockItem}>
+					<p className={styles.messageBlockTitle}>Requested by:</p>
+					<p className={styles.messageBlockText}>{signRequest?.origin}</p>
+				</div>
 			</div>
 			<div className={styles.buttonsContainer}>
 				<Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>

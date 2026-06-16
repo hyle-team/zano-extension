@@ -1,5 +1,7 @@
 .signContainer {
 	padding-top: 70px;
+	padding-bottom: 15px;
+
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -27,7 +29,13 @@
 		padding: 20px 0;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 15px;
+
+		.messageBlockItem {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
 
 		.messageBlockTitle {
 			font-size: 14px;
@@ -35,7 +43,7 @@
 		}
 
 		.messageBlockText {
-			word-break: break-word;
+			word-break: break-all;
 		}
 	}
 
