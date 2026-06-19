@@ -1,4 +1,7 @@
 import JSONbig from 'json-bigint';
+// @ts-expect-error - Disabling TS error while importing /shared submodule
+// due to global tsconfig "moduleResolution" prop is set to "node"
+import { validateSecureMessageForSigning } from 'zano_web3/shared';
 import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
@@ -243,6 +246,8 @@ const signReqs: {
 	windowId: number;
 	message: string;
 	host: string;
+	secure: boolean;
+	uri: string;
 }[] = [];
 
 chrome.storage.local.get('pendingTx', (result) => {
@@ -933,12 +938,32 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 		}
 
 		case 'REQUEST_MESSAGE_SIGN': {
-			openWindow().then((requestWindow) => {
-				const urlStr = sender.url ?? '';
+			const urlStr = sender.url ?? '';
 
-				const url = new URL(urlStr);
-				const { host } = url;
+			const url = new URL(urlStr);
+			const { host } = url;
 
+			const walletData = await getWalletData();
+
+			const { isSecureMessage, isValidSecureMessage } = validateSecureMessageForSigning({
+				message: String(request.message),
+				domain: host,
+				address: walletData.address,
+				uri: urlStr,
+			});
+
+			const canGoAheadWithSigning =
+				!isSecureMessage || (isSecureMessage && isValidSecureMessage);
+
+			const isInSecureMode = isSecureMessage && isValidSecureMessage;
+
+			if (!canGoAheadWithSigning) {
+				return sendResponse({
+					error: 'The message failed security validation and cannot be signed',
+				});
+			}
+
+			openWindow().then(async (requestWindow) => {
 				const signReqId = crypto.randomUUID();
 
 				signReqFinalizers[signReqId] = (result) => {
@@ -952,6 +977,8 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 					windowId: Number(requestWindow.id),
 					message: String(request.message),
 					host,
+					secure: isInSecureMode,
+					uri: urlStr,
 				});
 
 				if (typeof request.timeout === 'number') {

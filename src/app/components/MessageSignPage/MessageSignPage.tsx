@@ -55,6 +55,12 @@ export default function MessageSignPage() {
 				Sign this message only if you fully understand its contents and trust the requesting
 				site.
 			</p>
+			{!signRequest?.secure && (
+				<p className={styles.text}>
+					<b>ATTENTION!</b>: Double check the domain of the site and make sure it is
+					correct, avoid phishing attacks.
+				</p>
+			)}
 			<p className={styles.subtext}>You sign:</p>
 			<div className={styles.messageBlock}>
 				<div className={styles.messageBlockItem}>
