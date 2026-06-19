@@ -242,7 +242,7 @@ const signReqs: {
 	id: string;
 	windowId: number;
 	message: string;
-	origin: string;
+	host: string;
 }[] = [];
 
 chrome.storage.local.get('pendingTx', (result) => {
@@ -934,7 +934,10 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 		case 'REQUEST_MESSAGE_SIGN': {
 			openWindow().then((requestWindow) => {
-				const origin = normalizeOrigin(sender.origin ?? new URL(sender.url!).origin);
+				const urlStr = sender.url ?? '';
+
+				const url = new URL(urlStr);
+				const { host } = url;
 
 				const signReqId = crypto.randomUUID();
 
@@ -948,7 +951,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 					id: signReqId,
 					windowId: Number(requestWindow.id),
 					message: String(request.message),
-					origin,
+					host,
 				});
 
 				if (typeof request.timeout === 'number') {

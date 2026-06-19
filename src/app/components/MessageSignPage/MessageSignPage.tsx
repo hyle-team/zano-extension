@@ -63,7 +63,7 @@ export default function MessageSignPage() {
 				</div>
 				<div className={styles.messageBlockItem}>
 					<p className={styles.messageBlockTitle}>Requested by:</p>
-					<p className={styles.messageBlockText}>{signRequest?.origin}</p>
+					<p className={styles.messageBlockText}>{signRequest?.host}</p>
 				</div>
 			</div>
 			<div className={styles.buttonsContainer}>
