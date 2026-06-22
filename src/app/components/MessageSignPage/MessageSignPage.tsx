@@ -52,20 +52,24 @@ export default function MessageSignPage() {
 		<div className={styles.signContainer}>
 			<h3 className={styles.title}>Sign Request</h3>
 			<p className={styles.text}>
-				Sign this message only if you fully understand its contents and trust the requesting
-				site.
+				<b>ATTENTION!</b>: Sign this message only if you fully understand its contents and
+				trust the requesting site. Check the domain and make sure it is correct, avoid
+				phishing attacks.
 			</p>
-			{!signRequest?.secure && (
-				<p className={styles.text}>
-					<b>ATTENTION!</b>: Double check the domain of the site and make sure it is
-					correct, avoid phishing attacks.
-				</p>
-			)}
+
 			<p className={styles.subtext}>You sign:</p>
 			<div className={styles.messageBlock}>
 				<div className={styles.messageBlockItem}>
 					<p className={styles.messageBlockTitle}>Message:</p>
-					<p className={styles.messageBlockText}>{signRequest?.message}</p>
+					<p
+						className={
+							signRequest?.secure
+								? styles.messageBlockTextSecure
+								: styles.messageBlockText
+						}
+					>
+						{signRequest?.message}
+					</p>
 				</div>
 				<div className={styles.messageBlockItem}>
 					<p className={styles.messageBlockTitle}>Requested by:</p>
