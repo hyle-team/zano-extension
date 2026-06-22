@@ -1,7 +1,7 @@
 import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
-import { validateSecureMessageForSigning } from 'zano_web3/shared';
+import { parseSecureMessageForSigning } from 'zano_web3/shared';
 import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
@@ -945,21 +945,37 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 
 			const walletData = await getWalletData();
 
-			const { isSecureMessage, isValidSecureMessage } = validateSecureMessageForSigning({
+			const parsedMessageResult = parseSecureMessageForSigning({
 				message: String(request.message),
-				domain: host,
-				address: walletData.address,
-				uri: urlStr,
 			});
+			const parsingData = parsedMessageResult.success
+				? parsedMessageResult.parsingResult
+				: null;
 
 			const canGoAheadWithSigning =
-				!isSecureMessage || (isSecureMessage && isValidSecureMessage);
+				parsedMessageResult.success &&
+				parsingData !== null &&
+				((parsingData.isSecureMessage && parsingData.isValidSecureMessage) ||
+					!parsingData.isSecureMessage);
 
-			const isInSecureMode = isSecureMessage && isValidSecureMessage;
+			const isInSecureMode = parsingData.isSecureMessage && parsingData.isValidSecureMessage;
 
 			if (!canGoAheadWithSigning) {
 				return sendResponse({
 					error: 'The message failed security validation and cannot be signed',
+				});
+			}
+
+			const messagePayload = parsingData.values;
+
+			const isPayloadContentValid =
+				messagePayload.domain === host &&
+				messagePayload.address === walletData.address &&
+				messagePayload.uri === urlStr;
+
+			if (!isPayloadContentValid) {
+				return sendResponse({
+					error: 'The message payload content is invalid and cannot be signed',
 				});
 			}
 
