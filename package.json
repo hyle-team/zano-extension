@@ -28,7 +28,6 @@
 		"precommit": "lint-staged",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
 		"format": "prettier --write .",
-		"security:guard": "curl -fsSL https://raw.githubusercontent.com/PRavaga/ci-security/v1/scripts/security-guard.mjs | node --input-type=module",
 		"prepare": "husky"
 	},
 	"lint-staged": {

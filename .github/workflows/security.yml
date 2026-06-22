@@ -12,5 +12,6 @@ permissions:
 
 jobs:
   security:
-    uses: PRavaga/ci-security/.github/workflows/security.yml@v1
-    secrets: inherit
+    uses: PRavaga/ci-security/.github/workflows/security.yml@v1.0.0
+    secrets:
+      CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
