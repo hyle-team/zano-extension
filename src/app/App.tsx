@@ -47,6 +47,7 @@ import {
 import { useFullscreenMac } from './hooks/useFullscreenMac';
 import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 import RequestAccessPage from './components/RequestAccessPage';
+import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
@@ -64,11 +65,21 @@ function App() {
 			const password = await getSessionPassword();
 			setLoggedIn(!!password);
 			if (password) {
-				const connectData = ConnectKeyUtils.getConnectData(password);
+				const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+				if (!getConnectDataResult.success) {
+					console.error(
+						'Failed to get connect data. Error code:',
+						getConnectDataResult.error,
+					);
+					return;
+				}
+
+				const { connectData } = getConnectDataResult;
 
 				setConnectData(dispatch as dispatchType, {
-					token: String(connectData?.token),
-					port: String(connectData?.port),
+					token: String(connectData.token),
+					port: String(connectData.port),
 				});
 			}
 		}
@@ -164,7 +175,8 @@ function App() {
 	}, [dispatch]);
 
 	const appConnected = !!(
-		state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
+		(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()) &&
+		passwordExists()
 	);
 
 	useEffect(() => {
@@ -477,7 +489,6 @@ function App() {
 	}, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
 
 	useEffect(() => {
-		console.log('connectCredentials', state.connectCredentials);
 		if (state.connectCredentials.token) {
 			fetchBackground({
 				method: 'SET_API_CREDENTIALS',
@@ -489,6 +500,7 @@ function App() {
 		}
 	}, [state.connectCredentials]);
 
+	useInitialClearDeprecatedLocalData();
 	useFullscreenMac();
 
 	function PasswordPages() {
@@ -496,9 +508,17 @@ function App() {
 			<PasswordPage
 				incorrectPassword={incorrectPassword}
 				setIncorrectPassword={setIncorrectPassword}
-				onConfirm={(password) => {
-					console.log(password, comparePasswords(password));
-					if (comparePasswords(password)) {
+				onConfirm={async (password) => {
+					const compareResult = await comparePasswords(password);
+
+					if (!compareResult.success) {
+						console.error('Error comparing passwords:', compareResult.error);
+						return;
+					}
+
+					const correctPassword = compareResult.doesPasswordMatch;
+
+					if (correctPassword) {
 						updateLoading(dispatch as dispatchType, true);
 
 						setTimeout(() => {
@@ -507,9 +527,19 @@ function App() {
 
 						setLoggedIn(true);
 						setSessionPassword(password);
-						const connectData = ConnectKeyUtils.getConnectData(password);
-						console.log('connectData', connectData);
-						if (connectData?.token) {
+						const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+						if (!getConnectDataResult.success) {
+							console.error(
+								'Failed to get connect data. Error code:',
+								getConnectDataResult.error,
+							);
+							return;
+						}
+
+						const { connectData } = getConnectDataResult;
+
+						if (connectData.token) {
 							setConnectData(dispatch as dispatchType, {
 								token: connectData.token,
 								port: connectData.port,
@@ -549,18 +579,16 @@ function App() {
 
 					return (
 						<ConnectPage
-							incorrectPassword={incorrectPassword}
-							setIncorrectPassword={setIncorrectPassword}
 							passwordExists={passwordExists()}
 							setConnectOpened={setConnectOpened}
 							onConfirm={async (inputPassword, connectKey, walletPort) => {
 								const password = inputPassword || (await getSessionPassword());
 								if (!password) return;
 
-								setPassword(password);
+								await setPassword(password);
 
 								if (connectKey) {
-									ConnectKeyUtils.setConnectData(
+									await ConnectKeyUtils.setConnectData(
 										connectKey,
 										String(walletPort),
 										password,

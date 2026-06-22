@@ -22,6 +22,7 @@ interface MyInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	noValidation?: boolean;
 	type?: string;
 	stroke?: string | null;
+	preserveStrokeLabelSpace?: boolean;
 }
 
 const MyInput: React.FC<MyInputProps> = memo((props) => {
@@ -35,6 +36,7 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
 		isError,
 		noValidation,
 		stroke,
+		preserveStrokeLabelSpace,
 		...otherProps
 	} = props;
 
@@ -50,6 +52,9 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
 			if (onInput) onInput(newValue);
 		} else if (onChange) onChange(e);
 	};
+
+	const shouldShowStrokeMessage = !!stroke && !!isDirty;
+	const shouldRenderStrokeSpan = shouldShowStrokeMessage || !!preserveStrokeLabelSpace;
 
 	return (
 		<div className={classNames(cls.myInput, {})}>
@@ -75,7 +80,9 @@ const MyInput: React.FC<MyInputProps> = memo((props) => {
 				/>
 			</div>
 
-			{stroke && isDirty && <span className={cls.stroke}>{stroke}</span>}
+			{shouldRenderStrokeSpan && (
+				<span className={cls.stroke}>{shouldShowStrokeMessage ? stroke : null}</span>
+			)}
 		</div>
 	);
 });

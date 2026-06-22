@@ -25,8 +25,14 @@
 		flex-direction: column;
 		gap: 10px;
 
-		> button {
-			margin-top: 10px;
+		.buttons {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+
+			&.buttonsWithMargin {
+				margin-top: 10px;
+			}
 		}
 
 		.input {
@@ -38,6 +44,12 @@
 				font-size: 16px;
 				color: #ff6767;
 			}
+		}
+
+		.passwords {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
 		}
 	}
 }

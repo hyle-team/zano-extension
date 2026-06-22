@@ -38,4 +38,9 @@ export const METHOD_EXTRA_PERMISSIONS: Record<string, string[]> = {
 	GET_WALLET_BALANCE: ['balance'],
 };
 
-export const PUBLIC_METHODS = ['REQUEST_ACCESS', 'GET_PERMISSIONS'];
+export const PUBLIC_METHODS = ['REQUEST_ACCESS'];
+
+export const PASSWORD_HASH_SALT_STORAGE_KEY = 'salt2';
+export const PASSWORD_HASH_STORAGE_KEY = 'hash2';
+
+export const PASSWORD_HASH_STORAGE_KEY_DEPRECATED = 'hash';
