@@ -1,6 +1,6 @@
 /* global chrome */
 import React from 'react';
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Router, goTo } from 'react-chrome-extension-router';
 import Big from 'big.js';
 import AppPlug from './components/AppPlug/AppPlug';
@@ -8,7 +8,6 @@ import Header from './components/Header/Header';
 import TokensTabs from './components/TokensTabs/TokensTabs';
 import AppLoader from './components/UI/AppLoader/AppLoader';
 import Wallet from './components/Wallet/Wallet';
-import ModalConfirmation from './components/ModalConfirmation/ModalConfirmation';
 import {
 	comparePasswords,
 	fetchBackground,
@@ -24,8 +23,6 @@ import {
 	updateWalletData,
 	updatePriceData,
 	updateLoading,
-	updateConfirmationModal,
-	updateTransactionStatus,
 	setConnectData,
 	setWhiteList,
 } from './store/actions';
@@ -44,7 +41,6 @@ import {
 	AcceptSwapReq,
 	AssetWhitelistReq,
 	dispatchType,
-	BurnAssetRequestType,
 	SwapRequest,
 	transferType,
 } from '../types';
@@ -54,7 +50,6 @@ import RequestAccessPage from './components/RequestAccessPage';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
-	const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
 	const [accessOpened, setAccessOpened] = useState(false);
 
 	const [incorrectPassword, setIncorrectPassword] = useState(false);
@@ -79,52 +74,6 @@ function App() {
 		}
 		loadLogin();
 	}, []);
-
-	const executeTransfer = useCallback(async () => {
-		try {
-			const response = await fetchBackground({
-				method: 'EXECUTE_BRIDGING_TRANSFER',
-			});
-
-			if (response.data.error) {
-				return { sent: false, status: response.data.error };
-			}
-			return { sent: true, status: response.data.result };
-		} catch (error) {
-			return { sent: false, status: error };
-		}
-	}, []);
-
-	const closeModal = () => {
-		setConfirmationModalOpen(false);
-		updateConfirmationModal(dispatch as dispatchType, null);
-		chrome.storage?.local?.remove?.(['pendingTx']);
-		chrome.action.setBadgeText({ text: '' });
-	};
-
-	const handleConfirm = async () => {
-		try {
-			const response = await executeTransfer();
-			if (response.sent) {
-				closeModal();
-			} else {
-				closeModal();
-				console.log(response.status);
-				updateTransactionStatus(dispatch as dispatchType, {
-					visible: true,
-					type: 'error',
-					code: response.status.code || 0,
-					message: response.status.message || 'Insufficient balance',
-				});
-			}
-		} catch (error) {
-			console.log('Error during transfer confirmation:', error);
-		}
-	};
-
-	const handleCancel = () => {
-		closeModal();
-	};
 
 	useEffect(() => {
 		const checkConnection = async () => {
@@ -193,69 +142,6 @@ function App() {
 		getZanoPrice().then((priceData) => {
 			console.log('price data', priceData);
 			updatePriceData(dispatch as dispatchType, priceData);
-		});
-	}, [dispatch]);
-
-	useEffect(() => {
-		const listener = (
-			request: BurnAssetRequestType,
-			sender: chrome.runtime.MessageSender,
-			sendResponse: (response: { status: string }) => void,
-		) => {
-			if (
-				!(
-					'assetId' in request &&
-					'amount' in request &&
-					'destinationAddress' in request &&
-					'destinationChainId' in request
-				)
-			) {
-				console.error('Invalid BRIDGING_TRANSFER request', request);
-				return;
-			}
-
-			if (request.method === 'BRIDGING_TRANSFER') {
-				updateConfirmationModal(dispatch as dispatchType, {
-					method: 'SEND_TRANSFER',
-					params: [
-						request.assetId,
-						request.amount,
-						request.destinationAddress,
-						request.destinationChainId,
-					],
-				});
-				chrome.storage?.local?.set?.({ pendingTx: request });
-				setConfirmationModalOpen(true);
-				sendResponse({ status: 'confirmation_pending' });
-			}
-			return true;
-		};
-
-		if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
-			chrome.runtime.onMessage.addListener(listener);
-		}
-
-		return () => {
-			if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
-				chrome.runtime.onMessage.removeListener(listener);
-			}
-		};
-	}, [dispatch]);
-
-	useEffect(() => {
-		chrome.storage?.local?.get?.(['pendingTx'], (result) => {
-			if (result.pendingTx) {
-				updateConfirmationModal(dispatch as dispatchType, {
-					method: 'SEND_TRANSFER',
-					params: [
-						result.pendingTx.assetId,
-						result.pendingTx.amount,
-						result.pendingTx.destinationAddress,
-						result.pendingTx.destinationChainId,
-					],
-				});
-				setConfirmationModalOpen(true);
-			}
 		});
 	}, [dispatch]);
 
@@ -640,11 +526,6 @@ function App() {
 	return (
 		<div className="App">
 			<>
-				<ModalConfirmation
-					isOpen={confirmationModalOpen}
-					onClose={handleCancel}
-					onConfirm={handleConfirm}
-				/>
 				{loggedIn && state.isConnected && <Header />}
 				<AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
