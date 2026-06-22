@@ -16,7 +16,6 @@ import {
 	getWalletData,
 	getWallets,
 	transfer,
-	burnBridge,
 	ionicSwap,
 	ionicSwapAccept,
 	signMessage,
@@ -188,15 +187,6 @@ const defaultCredentials: Credentials = {
 
 export let apiCredentials: Credentials = { ...defaultCredentials };
 
-interface pendingTxTypes {
-	assetId: string;
-	amount: string;
-	destinationAddress: string | undefined;
-	destinationChainId: string | undefined;
-}
-
-let pendingTx: pendingTxTypes | null = null;
-
 interface UserData {
 	password?: string;
 	apiCredentials?: Credentials;
@@ -243,12 +233,6 @@ const signReqs: {
 	windowId: number;
 	message: string;
 }[] = [];
-
-chrome.storage.local.get('pendingTx', (result) => {
-	if (result.pendingTx) {
-		pendingTx = result.pendingTx;
-	}
-});
 
 function openWindow(): Promise<chrome.windows.Window> {
 	return chrome.windows.create({
@@ -809,48 +793,6 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			);
 			break;
 		}
-
-		case 'BRIDGING_TRANSFER':
-			pendingTx = {
-				assetId: request.assetId,
-				amount: request.amount,
-				destinationAddress: request.destinationAddress,
-				destinationChainId: request.destinationChainId,
-			};
-			// eslint-disable-next-line no-undef
-			chrome.storage.local.set({ pendingTx });
-			sendResponse({ status: 'confirmation_pending' });
-			// eslint-disable-next-line no-undef
-			chrome.action.setBadgeText({ text: '1' });
-			break;
-
-		case 'EXECUTE_BRIDGING_TRANSFER':
-			if (pendingTx) {
-				console.log('Executing bridging transfer', pendingTx);
-				burnBridge(
-					pendingTx.assetId,
-					pendingTx.amount,
-					String(pendingTx.destinationAddress),
-					pendingTx.destinationChainId,
-				)
-					.then((data) => {
-						sendResponse({ data });
-						pendingTx = null;
-						// eslint-disable-next-line no-undef
-						chrome.storage.local.remove('pendingTx');
-						// eslint-disable-next-line no-undef
-						chrome.action.setBadgeText({ text: '' });
-					})
-					.catch((error) => {
-						console.error('Error bridging transfer:', error);
-						sendResponse({
-							error: 'An error occurred while bridging transfer',
-						});
-					});
-			} else {
-				sendResponse({ error: 'No pending transaction' });
-			}
-			break;
 
 		case 'SET_PASSWORD': {
 			updateUserData({ password: request.password }).then(() => {
