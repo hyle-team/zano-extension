@@ -938,7 +938,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 		}
 
 		case 'REQUEST_MESSAGE_SIGN': {
-			const urlStr = sender.url ?? '';
+			const urlStr = new URL(sender.url ?? '').toString();
 
 			const url = new URL(urlStr);
 			const { host } = url;
@@ -948,6 +948,7 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 			const parsedMessageResult = parseSecureMessageForSigning({
 				message: String(request.message),
 			});
+
 			const parsingData = parsedMessageResult.success
 				? parsedMessageResult.parsingResult
 				: null;
@@ -966,17 +967,21 @@ async function processRequest(request: RequestType, sender: Sender, sendResponse
 				});
 			}
 
-			const messagePayload = parsingData.values;
+			if (isInSecureMode) {
+				const messagePayload = parsingData.values;
 
-			const isPayloadContentValid =
-				messagePayload.domain === host &&
-				messagePayload.address === walletData.address &&
-				messagePayload.uri === urlStr;
+				const normalizedMessageURI = new URL(messagePayload.uri).toString();
 
-			if (!isPayloadContentValid) {
-				return sendResponse({
-					error: 'The message payload content is invalid and cannot be signed',
-				});
+				const isPayloadContentValid =
+					messagePayload.domain === host &&
+					messagePayload.address === walletData.address &&
+					normalizedMessageURI === urlStr;
+
+				if (!isPayloadContentValid) {
+					return sendResponse({
+						error: 'The message payload content is invalid and cannot be signed',
+					});
+				}
 			}
 
 			openWindow().then(async (requestWindow) => {
