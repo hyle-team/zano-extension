@@ -20,7 +20,7 @@
 		"react-dom": "^18.2.0",
 		"react-id-generator": "^3.0.2",
 		"web-vitals": "^2.1.4",
-		"zano_web3": "^9.2.2"
+		"zano_web3": "^9.8.0-canary.0"
 	},
 	"scripts": {
 		"build": "webpack --mode production",
