@@ -7,8 +7,8 @@ export interface PasswordValidationRule {
 export const PASSWORD_VALIDATION_RULES: PasswordValidationRule[] = [
 	{
 		name: 'minLength',
-		message: 'Must be at least 4 characters long',
-		isSatisfiedBy: (password) => password.length >= 4,
+		message: 'Must be at least 8 characters long',
+		isSatisfiedBy: (password) => password.length >= 8,
 	},
 ];
 
