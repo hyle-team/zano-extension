@@ -864,7 +864,49 @@ async function processRequest(
 					finalize({ error: 'Sign request denied by user' });
 					sendResponse({ data: true });
 				} else {
-					const { message } = signReq;
+					const { message, secure } = signReq;
+
+					if (secure) {
+						const parsedMessageResult = parseSecureMessageForSigning({
+							message,
+						});
+
+						const parsingData = parsedMessageResult.success
+							? parsedMessageResult.parsingResult
+							: null;
+
+						const canGoAheadWithSigning =
+							parsedMessageResult.success &&
+							parsingData !== null &&
+							parsingData.isSecureMessage &&
+							parsingData.isValidSecureMessage;
+
+						if (!canGoAheadWithSigning) {
+							finalize({
+								error: 'The message failed security validation and cannot be signed',
+							});
+							sendResponse({
+								error: 'The message failed security validation and cannot be signed',
+							});
+							return;
+						}
+
+						const messagePayload = parsingData.values;
+
+						const walletData = await getWalletData();
+
+						const isPayloadContentValid = messagePayload.address === walletData.address;
+
+						if (!isPayloadContentValid) {
+							finalize({
+								error: 'The message payload content is invalid and cannot be signed',
+							});
+							sendResponse({
+								error: 'The message payload content is invalid and cannot be signed',
+							});
+							return;
+						}
+					}
 
 					signMessage(message)
 						.then((data) => {
@@ -891,9 +933,8 @@ async function processRequest(
 		}
 
 		case 'REQUEST_MESSAGE_SIGN': {
-			const urlStr = new URL(sender.url ?? '').toString();
-
-			const url = new URL(urlStr);
+			const url = new URL(sender.url ?? '');
+			const urlStr = url.toString();
 			const { host } = url;
 
 			const walletData = await getWalletData();
@@ -912,13 +953,13 @@ async function processRequest(
 				((parsingData.isSecureMessage && parsingData.isValidSecureMessage) ||
 					!parsingData.isSecureMessage);
 
-			const isInSecureMode = parsingData.isSecureMessage && parsingData.isValidSecureMessage;
-
 			if (!canGoAheadWithSigning) {
 				return sendResponse({
 					error: 'The message failed security validation and cannot be signed',
 				});
 			}
+
+			const isInSecureMode = parsingData.isSecureMessage && parsingData.isValidSecureMessage;
 
 			if (isInSecureMode) {
 				const messagePayload = parsingData.values;
