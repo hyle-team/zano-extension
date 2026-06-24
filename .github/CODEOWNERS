@@ -1,0 +1,4 @@
+# Security CI requires owner review before it can be changed.
+/.github/workflows/ @PRavaga
+/security-guard.config.json @PRavaga
+/scripts/security-guard.mjs @PRavaga
