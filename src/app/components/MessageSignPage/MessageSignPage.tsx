@@ -57,23 +57,22 @@ export default function MessageSignPage() {
 				phishing attacks.
 			</p>
 
-			<p className={styles.subtext}>You sign:</p>
 			<div className={styles.messageBlock}>
 				<div className={styles.messageBlockItem}>
 					<p className={styles.messageBlockTitle}>Message:</p>
-					<p
-						className={
-							signRequest?.secure
-								? styles.messageBlockTextSecure
-								: styles.messageBlockText
-						}
-					>
-						{signRequest?.message}
-					</p>
+					<div className={styles.messageBox}>
+						<p
+							className={
+								signRequest?.secure ? styles.messageTextSecure : styles.messageText
+							}
+						>
+							{signRequest?.message}
+						</p>
+					</div>
 				</div>
 				<div className={styles.messageBlockItem}>
 					<p className={styles.messageBlockTitle}>Requested by:</p>
-					<p className={styles.messageBlockText}>{signRequest?.host}</p>
+					<p className={styles.messageText}>{signRequest?.host}</p>
 				</div>
 			</div>
 			<div className={styles.buttonsContainer}>

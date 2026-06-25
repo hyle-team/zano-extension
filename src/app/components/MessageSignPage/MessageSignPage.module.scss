@@ -1,5 +1,7 @@
+@import 'src/app/styles/variables';
+
 .signContainer {
-	padding-top: 70px;
+	padding-top: 40px;
 	padding-bottom: 15px;
 
 	display: flex;
@@ -13,12 +15,6 @@
 
 	.text {
 		text-align: center;
-	}
-
-	.subtext {
-		margin-top: 20px;
-		opacity: 0.7;
-		font-size: 14px;
 	}
 
 	.messageBlock {
@@ -42,18 +38,49 @@
 			opacity: 0.7;
 		}
 
-		.messageBlockTextSecure {
+		.messageBox {
+			width: 100%;
+			height: 120px;
+			overflow-y: auto;
+			border: 1px solid #273666;
+			border-radius: 8px;
+			padding: 12px 14px;
+
+			scrollbar-width: thin;
+			scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+
+			&::-webkit-scrollbar {
+				display: block;
+				width: 5px;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background-color: rgba(255, 255, 255, 0.3);
+				border-radius: 5px;
+			}
+		}
+
+		.messageText,
+		.messageTextSecure {
+			font-family: $fontFamilyMono, monospace;
+			font-size: 14px;
+			line-height: 1.5;
+			letter-spacing: -0.5px;
+			color: #ffffff;
+			overflow-wrap: anywhere;
+		}
+
+		.messageTextSecure {
 			white-space: pre-wrap;
 			word-break: break-word;
 		}
 
-		.messageBlockText {
+		.messageText {
 			word-break: break-all;
 		}
 	}
 
 	.buttonsContainer {
-		margin-top: 40px;
 		width: 100%;
 		display: flex;
 		gap: 10px;
