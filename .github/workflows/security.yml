@@ -12,6 +12,6 @@ permissions:
 
 jobs:
   security:
-    uses: PRavaga/ci-security/.github/workflows/security.yml@v1.0.1
+    uses: PRavaga/ci-security/.github/workflows/security.yml@v1.3.0
     secrets:
       CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
