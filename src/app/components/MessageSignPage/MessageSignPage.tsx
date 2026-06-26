@@ -75,13 +75,15 @@ export default function MessageSignPage() {
 					<p className={styles.messageText}>{signRequest?.host}</p>
 				</div>
 			</div>
-			<div className={styles.buttonsContainer}>
-				<Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>
-					Deny
-				</Button>
-				<Button disabled={accepting} onClick={acceptClick}>
-					Accept
-				</Button>
+			<div className={styles.bottom}>
+				<div className={styles.buttonsContainer}>
+					<Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>
+						Deny
+					</Button>
+					<Button disabled={accepting} onClick={acceptClick}>
+						Accept
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

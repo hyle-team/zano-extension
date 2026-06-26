@@ -2,7 +2,7 @@
 
 .signContainer {
 	padding-top: 40px;
-	padding-bottom: 15px;
+	padding-bottom: 90px;
 
 	display: flex;
 	flex-direction: column;
@@ -39,25 +39,9 @@
 		}
 
 		.messageBox {
-			width: 100%;
-			height: 120px;
-			overflow-y: auto;
 			border: 1px solid #273666;
 			border-radius: 8px;
 			padding: 12px 14px;
-
-			scrollbar-width: thin;
-			scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-
-			&::-webkit-scrollbar {
-				display: block;
-				width: 5px;
-			}
-
-			&::-webkit-scrollbar-thumb {
-				background-color: rgba(255, 255, 255, 0.3);
-				border-radius: 5px;
-			}
 		}
 
 		.messageText,
@@ -80,13 +64,27 @@
 		}
 	}
 
-	.buttonsContainer {
+	.bottom {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		z-index: 3;
+		background-color: #0f2055;
+		border-top: 1px solid #273666;
 		width: 100%;
-		display: flex;
-		gap: 10px;
+		padding: 16px;
+		padding-top: 12px;
 
-		> * {
-			flex: 1;
+		.buttonsContainer {
+			max-width: calc(var(--app-width) - 20px);
+			width: 100%;
+			margin-inline: auto;
+			display: flex;
+			gap: 8px;
+
+			> * {
+				flex: 1;
+			}
 		}
 	}
 }
