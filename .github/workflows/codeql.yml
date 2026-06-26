@@ -12,4 +12,4 @@ permissions:
   actions: read
 jobs:
   codeql:
-    uses: PRavaga/ci-security/.github/workflows/codeql.yml@v1.2.0
+    uses: PRavaga/ci-security/.github/workflows/codeql.yml@v1.3.0
