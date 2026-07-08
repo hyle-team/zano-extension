@@ -1,7 +1,14 @@
 /* global chrome */
 import Big from 'big.js';
 import Decimal from 'decimal.js';
-import sha256 from 'sha256';
+import * as NobleHashesScrypt from '@noble/hashes/scrypt.js';
+import * as NobleUtils from '@noble/hashes/utils.js';
+import CryptoJS from 'crypto-js';
+import {
+	PASSWORD_HASH_SALT_STORAGE_KEY,
+	PASSWORD_HASH_STORAGE_KEY,
+	PASSWORD_HASH_STORAGE_KEY_DEPRECATED,
+} from '../../constants';
 
 interface BackgroundResponse {
 	password: string;
@@ -43,16 +50,68 @@ export const addZeros = (amount: string | number, decimal_point = 12): Big => {
 	return fixedAmount;
 };
 
-export const setPassword = (password: string): void => {
-	localStorage.setItem('hash', sha256(password));
+export const scrypt = async ({
+	str,
+	saltBuffer,
+}: {
+	str: string;
+	saltBuffer: Uint8Array;
+}): Promise<Uint8Array> => {
+	const hashBuffer = await NobleHashesScrypt.scryptAsync(str, saltBuffer, {
+		N: 2 ** 14,
+		r: 8,
+		p: 1,
+		dkLen: 32,
+	});
+
+	return hashBuffer;
 };
 
-export const comparePasswords = (password: string): boolean => {
-	const hash = localStorage.getItem('hash');
-	return hash === sha256(password);
+export const clearDeprecatedPasswordStorageData = (): void => {
+	localStorage.removeItem(PASSWORD_HASH_STORAGE_KEY_DEPRECATED);
 };
 
-export const passwordExists = (): boolean => !!localStorage.getItem('hash');
+export const setPassword = async (password: string): Promise<void> => {
+	const salt = CryptoJS.lib.WordArray.random(128).toString(CryptoJS.enc.Hex);
+	const saltBuffer = NobleUtils.hexToBytes(salt);
+
+	const hashBytes = await scrypt({ str: password, saltBuffer });
+	const hash = NobleUtils.bytesToHex(hashBytes);
+
+	localStorage.setItem(PASSWORD_HASH_STORAGE_KEY, hash);
+	localStorage.setItem(PASSWORD_HASH_SALT_STORAGE_KEY, salt);
+};
+
+type ComparePasswordsResult =
+	| {
+			success: true;
+			doesPasswordMatch: boolean;
+	  }
+	| {
+			success: false;
+			error: 'NO_PASSWORD_OR_HASH';
+	  };
+export const comparePasswords = async (password: string): Promise<ComparePasswordsResult> => {
+	const hash = localStorage.getItem(PASSWORD_HASH_STORAGE_KEY);
+	const salt = localStorage.getItem(PASSWORD_HASH_SALT_STORAGE_KEY);
+
+	if (!hash || !salt) {
+		return { success: false, error: 'NO_PASSWORD_OR_HASH' };
+	}
+
+	const saltBuffer = NobleUtils.hexToBytes(salt);
+
+	const newHashBytes = await scrypt({ str: password, saltBuffer });
+	const newHash = NobleUtils.bytesToHex(newHashBytes);
+
+	return { success: true, doesPasswordMatch: newHash === hash };
+};
+
+export const passwordExists = (): boolean =>
+	!!(
+		localStorage.getItem(PASSWORD_HASH_STORAGE_KEY) &&
+		localStorage.getItem(PASSWORD_HASH_SALT_STORAGE_KEY)
+	);
 
 export const getSessionPassword = async (): Promise<string> => {
 	const sessionPass = (await fetchBackground({ method: 'GET_PASSWORD' })) as BackgroundResponse;

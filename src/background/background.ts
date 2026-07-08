@@ -1,4 +1,7 @@
 import JSONbig from 'json-bigint';
+// @ts-expect-error - Disabling TS error while importing /shared submodule
+// due to global tsconfig "moduleResolution" prop is set to "node"
+import { parseSecureMessageForSigning } from 'zano_web3/shared';
 import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
@@ -15,7 +18,6 @@ import {
 	getWalletData,
 	getWallets,
 	transfer,
-	burnBridge,
 	ionicSwap,
 	ionicSwapAccept,
 	signMessage,
@@ -192,15 +194,6 @@ const defaultCredentials: Credentials = {
 
 export let apiCredentials: Credentials = { ...defaultCredentials };
 
-interface pendingTxTypes {
-	assetId: string;
-	amount: string;
-	destinationAddress: string | undefined;
-	destinationChainId: string | undefined;
-}
-
-let pendingTx: pendingTxTypes | null = null;
-
 interface UserData {
 	password?: string;
 	apiCredentials?: Credentials;
@@ -246,13 +239,10 @@ const signReqs: {
 	id: string;
 	windowId: number;
 	message: string;
+	host: string;
+	secure: boolean;
+	uri: string;
 }[] = [];
-
-chrome.storage.local.get('pendingTx', (result) => {
-	if (result.pendingTx) {
-		pendingTx = result.pendingTx;
-	}
-});
 
 function openWindow(): Promise<chrome.windows.Window> {
 	return chrome.windows.create({
@@ -821,48 +811,6 @@ async function processRequest(
 			break;
 		}
 
-		case 'BRIDGING_TRANSFER':
-			pendingTx = {
-				assetId: request.assetId,
-				amount: request.amount,
-				destinationAddress: request.destinationAddress,
-				destinationChainId: request.destinationChainId,
-			};
-			// eslint-disable-next-line no-undef
-			chrome.storage.local.set({ pendingTx });
-			sendResponse({ status: 'confirmation_pending' });
-			// eslint-disable-next-line no-undef
-			chrome.action.setBadgeText({ text: '1' });
-			break;
-
-		case 'EXECUTE_BRIDGING_TRANSFER':
-			if (pendingTx) {
-				console.log('Executing bridging transfer', pendingTx);
-				burnBridge(
-					pendingTx.assetId,
-					pendingTx.amount,
-					String(pendingTx.destinationAddress),
-					pendingTx.destinationChainId,
-				)
-					.then((data) => {
-						sendResponse({ data });
-						pendingTx = null;
-						// eslint-disable-next-line no-undef
-						chrome.storage.local.remove('pendingTx');
-						// eslint-disable-next-line no-undef
-						chrome.action.setBadgeText({ text: '' });
-					})
-					.catch((error) => {
-						console.error('Error bridging transfer:', error);
-						sendResponse({
-							error: 'An error occurred while bridging transfer',
-						});
-					});
-			} else {
-				sendResponse({ error: 'No pending transaction' });
-			}
-			break;
-
 		case 'SET_PASSWORD': {
 			updateUserData({ password: request.password }).then(() => {
 				sendResponse({ success: true });
@@ -916,7 +864,49 @@ async function processRequest(
 					finalize({ error: 'Sign request denied by user' });
 					sendResponse({ data: true });
 				} else {
-					const { message } = signReq;
+					const { message, secure } = signReq;
+
+					if (secure) {
+						const parsedMessageResult = parseSecureMessageForSigning({
+							message,
+						});
+
+						const parsingData = parsedMessageResult.success
+							? parsedMessageResult.parsingResult
+							: null;
+
+						const canGoAheadWithSigning =
+							parsedMessageResult.success &&
+							parsingData !== null &&
+							parsingData.isSecureMessage &&
+							parsingData.isValidSecureMessage;
+
+						if (!canGoAheadWithSigning) {
+							finalize({
+								error: 'The message failed security validation and cannot be signed',
+							});
+							sendResponse({
+								error: 'The message failed security validation and cannot be signed',
+							});
+							return;
+						}
+
+						const messagePayload = parsingData.values;
+
+						const walletData = await getWalletData();
+
+						const isPayloadContentValid = messagePayload.address === walletData.address;
+
+						if (!isPayloadContentValid) {
+							finalize({
+								error: 'The message payload content is invalid and cannot be signed',
+							});
+							sendResponse({
+								error: 'The message payload content is invalid and cannot be signed',
+							});
+							return;
+						}
+					}
 
 					signMessage(message)
 						.then((data) => {
@@ -943,7 +933,52 @@ async function processRequest(
 		}
 
 		case 'REQUEST_MESSAGE_SIGN': {
-			openWindow().then((requestWindow) => {
+			const url = new URL(sender.url ?? '');
+			const urlStr = url.toString();
+			const { host } = url;
+
+			const walletData = await getWalletData();
+
+			const parsedMessageResult = parseSecureMessageForSigning({
+				message: String(request.message),
+			});
+
+			const parsingData = parsedMessageResult.success
+				? parsedMessageResult.parsingResult
+				: null;
+
+			const canGoAheadWithSigning =
+				parsedMessageResult.success &&
+				parsingData !== null &&
+				((parsingData.isSecureMessage && parsingData.isValidSecureMessage) ||
+					!parsingData.isSecureMessage);
+
+			if (!canGoAheadWithSigning) {
+				return sendResponse({
+					error: 'The message failed security validation and cannot be signed',
+				});
+			}
+
+			const isInSecureMode = parsingData.isSecureMessage && parsingData.isValidSecureMessage;
+
+			if (isInSecureMode) {
+				const messagePayload = parsingData.values;
+
+				const normalizedMessageURI = new URL(messagePayload.uri).toString();
+
+				const isPayloadContentValid =
+					messagePayload.domain === host &&
+					messagePayload.address === walletData.address &&
+					normalizedMessageURI === urlStr;
+
+				if (!isPayloadContentValid) {
+					return sendResponse({
+						error: 'The message payload content is invalid and cannot be signed',
+					});
+				}
+			}
+
+			openWindow().then(async (requestWindow) => {
 				const signReqId = crypto.randomUUID();
 
 				signReqFinalizers[signReqId] = (result) => {
@@ -956,6 +991,9 @@ async function processRequest(
 					id: signReqId,
 					windowId: Number(requestWindow.id),
 					message: String(request.message),
+					host,
+					secure: isInSecureMode,
+					uri: urlStr,
 				});
 
 				if (typeof request.timeout === 'number') {

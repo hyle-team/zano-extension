@@ -52,21 +52,38 @@ export default function MessageSignPage() {
 		<div className={styles.signContainer}>
 			<h3 className={styles.title}>Sign Request</h3>
 			<p className={styles.text}>
-				Sign this message only if you fully understand its contents and trust the requesting
-				site.
+				<b>ATTENTION!</b>: Sign this message only if you fully understand its contents and
+				trust the requesting site. Check the domain and make sure it is correct, avoid
+				phishing attacks.
 			</p>
-			<p className={styles.subtext}>You sign:</p>
+
 			<div className={styles.messageBlock}>
-				<p className={styles.messageTitle}>Message:</p>
-				<p>{signRequest?.message}</p>
+				<div className={styles.messageBlockItem}>
+					<p className={styles.messageBlockTitle}>Message:</p>
+					<div className={styles.messageBox}>
+						<p
+							className={
+								signRequest?.secure ? styles.messageTextSecure : styles.messageText
+							}
+						>
+							{signRequest?.message}
+						</p>
+					</div>
+				</div>
+				<div className={styles.messageBlockItem}>
+					<p className={styles.messageBlockTitle}>Requested by:</p>
+					<p className={styles.messageText}>{signRequest?.host}</p>
+				</div>
 			</div>
-			<div className={styles.buttonsContainer}>
-				<Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>
-					Deny
-				</Button>
-				<Button disabled={accepting} onClick={acceptClick}>
-					Accept
-				</Button>
+			<div className={styles.bottom}>
+				<div className={styles.buttonsContainer}>
+					<Button disabled={denying} theme={ButtonThemes.Outline} onClick={denyClick}>
+						Deny
+					</Button>
+					<Button disabled={accepting} onClick={acceptClick}>
+						Accept
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

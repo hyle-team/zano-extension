@@ -1,5 +1,9 @@
+@import 'src/app/styles/variables';
+
 .signContainer {
-	padding-top: 70px;
+	padding-top: 40px;
+	padding-bottom: 90px;
+
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -13,12 +17,6 @@
 		text-align: center;
 	}
 
-	.subtext {
-		margin-top: 20px;
-		opacity: 0.7;
-		font-size: 14px;
-	}
-
 	.messageBlock {
 		width: 100%;
 		border: 1px solid #ffffff62;
@@ -27,22 +25,66 @@
 		padding: 20px 0;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 15px;
 
-		.messageTitle {
+		.messageBlockItem {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
+
+		.messageBlockTitle {
 			font-size: 14px;
 			opacity: 0.7;
 		}
+
+		.messageBox {
+			border: 1px solid #273666;
+			border-radius: 8px;
+			padding: 12px 14px;
+		}
+
+		.messageText,
+		.messageTextSecure {
+			font-family: $fontFamilyMono, monospace;
+			font-size: 14px;
+			line-height: 1.5;
+			letter-spacing: -0.5px;
+			color: #ffffff;
+			overflow-wrap: anywhere;
+		}
+
+		.messageTextSecure {
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.messageText {
+			word-break: break-all;
+		}
 	}
 
-	.buttonsContainer {
-		margin-top: 80px;
+	.bottom {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		z-index: 3;
+		background-color: #0f2055;
+		border-top: 1px solid #273666;
 		width: 100%;
-		display: flex;
-		gap: 10px;
+		padding: 16px;
+		padding-top: 12px;
 
-		> * {
-			flex: 1;
+		.buttonsContainer {
+			max-width: calc(var(--app-width) - 20px);
+			width: 100%;
+			margin-inline: auto;
+			display: flex;
+			gap: 8px;
+
+			> * {
+				flex: 1;
+			}
 		}
 	}
 }

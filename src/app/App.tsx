@@ -1,6 +1,6 @@
 /* global chrome */
 import React from 'react';
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Router, goTo } from 'react-chrome-extension-router';
 import Big from 'big.js';
 import AppPlug from './components/AppPlug/AppPlug';
@@ -8,7 +8,6 @@ import Header from './components/Header/Header';
 import TokensTabs from './components/TokensTabs/TokensTabs';
 import AppLoader from './components/UI/AppLoader/AppLoader';
 import Wallet from './components/Wallet/Wallet';
-import ModalConfirmation from './components/ModalConfirmation/ModalConfirmation';
 import {
 	comparePasswords,
 	fetchBackground,
@@ -24,8 +23,6 @@ import {
 	updateWalletData,
 	updatePriceData,
 	updateLoading,
-	updateConfirmationModal,
-	updateTransactionStatus,
 	setConnectData,
 	setWhiteList,
 } from './store/actions';
@@ -44,17 +41,16 @@ import {
 	AcceptSwapReq,
 	AssetWhitelistReq,
 	dispatchType,
-	BurnAssetRequestType,
 	SwapRequest,
 	transferType,
 } from '../types';
 import { useFullscreenMac } from './hooks/useFullscreenMac';
 import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 import RequestAccessPage from './components/RequestAccessPage';
+import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
 
 function App() {
 	const { state, dispatch } = useContext(Store);
-	const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
 	const [accessOpened, setAccessOpened] = useState(false);
 
 	const [incorrectPassword, setIncorrectPassword] = useState(false);
@@ -69,62 +65,26 @@ function App() {
 			const password = await getSessionPassword();
 			setLoggedIn(!!password);
 			if (password) {
-				const connectData = ConnectKeyUtils.getConnectData(password);
+				const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+				if (!getConnectDataResult.success) {
+					console.error(
+						'Failed to get connect data. Error code:',
+						getConnectDataResult.error,
+					);
+					return;
+				}
+
+				const { connectData } = getConnectDataResult;
 
 				setConnectData(dispatch as dispatchType, {
-					token: String(connectData?.token),
-					port: String(connectData?.port),
+					token: String(connectData.token),
+					port: String(connectData.port),
 				});
 			}
 		}
 		loadLogin();
 	}, []);
-
-	const executeTransfer = useCallback(async () => {
-		try {
-			const response = await fetchBackground({
-				method: 'EXECUTE_BRIDGING_TRANSFER',
-			});
-
-			if (response.data.error) {
-				return { sent: false, status: response.data.error };
-			}
-			return { sent: true, status: response.data.result };
-		} catch (error) {
-			return { sent: false, status: error };
-		}
-	}, []);
-
-	const closeModal = () => {
-		setConfirmationModalOpen(false);
-		updateConfirmationModal(dispatch as dispatchType, null);
-		chrome.storage?.local?.remove?.(['pendingTx']);
-		chrome.action.setBadgeText({ text: '' });
-	};
-
-	const handleConfirm = async () => {
-		try {
-			const response = await executeTransfer();
-			if (response.sent) {
-				closeModal();
-			} else {
-				closeModal();
-				console.log(response.status);
-				updateTransactionStatus(dispatch as dispatchType, {
-					visible: true,
-					type: 'error',
-					code: response.status.code || 0,
-					message: response.status.message || 'Insufficient balance',
-				});
-			}
-		} catch (error) {
-			console.log('Error during transfer confirmation:', error);
-		}
-	};
-
-	const handleCancel = () => {
-		closeModal();
-	};
 
 	useEffect(() => {
 		const checkConnection = async () => {
@@ -197,69 +157,6 @@ function App() {
 	}, [dispatch]);
 
 	useEffect(() => {
-		const listener = (
-			request: BurnAssetRequestType,
-			sender: chrome.runtime.MessageSender,
-			sendResponse: (response: { status: string }) => void,
-		) => {
-			if (
-				!(
-					'assetId' in request &&
-					'amount' in request &&
-					'destinationAddress' in request &&
-					'destinationChainId' in request
-				)
-			) {
-				console.error('Invalid BRIDGING_TRANSFER request', request);
-				return;
-			}
-
-			if (request.method === 'BRIDGING_TRANSFER') {
-				updateConfirmationModal(dispatch as dispatchType, {
-					method: 'SEND_TRANSFER',
-					params: [
-						request.assetId,
-						request.amount,
-						request.destinationAddress,
-						request.destinationChainId,
-					],
-				});
-				chrome.storage?.local?.set?.({ pendingTx: request });
-				setConfirmationModalOpen(true);
-				sendResponse({ status: 'confirmation_pending' });
-			}
-			return true;
-		};
-
-		if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
-			chrome.runtime.onMessage.addListener(listener);
-		}
-
-		return () => {
-			if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
-				chrome.runtime.onMessage.removeListener(listener);
-			}
-		};
-	}, [dispatch]);
-
-	useEffect(() => {
-		chrome.storage?.local?.get?.(['pendingTx'], (result) => {
-			if (result.pendingTx) {
-				updateConfirmationModal(dispatch as dispatchType, {
-					method: 'SEND_TRANSFER',
-					params: [
-						result.pendingTx.assetId,
-						result.pendingTx.amount,
-						result.pendingTx.destinationAddress,
-						result.pendingTx.destinationChainId,
-					],
-				});
-				setConfirmationModalOpen(true);
-			}
-		});
-	}, [dispatch]);
-
-	useEffect(() => {
 		chrome.storage?.local?.get?.(['key'], (result) => {
 			let walletId = 0;
 			if (!result.key) {
@@ -278,7 +175,8 @@ function App() {
 	}, [dispatch]);
 
 	const appConnected = !!(
-		state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()
+		(state.connectCredentials?.token || ConnectKeyUtils.getConnectKeyEncrypted()) &&
+		passwordExists()
 	);
 
 	useEffect(() => {
@@ -591,7 +489,6 @@ function App() {
 	}, [appConnected, connectOpened, loggedIn, state.isConnected, state.wallet?.assets]);
 
 	useEffect(() => {
-		console.log('connectCredentials', state.connectCredentials);
 		if (state.connectCredentials.token) {
 			fetchBackground({
 				method: 'SET_API_CREDENTIALS',
@@ -603,6 +500,7 @@ function App() {
 		}
 	}, [state.connectCredentials]);
 
+	useInitialClearDeprecatedLocalData();
 	useFullscreenMac();
 
 	function PasswordPages() {
@@ -610,9 +508,17 @@ function App() {
 			<PasswordPage
 				incorrectPassword={incorrectPassword}
 				setIncorrectPassword={setIncorrectPassword}
-				onConfirm={(password) => {
-					console.log(password, comparePasswords(password));
-					if (comparePasswords(password)) {
+				onConfirm={async (password) => {
+					const compareResult = await comparePasswords(password);
+
+					if (!compareResult.success) {
+						console.error('Error comparing passwords:', compareResult.error);
+						return;
+					}
+
+					const correctPassword = compareResult.doesPasswordMatch;
+
+					if (correctPassword) {
 						updateLoading(dispatch as dispatchType, true);
 
 						setTimeout(() => {
@@ -621,9 +527,19 @@ function App() {
 
 						setLoggedIn(true);
 						setSessionPassword(password);
-						const connectData = ConnectKeyUtils.getConnectData(password);
-						console.log('connectData', connectData);
-						if (connectData?.token) {
+						const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+						if (!getConnectDataResult.success) {
+							console.error(
+								'Failed to get connect data. Error code:',
+								getConnectDataResult.error,
+							);
+							return;
+						}
+
+						const { connectData } = getConnectDataResult;
+
+						if (connectData.token) {
 							setConnectData(dispatch as dispatchType, {
 								token: connectData.token,
 								port: connectData.port,
@@ -640,11 +556,6 @@ function App() {
 	return (
 		<div className="App">
 			<>
-				<ModalConfirmation
-					isOpen={confirmationModalOpen}
-					onClose={handleCancel}
-					onConfirm={handleConfirm}
-				/>
 				{loggedIn && state.isConnected && <Header />}
 				<AppLoader firstWalletLoaded={firstWalletLoaded} loggedIn={loggedIn} />
 
@@ -668,18 +579,16 @@ function App() {
 
 					return (
 						<ConnectPage
-							incorrectPassword={incorrectPassword}
-							setIncorrectPassword={setIncorrectPassword}
 							passwordExists={passwordExists()}
 							setConnectOpened={setConnectOpened}
 							onConfirm={async (inputPassword, connectKey, walletPort) => {
 								const password = inputPassword || (await getSessionPassword());
 								if (!password) return;
 
-								setPassword(password);
+								await setPassword(password);
 
 								if (connectKey) {
-									ConnectKeyUtils.setConnectData(
+									await ConnectKeyUtils.setConnectData(
 										connectKey,
 										String(walletPort),
 										password,

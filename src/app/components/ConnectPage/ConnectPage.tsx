@@ -8,18 +8,17 @@ import { setConnectData } from '../../store/actions';
 import { Store } from '../../store/store-reducer';
 import ConnectKeyUtils from '../../utils/ConnectKeyUtils';
 import { defaultPort } from '../../config/config';
+import { getFirstFailedPasswordRule } from './helpers/passwordValidation';
 
 interface ConnectPageProps {
-	incorrectPassword: boolean;
-	setIncorrectPassword: Dispatch<SetStateAction<boolean>>;
 	onConfirm?: (password?: string, keyValue?: string, walletPort?: string) => void;
 	passwordExists: boolean;
 	setConnectOpened: Dispatch<SetStateAction<boolean>>;
 }
 
+const PASSWORDS_DO_NOT_MATCH_MESSAGE = 'Passwords do not match';
+
 export default function ConnectPage({
-	incorrectPassword,
-	setIncorrectPassword,
 	onConfirm,
 	passwordExists,
 	setConnectOpened,
@@ -37,24 +36,39 @@ export default function ConnectPage({
 	const [passwordRepeat, setPasswordRepeat] = useState('');
 	const [walletPort, setWalletPort] = useState(`${defaultPort}`);
 
-	const [invalidPassword, setInvalidPassword] = useState(false);
+	const [passwordValidationErrorMessage, setPasswordValidationErrorMessage] = useState<
+		string | null
+	>(null);
+	const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState(false);
 
 	useEffect(() => {
 		async function getExistingPort() {
 			if (!passwordExists) return;
 			const password = await getSessionPassword();
 			if (!password) return;
-			const connectData = ConnectKeyUtils.getConnectData(password);
-			if (connectData?.port) setWalletPort(connectData.port);
+			const getConnectDataResult = await ConnectKeyUtils.getConnectData(password);
+
+			if (!getConnectDataResult.success) {
+				console.error(
+					'Failed to get connect data. Error code:',
+					getConnectDataResult.error,
+				);
+
+				return;
+			}
+
+			const { connectData } = getConnectDataResult;
+
+			setWalletPort(connectData.port);
 		}
 		getExistingPort();
 	}, [passwordExists]);
 
-	function onPasswordInput(event: React.ChangeEvent<HTMLInputElement>, repeat: boolean) {
+	function onPasswordInput(event: React.ChangeEvent<HTMLInputElement>, isRepeatField: boolean) {
 		const { value } = event.currentTarget;
-		setIncorrectPassword(false);
-		setInvalidPassword(false);
-		if (repeat) {
+		setPasswordValidationErrorMessage(null);
+		setPasswordsDoNotMatch(false);
+		if (isRepeatField) {
 			setPasswordRepeat(value);
 		} else {
 			setPassword(value);
@@ -63,9 +77,16 @@ export default function ConnectPage({
 
 	async function continueClick() {
 		if (!updateSettings) {
-			const correctPassword = password === passwordRepeat && password;
+			const failedValidationRule = getFirstFailedPasswordRule(password);
+			if (failedValidationRule) {
+				setPasswordValidationErrorMessage(failedValidationRule.message);
+				return;
+			}
 
-			if (!correctPassword) return setInvalidPassword(true);
+			if (password !== passwordRepeat) {
+				setPasswordsDoNotMatch(true);
+				return;
+			}
 		}
 
 		if (!parseInt(walletPort, 10)) {
@@ -98,6 +119,13 @@ export default function ConnectPage({
 		setKeyIncorrect(false);
 	}
 
+	const passwordMatchingErrorMessage = passwordsDoNotMatch
+		? PASSWORDS_DO_NOT_MATCH_MESSAGE
+		: null;
+
+	const passwordFieldErrorMessage =
+		passwordValidationErrorMessage ?? passwordMatchingErrorMessage;
+
 	return (
 		<div className={s.connect}>
 			<img className={s.logoImage} src={logo} alt="Zano" />
@@ -124,14 +152,14 @@ export default function ConnectPage({
 					onChange={onKeyInput}
 				/>
 				{!updateSettings && (
-					<>
+					<div className={s.passwords}>
 						<MyInput
 							type="password"
 							label="Password"
 							placeholder="Password"
 							inputData={{
 								value: password,
-								isDirty: !!(incorrectPassword || invalidPassword),
+								isDirty: !!passwordFieldErrorMessage,
 							}}
 							onChange={(event) => onPasswordInput(event, false)}
 						/>
@@ -140,18 +168,22 @@ export default function ConnectPage({
 							placeholder="Repeat password"
 							inputData={{
 								value: passwordRepeat,
-								isDirty: !!(incorrectPassword || invalidPassword),
+								isDirty: !!passwordFieldErrorMessage,
 							}}
+							stroke={passwordFieldErrorMessage}
 							onChange={(event) => onPasswordInput(event, true)}
+							preserveStrokeLabelSpace
 						/>
-					</>
+					</div>
 				)}
-				<Button onClick={continueClick}>{updateSettings ? 'Save' : 'Continue'}</Button>
-				{updateSettings && (
-					<Button theme="outline" onClick={() => setConnectOpened(false)}>
-						Back
-					</Button>
-				)}
+				<div className={`${s.buttons} ${updateSettings ? s.buttonsWithMargin : ''}`}>
+					<Button onClick={continueClick}>{updateSettings ? 'Save' : 'Continue'}</Button>
+					{updateSettings && (
+						<Button theme="outline" onClick={() => setConnectOpened(false)}>
+							Back
+						</Button>
+					)}
+				</div>
 			</div>
 		</div>
 	);

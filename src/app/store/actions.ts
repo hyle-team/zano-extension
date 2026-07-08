@@ -88,15 +88,6 @@ export const updateBalancesHidden = (
 		payload: state,
 	});
 
-export const updateConfirmationModal = (
-	dispatch: DispatchFunction,
-	state: WalletState['confirmationModalOpen'],
-): void =>
-	dispatch({
-		type: 'CONFIRMATION_MODAL_UPDATED',
-		payload: state,
-	});
-
 export const updateTransactionStatus = (
 	dispatch: DispatchFunction,
 	state: WalletState['transactionStatus'] | object,
