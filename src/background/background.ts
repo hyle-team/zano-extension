@@ -241,7 +241,6 @@ const signReqs: {
 	message: string;
 	host: string;
 	secure: boolean;
-	uri: string;
 }[] = [];
 
 function openWindow(): Promise<chrome.windows.Window> {
@@ -933,9 +932,8 @@ async function processRequest(
 		}
 
 		case 'REQUEST_MESSAGE_SIGN': {
-			const url = new URL(sender.url ?? '');
-			const urlStr = url.toString();
-			const { host } = url;
+			const originURL = new URL(sender.origin ?? '');
+			const { origin, host } = originURL;
 
 			const walletData = await getWalletData();
 
@@ -964,12 +962,12 @@ async function processRequest(
 			if (isInSecureMode) {
 				const messagePayload = parsingData.values;
 
-				const normalizedMessageURI = new URL(messagePayload.uri).toString();
+				const normalizedMessageURIOrigin = new URL(messagePayload.uri).origin;
 
 				const isPayloadContentValid =
 					messagePayload.domain === host &&
 					messagePayload.address === walletData.address &&
-					normalizedMessageURI === urlStr;
+					normalizedMessageURIOrigin === origin;
 
 				if (!isPayloadContentValid) {
 					return sendResponse({
@@ -993,7 +991,6 @@ async function processRequest(
 					message: String(request.message),
 					host,
 					secure: isInSecureMode,
-					uri: urlStr,
 				});
 
 				if (typeof request.timeout === 'number') {
