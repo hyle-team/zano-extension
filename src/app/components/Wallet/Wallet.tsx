@@ -172,7 +172,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 				{isTrackingWallet && (
 					<div className={s.watchOnlyBadge}>
 						<img src={shieldOffIcon} alt="watch-only icon" />
-						Read-only wallet
+						View-only wallet
 					</div>
 				)}
 			</div>
