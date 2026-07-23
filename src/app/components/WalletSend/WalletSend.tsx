@@ -16,6 +16,7 @@ import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import s from './WalletSend.module.scss';
 import { fetchBackground, isPositiveFloatStr } from '../../utils/utils';
+import { WALLET_MIXIN } from '../../../constants';
 import AssetsSelect from './ui/AssetsSelect/AssetsSelect';
 import AdditionalDetails from './ui/AdditionalDetails/AdditionalDetails';
 
@@ -75,8 +76,15 @@ const WalletSend = () => {
 		},
 	);
 	const comment = useInput('', { isEmpty: true });
-	const mixin = useInput(10, { isEmpty: true });
+	const mixin = useInput(
+		state.wallet.isAuditable ? WALLET_MIXIN.AUDITABLE : WALLET_MIXIN.DEFAULT,
+		{ isEmpty: true },
+	);
 	const fee = useInput(0.01, { isEmpty: true });
+
+	useEffect(() => {
+		mixin.setValue(state.wallet.isAuditable ? WALLET_MIXIN.AUDITABLE : WALLET_MIXIN.DEFAULT);
+	}, [state.wallet.isAuditable]);
 
 	const amountWithDot =
 		typeof amount.value === 'string' ? amount.value.replace(',', '.') : amount.value;

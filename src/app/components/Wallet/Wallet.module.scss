@@ -9,6 +9,15 @@
 	border-radius: 16px;
 	padding: 16px 16px 10px 16px;
 
+	&.auditable {
+		background: linear-gradient(90deg, #9b4dff 0%, #8b3ff4 35%, #6f22e8 70%, #5b11df 100%);
+	}
+
+	&.watchOnly {
+		background: rgba(31, 143, 235, 0.15);
+		border: 1px solid #9b4dff;
+	}
+
 	&:not(:last-child) {
 		margin-bottom: 20px;
 	}
@@ -75,6 +84,11 @@
 			}
 		}
 	}
+}
+
+.actionPlaceholder {
+	width: 35px;
+	height: 35px;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -181,4 +195,22 @@
 .lockedBalanceText {
 	color: rgba(255, 255, 255, 0.8);
 	font-weight: 600;
+}
+
+.watchOnlyBadge {
+	display: inline-flex;
+	align-items: center;
+	column-gap: 6px;
+	padding: 5px 8px;
+	border-radius: 8px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	max-width: max-content;
+
+	img {
+		width: 14px;
+		height: 14px;
+	}
 }

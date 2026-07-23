@@ -38,6 +38,8 @@ interface Wallet {
 	lockedBalance?: number;
 	assets: Asset[];
 	transactions: Transaction[];
+	isWatchOnly?: boolean;
+	isAuditable?: boolean;
 }
 
 interface TransactionStatus {
@@ -58,7 +60,14 @@ interface PriceData {
 }
 
 interface State {
-	walletsList: { address: string; alias: string; balance: number; wallet_id?: number }[];
+	walletsList: {
+		address: string;
+		alias: string;
+		balance: number;
+		wallet_id?: number;
+		is_watch_only?: boolean;
+		is_auditable?: boolean;
+	}[];
 	activeWalletId: number;
 	wallet: Wallet;
 	displayUsd: boolean;

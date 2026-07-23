@@ -110,7 +110,8 @@ function App() {
 				method: 'GET_WALLET_DATA',
 			});
 			if (!walletData.data) return;
-			const { address, alias, balance, transactions, assets } = walletData.data;
+			const { address, alias, balance, transactions, assets, isWatchOnly, isAuditable } =
+				walletData.data;
 
 			// console.log("WALLET DATA:");
 			// console.log(walletData.data);
@@ -121,6 +122,8 @@ function App() {
 				balance,
 				assets,
 				transactions,
+				isWatchOnly,
+				isAuditable,
 			});
 
 			console.log('wallet data updated');
