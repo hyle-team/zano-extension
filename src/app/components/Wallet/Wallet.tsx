@@ -10,6 +10,7 @@ import showIcon from '../../assets/svg/show.svg';
 import hideIcon from '../../assets/svg/hide.svg';
 import dappIcon from '../../assets/svg/dapp.svg';
 import lockedIcon from '../../assets/svg/lockedIcon.svg';
+import shieldOffIcon from '../../assets/svg/lockedIcon.svg';
 import checkIcon from '../../assets/svg/check-icon.svg';
 import useAwayClick from '../../hooks/useAwayClick';
 import { useCensorDigits } from '../../hooks/useCensorDigits';
@@ -89,56 +90,69 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 	};
 	useAwayClick(menuRef, handleAwayClick);
 
+	const isTrackingWallet = !!state.wallet.isWatchOnly;
+	const isAuditableWallet = !!state.wallet.isAuditable;
+
 	const unlockedBalance = getUnlockedBalance();
 	const lockedBalance = new Decimal(state.wallet.balance).minus(unlockedBalance ?? 0);
 	const lockedBalanceDisplay = lockedBalance.gt(0)
 		? lockedBalance.toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed()
 		: undefined;
 
+	const hasAlias = Boolean(state.wallet.alias);
+	const canCreateAlias = !hasAlias && !isTrackingWallet;
+	const showAliasBlock = hasAlias || canCreateAlias;
+
 	return (
-		<div className={s.wallet}>
+		<div
+			className={classNames(s.wallet, {
+				[s.auditable]: isAuditableWallet && !isTrackingWallet,
+				[s.watchOnly]: isTrackingWallet,
+			})}
+		>
 			<ModalTransactionStatus />
 			<div className={s.infoWallet}>
-				<div className={s.aliasWrapper}>
-					<div
-						className={classNames(s.aliasContent, {
-							[s.active]: state.wallet.alias,
-						})}
-					>
-						{state.wallet.alias ? (
-							`@${state.wallet.alias}`
-						) : (
-							<NavLink component={AliasManagePage} className={s.aliasCreateBtn}>
-								Create alias
-							</NavLink>
+				{showAliasBlock && (
+					<div className={s.aliasWrapper}>
+						<div
+							className={classNames(s.aliasContent, {
+								[s.active]: hasAlias,
+							})}
+						>
+							{hasAlias ? (
+								`@${state.wallet.alias}`
+							) : (
+								<NavLink component={AliasManagePage} className={s.aliasCreateBtn}>
+									Create alias
+								</NavLink>
+							)}
+						</div>
+
+						{hasAlias && canCreateAlias && (
+							<div className={s.aliasWrapper__actions}>
+								<NavLink
+									component={AliasManagePage}
+									props={{ mode: 'edit' }}
+									className="round-button"
+								>
+									<img width={18} height={18} src={editIcon} alt="edit icon" />
+									<span>Edit alias</span>
+								</NavLink>
+
+								<NavLink component={AliasTransfer} className="round-button">
+									<img
+										width={18}
+										height={18}
+										src={transferIcon}
+										alt="transfer icon"
+									/>
+									<span>Transfer alias</span>
+								</NavLink>
+							</div>
 						)}
 					</div>
+				)}
 
-					{state.wallet.alias && (
-						<div className={s.aliasWrapper__actions}>
-							<NavLink
-								component={AliasManagePage}
-								props={{ mode: 'edit' }}
-								className="round-button"
-							>
-								<img width={18} height={18} src={editIcon} alt="edit icon" />
-								{/* Tooltip */}
-								<span>Edit alias</span>
-							</NavLink>
-
-							<NavLink component={AliasTransfer} className="round-button">
-								<img
-									width={18}
-									height={18}
-									src={transferIcon}
-									alt="transfer icon"
-								/>
-								{/* Tooltip */}
-								<span>Transfer alias</span>
-							</NavLink>
-						</div>
-					)}
-				</div>
 				<div className={s.balanceWrapper}>
 					<button onClick={flipDisplay} className={s.balance}>
 						{renderBalance()}
@@ -154,6 +168,13 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 				<div className={s.infoAddress}>
 					<span>{state.wallet.address}</span>
 				</div>
+
+				{isTrackingWallet && (
+					<div className={s.watchOnlyBadge}>
+						<img src={shieldOffIcon} alt="watch-only icon" />
+						View-only wallet
+					</div>
+				)}
 			</div>
 
 			<div className={s.actionsWallet}>
@@ -185,11 +206,17 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 					)}
 				</div>
 
-				<NavLink component={WalletSend} className="round-button">
-					<img src={sendIcon} alt="send icon" />
-					{/* Tooltip */}
-					<span>send</span>
-				</NavLink>
+				{!isTrackingWallet && (
+					<NavLink component={WalletSend} className="round-button">
+						<img src={sendIcon} alt="send icon" />
+						{/* Tooltip */}
+						<span>send</span>
+					</NavLink>
+				)}
+
+				{isTrackingWallet && hasAlias && (
+					<div className={s.actionPlaceholder} aria-hidden="true" />
+				)}
 
 				<button
 					onClick={() => copyToClipboard(state.wallet.address)}

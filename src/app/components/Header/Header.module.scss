@@ -27,6 +27,7 @@
 	font-size: 14px;
 	text-align: right;
 	white-space: nowrap;
+
 	span {
 		border-radius: 50%;
 		width: 10px;
@@ -85,10 +86,12 @@
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+
 	&::-webkit-scrollbar {
 		display: block;
 		width: 5px;
 	}
+
 	&::-webkit-scrollbar-thumb {
 		background-color: rgba(255, 255, 255, 0.3);
 		border-radius: 5px;
@@ -108,12 +111,15 @@
 	font-size: 18px;
 	font-weight: 600;
 	line-height: math.div(21, 18);
+
 	&:not(:last-child) {
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	}
+
 	&:hover {
 		background: rgba(255, 255, 255, 0.05);
 	}
+
 	&:focus-visible {
 		outline: 2px solid #16d1d6;
 		outline-offset: -2px;

@@ -10,6 +10,7 @@
 	justify-content: center;
 	align-items: center;
 	transition: background-color 0.2s ease 0s;
+
 	span {
 		position: absolute;
 		z-index: 10;
@@ -31,6 +32,7 @@
 		background: rgba(20, 65, 130, 1);
 		opacity: 0;
 		visibility: hidden;
+
 		&::after {
 			content: '';
 			position: absolute;
@@ -42,13 +44,16 @@
 			transform: rotate(45deg);
 		}
 	}
+
 	img {
 		width: 18px;
 		height: 18px;
 		max-width: 100%;
 	}
+
 	&:hover {
 		background-color: rgba(255, 255, 255, 0.07);
+
 		span {
 			opacity: 1;
 			visibility: visible;
@@ -66,6 +71,7 @@
 // Table
 .table {
 	padding-bottom: 50px;
+
 	&__row {
 		display: flex;
 		align-items: center;
@@ -79,6 +85,7 @@
 			margin-bottom: 16px;
 		}
 	}
+
 	&__label {
 		flex: 1 1 auto;
 		display: flex;
@@ -88,12 +95,14 @@
 		line-height: math.div(21, 18);
 		color: #1f8feb;
 	}
+
 	&__value {
 		font-weight: 300;
 		font-size: 18px;
 		line-height: math.div(21, 18);
 		color: rgba(255, 255, 255, 0.9);
 		word-break: break-all;
+
 		.table__row_button & {
 			flex: 1 1 100%;
 		}

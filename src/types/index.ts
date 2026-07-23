@@ -204,6 +204,7 @@ interface WalletWI {
 	address: string;
 	balances: Balance[];
 	is_watch_only?: boolean;
+	is_auditable?: boolean;
 }
 
 export interface WalletRaw {
@@ -312,6 +313,8 @@ export interface GetWalletDataRes {
 	balance?: string;
 	transactions?: Transaction[];
 	assets?: WalletAsset[];
+	isWatchOnly?: boolean;
+	isAuditable?: boolean;
 }
 
 export interface SendResponse {

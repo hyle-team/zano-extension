@@ -114,7 +114,9 @@ const Header = () => {
 				aria-label="Toggle wallets list"
 			>
 				<span className={s.dropdownButtonLabel} title={state.wallet.address}>
-					{formatWalletAddress(state.wallet.address)}
+					{state.wallet.alias
+						? `@${state.wallet.alias}`
+						: formatWalletAddress(state.wallet.address)}
 				</span>
 				<img
 					src={arrowIcon}

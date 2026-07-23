@@ -2,7 +2,7 @@ import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
-import { SELF_ONLY_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import { SELF_ONLY_REQUESTS, WATCH_ONLY_BLOCKED_REQUESTS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
@@ -17,6 +17,7 @@ import {
 	fetchData,
 	getWalletData,
 	getWallets,
+	getCurrentWalletFlags,
 	transfer,
 	ionicSwap,
 	ionicSwapAccept,
@@ -351,6 +352,24 @@ async function processRequest(
 		await recoverApiCredentials();
 	}
 
+	if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
+		return sendResponse({ error: 'Unauthorized request' });
+	}
+
+	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
+		try {
+			const { isWatchOnly } = await getCurrentWalletFlags();
+			if (isWatchOnly) {
+				return sendResponse({
+					error: 'This operation is not available for tracking wallets',
+				});
+			}
+		} catch (error) {
+			console.error('Failed to check wallet type:', error);
+			return sendResponse({ error: 'Failed to verify wallet type' });
+		}
+	}
+
 	const allowed = await permissionMiddleware(
 		request,
 		sender,
@@ -365,10 +384,6 @@ async function processRequest(
 	);
 
 	if (!allowed) return;
-
-	if (SELF_ONLY_REQUESTS.includes(request.method) && !isFromExtensionFrontend) {
-		return sendResponse({ error: 'Unauthorized request' });
-	}
 
 	switch (request.method) {
 		case 'SET_API_CREDENTIALS':

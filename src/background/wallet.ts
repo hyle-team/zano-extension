@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import JSONbig from 'json-bigint';
 import { apiCredentials } from './background';
 import { addZeros, removeZeros } from '../app/utils/utils';
-import { ZANO_ASSET_ID } from '../constants';
+import { WALLET_MIXIN, ZANO_ASSET_ID } from '../constants';
 import {
 	BurnAssetDataType,
 	ionicSwapType,
@@ -152,18 +152,43 @@ export const getWallets = async () => {
 				address: wallet.wi.address,
 				alias,
 				balance: removeZeros(balanceRaw),
-				is_watch_only: wallet.wi.is_watch_only,
+				is_watch_only: !!wallet.wi.is_watch_only,
+				is_auditable: !!wallet.wi.is_auditable,
 				wallet_id: wallet.wallet_id,
 			};
 		}),
 	);
 
-	return wallets
-		.filter((e) => !e.is_watch_only)
-		.map((e) => {
-			delete e.is_watch_only;
-			return e;
-		});
+	return wallets;
+};
+
+const fetchWalletFlags = async (
+	address: string,
+): Promise<{ isWatchOnly: boolean; isAuditable: boolean }> => {
+	const response = await fetchData('mw_get_wallets');
+	const data = await response.json();
+	const wallets: WalletRaw[] = data?.result?.wallets || [];
+	const current = wallets.find((wallet) => wallet.wi.address === address);
+
+	return {
+		isWatchOnly: !!current?.wi?.is_watch_only,
+		isAuditable: !!current?.wi?.is_auditable,
+	};
+};
+
+export const getCurrentWalletFlags = async (): Promise<{
+	isWatchOnly: boolean;
+	isAuditable: boolean;
+}> => {
+	const addressResponse = await fetchData('getaddress');
+	const addressParsed: ParsedAddress = await addressResponse.json();
+
+	return fetchWalletFlags(addressParsed.result.address);
+};
+
+const getMixin = async (): Promise<number> => {
+	const { isAuditable } = await getCurrentWalletFlags();
+	return isAuditable ? WALLET_MIXIN.AUDITABLE : WALLET_MIXIN.DEFAULT;
 };
 
 export const getWalletData = async () => {
@@ -230,12 +255,16 @@ export const getWalletData = async () => {
 
 	const alias = await getAlias(address);
 
+	const { isWatchOnly, isAuditable } = await fetchWalletFlags(address);
+
 	return {
 		address,
 		alias,
 		balance,
 		transactions,
 		assets,
+		isWatchOnly,
+		isAuditable,
 	};
 };
 
@@ -260,7 +289,7 @@ export const ionicSwap = async (swapParams: ionicSwapType) => {
 					),
 				},
 			],
-			mixins: 10,
+			mixins: await getMixin(),
 			fee_paid_by_a: 10000000000,
 			expiration_time: swapParams.expirationTimestamp,
 		},
@@ -376,7 +405,7 @@ export const transfer = async (
 	} = {
 		destinations: allDestinations,
 		fee: 10000000000,
-		mixin: 10,
+		mixin: await getMixin(),
 	};
 
 	if (comment) options.comment = comment;
@@ -411,7 +440,7 @@ export const burnBridge = async (
 
 	const response = await fetchData('burn_asset', {
 		fee: 10000000000,
-		mixin: 15,
+		mixin: await getMixin(),
 		service_entries_permanent: true,
 		asset_id: assetId,
 		burn_amount: addZeros(amount),
@@ -560,7 +589,7 @@ export const burnAsset = async ({
 
 	const response = await fetchData('burn_asset', {
 		fee: 10000000000,
-		mixin: 15,
+		mixin: await getMixin(),
 		service_entries_permanent: true,
 		asset_id: assetId,
 		burn_amount: addZeros(burnAmount, asset_data?.decimal_point),
