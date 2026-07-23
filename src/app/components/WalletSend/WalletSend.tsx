@@ -122,7 +122,7 @@ const WalletSend = () => {
 	const openExplorer = (txId: string) => {
 		// eslint-disable-next-line no-undef
 		chrome.tabs.create({
-			url: `https://explorer.zano.org/block/${txId}`,
+			url: `https://explorer.zano.org/transaction/${txId}`,
 		});
 	};
 
