@@ -18,6 +18,7 @@ import {
 	getWalletData,
 	getWallets,
 	getCurrentWalletFlags,
+	getActiveWalletId,
 	transfer,
 	ionicSwap,
 	ionicSwapAccept,
@@ -86,18 +87,21 @@ const savedRequests: Record<
 
 const allPopupIds: number[] = [];
 class PopupRequestsMethods {
-	static onRequestCreate(
+	static async onRequestCreate(
 		requestType: SavedRequestType,
 		request: { timeout?: number },
 		sendResponse: (response: RequestResponse) => void,
 		reqParams: PopupRequest,
-	): void {
+	): Promise<void> {
 		console.log('Creating request', reqParams);
+
+		const boundWalletId = await getActiveWalletId();
 
 		openWindow().then((requestWindow) => {
 			const reqId = crypto.randomUUID();
 			const req = {
 				...reqParams,
+				boundWalletId,
 				windowId: requestWindow.id,
 				finalizer: (data: unknown) => sendResponse(data as RequestResponse),
 			};
@@ -127,13 +131,13 @@ class PopupRequestsMethods {
 		});
 	}
 
-	static onRequestFinalize(
+	static async onRequestFinalize(
 		requestType: keyof typeof savedRequests,
 		request: { id: string; success: boolean },
 		sendResponse: (response: RequestResponse) => void,
 		apiCallFunc: (req: PopupRequest) => Promise<unknown>,
 		errorMessages: ErrorMessages,
-	): void {
+	): Promise<void> {
 		const reqId = request.id;
 		const { success } = request;
 		const req = savedRequests[requestType][reqId];
@@ -149,6 +153,20 @@ class PopupRequestsMethods {
 				finalize({ error: 'Request denied by user' });
 				sendResponse({ data: true });
 			} else {
+				if (req.boundWalletId !== undefined) {
+					try {
+						const currentWalletId = await getActiveWalletId();
+						if (String(currentWalletId) !== String(req.boundWalletId)) {
+							finalize({ error: 'Active wallet changed' });
+							return sendResponse({ error: 'Active wallet changed' });
+						}
+					} catch (error) {
+						console.error('Failed to verify active wallet:', error);
+						finalize({ error: 'Failed to verify active wallet' });
+						return sendResponse({ error: 'Failed to verify active wallet' });
+					}
+				}
+
 				apiCallFunc(req)
 					.then((data) => {
 						finalize({ data });
@@ -315,6 +333,10 @@ async function requestAccess(
 		return { error: 'Request already pending' };
 	}
 
+	if (wallet.isWatchOnly) {
+		return { error: 'This operation is not available for tracking wallets' };
+	}
+
 	return new Promise((resolve) => {
 		openWindow()
 			.then((requestWindow) => {
@@ -356,20 +378,6 @@ async function processRequest(
 		return sendResponse({ error: 'Unauthorized request' });
 	}
 
-	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
-		try {
-			const { isWatchOnly } = await getCurrentWalletFlags();
-			if (isWatchOnly) {
-				return sendResponse({
-					error: 'This operation is not available for tracking wallets',
-				});
-			}
-		} catch (error) {
-			console.error('Failed to check wallet type:', error);
-			return sendResponse({ error: 'Failed to verify wallet type' });
-		}
-	}
-
 	const allowed = await permissionMiddleware(
 		request,
 		sender,
@@ -384,6 +392,23 @@ async function processRequest(
 	);
 
 	if (!allowed) return;
+
+	if (
+		WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method) &&
+		!request.method.startsWith('FINALIZE')
+	) {
+		try {
+			const { isWatchOnly } = await getCurrentWalletFlags();
+			if (isWatchOnly) {
+				return sendResponse({
+					error: 'This operation is not available for tracking wallets',
+				});
+			}
+		} catch (error) {
+			console.error('Failed to check wallet type:', error);
+			return sendResponse({ error: 'Failed to verify wallet type' });
+		}
+	}
 
 	switch (request.method) {
 		case 'SET_API_CREDENTIALS':
@@ -475,20 +500,20 @@ async function processRequest(
 		case 'GET_PERMISSIONS': {
 			try {
 				if (!sender.origin && !sender.url) {
-					return sendResponse({ error: 'Unknown origin' });
+					return sendResponse({ data: [] });
 				}
 
 				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
-				const wallet = await getWalletData();
-				const permissions = await getPermissions(origin, wallet.address);
+				const addressResponse = await fetchData('getaddress');
+				const addressParsed = await addressResponse.json();
+				const address = addressParsed?.result?.address;
+				const permissions = address ? await getPermissions(origin, address) : [];
 
 				sendResponse({
 					data: permissions,
 				});
 			} catch {
-				sendResponse({
-					error: 'Failed to get permissions',
-				});
+				sendResponse({ data: [] });
 			}
 
 			break;

@@ -48,6 +48,11 @@ export async function permissionMiddleware(
 		return true;
 	}
 
+	if (wallet.isWatchOnly) {
+		sendResponse({ error: 'This operation is not available for tracking wallets' });
+		return false;
+	}
+
 	const requestPermissionsResponse = await requestAccess(requiredPermissions);
 
 	if (!requestPermissionsResponse?.success) {

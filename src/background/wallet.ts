@@ -162,17 +162,31 @@ export const getWallets = async () => {
 	return wallets;
 };
 
+export const getActiveWalletId = async (): Promise<number> => {
+	return new Promise((resolve) => {
+		chrome.storage.local.get(['key'], (result) => {
+			resolve(Number(result?.key ?? 0));
+		});
+	});
+};
+
 const fetchWalletFlags = async (
-	address: string,
+	walletId: number,
 ): Promise<{ isWatchOnly: boolean; isAuditable: boolean }> => {
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
 	const wallets: WalletRaw[] = data?.result?.wallets || [];
-	const current = wallets.find((wallet) => wallet.wi.address === address);
+	const matches = wallets.filter((wallet) => String(wallet.wallet_id) === String(walletId));
+
+	if (matches.length !== 1) {
+		throw new Error('Unable to resolve active wallet capabilities');
+	}
+
+	const current = matches[0];
 
 	return {
-		isWatchOnly: !!current?.wi?.is_watch_only,
-		isAuditable: !!current?.wi?.is_auditable,
+		isWatchOnly: !!current.wi?.is_watch_only,
+		isAuditable: !!current.wi?.is_auditable,
 	};
 };
 
@@ -180,10 +194,9 @@ export const getCurrentWalletFlags = async (): Promise<{
 	isWatchOnly: boolean;
 	isAuditable: boolean;
 }> => {
-	const addressResponse = await fetchData('getaddress');
-	const addressParsed: ParsedAddress = await addressResponse.json();
+	const walletId = await getActiveWalletId();
 
-	return fetchWalletFlags(addressParsed.result.address);
+	return fetchWalletFlags(walletId);
 };
 
 const getMixin = async (): Promise<number> => {
@@ -255,7 +268,8 @@ export const getWalletData = async () => {
 
 	const alias = await getAlias(address);
 
-	const { isWatchOnly, isAuditable } = await fetchWalletFlags(address);
+	const walletId = await getActiveWalletId();
+	const { isWatchOnly, isAuditable } = await fetchWalletFlags(walletId);
 
 	return {
 		address,

@@ -135,13 +135,14 @@ const Header = () => {
 				<div onClick={toggleDropdown} className={s.dropdown}>
 					<div onClick={(event) => event.stopPropagation()} className={s.dropdownList}>
 						{state.walletsList.map((wallet) => {
-							const isActiveWallet = wallet.address === state.wallet.address;
+							const isActiveWallet =
+								String(wallet.wallet_id) === String(state.activeWalletId);
 							const aliasLabel = wallet.alias ? `@${wallet.alias}` : '';
 							const isCopySuccessful = copiedWalletAddress === wallet.address;
 
 							return (
 								<div
-									key={wallet.address}
+									key={String(wallet.wallet_id)}
 									className={`${s.dropdownItem} ${isActiveWallet ? s.dropdownItemActive : ''}`}
 									onClick={() => switchWallet(wallet.wallet_id)}
 									onKeyDown={(event) =>
