@@ -1,10 +1,14 @@
 import React, { useContext, useEffect } from 'react';
+import JSONbigConstructor from 'json-bigint';
+
 import Decimal from 'decimal.js';
 import WhitelistIconImage from '../../UI/WhitelistIconImage';
 import { useCensorDigits } from '../../../hooks/useCensorDigits';
 import { Store } from '../../../store/store-reducer';
 import s from './Assets.module.scss';
 import { ZANO_ASSET_ID } from '../../../../constants';
+
+const JSONbig = JSONbigConstructor({ storeAsString: true });
 
 function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) {
 	const { state } = useContext(Store);
@@ -19,7 +23,8 @@ function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) 
 		}
 
 		fetch(`https://explorer.zano.org/api/price?asset_id=${assetId}`)
-			.then((response) => response.json())
+			.then((response) => response.text())
+			.then((text) => JSONbig.parse(text))
 			.then((response) => {
 				if (response.data && response.data.usd) {
 					setAssetPrice(response.data.usd);
