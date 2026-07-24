@@ -1,6 +1,6 @@
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
-import JSONbig from 'json-bigint';
+import JSONbigConstructor from 'json-bigint';
 import { apiCredentials } from './background';
 import { addZeros, removeZeros } from '../app/utils/utils';
 import { WALLET_MIXIN, ZANO_ASSET_ID } from '../constants';
@@ -16,6 +16,8 @@ import {
 } from '../types';
 // window.Buffer = Buffer;
 import { IAsset } from '../types';
+
+const JSONbig = JSONbigConstructor({ storeAsString: true });
 
 interface JWTPayload {
 	body_hash: string;
@@ -108,14 +110,15 @@ const fetchTxData = async () => {
 	if (!response.ok) {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
-	const data = await response.text();
+	const data = JSONbig.parse(await response.text());
 
-	return JSONbig.parse(data);
+	return data;
 };
 
 export const getAlias = async (address: string | fetchDataProps | object = {}) => {
 	const response = await fetchData('get_alias_by_address', address);
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
+
 	if (data.result?.status === 'OK') {
 		return data.result.alias_info_list[0].alias;
 	}
@@ -124,7 +127,8 @@ export const getAlias = async (address: string | fetchDataProps | object = {}) =
 
 export const getAliasDetails = async (alias: string) => {
 	const response = await fetchData('get_alias_details', { alias });
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
+
 	if (data.result.status === 'OK') {
 		return data.result.alias_details;
 	}
@@ -133,7 +137,7 @@ export const getAliasDetails = async (alias: string) => {
 
 export const getWallets = async () => {
 	const response = await fetchData('mw_get_wallets');
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	if (!data?.result?.wallets) {
 		return [];
@@ -193,7 +197,7 @@ const getMixin = async (): Promise<number> => {
 
 export const getWalletData = async () => {
 	const addressResponse = await fetchData('getaddress');
-	const addressParsed: ParsedAddress = await addressResponse.json();
+	const addressParsed: ParsedAddress = JSONbig.parse(await addressResponse.text());
 	const { address } = addressParsed.result;
 
 	const balanceResponse = await fetchData('getbalance');
@@ -300,7 +304,7 @@ export const ionicSwap = async (swapParams: ionicSwapType) => {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 	return data;
 };
 
@@ -315,7 +319,7 @@ export const ionicSwapAccept = async (swapParams: { hex_raw_proposal: unknown })
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 	return data;
 };
 
@@ -335,7 +339,7 @@ export const createAlias = async ({
 			comment,
 		},
 	});
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	return data;
 };
@@ -356,14 +360,14 @@ export const updateAlias = async ({
 			comment,
 		},
 	});
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	return data;
 };
 
 export const getAliasByAddress = async (address: string) => {
 	const response = await fetchData('get_alias_by_address', address);
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	return data?.result;
 };
@@ -416,7 +420,7 @@ export const transfer = async (
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	return response.json();
+	return JSONbig.parse(await response.text());
 };
 
 // TODO: move bridge address to the config
@@ -464,7 +468,7 @@ export const burnBridge = async (
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 	return data;
 };
 
@@ -481,7 +485,7 @@ export const signMessage = async (message: string) => {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 	return data;
 };
 export const createConnectKey = async () =>
@@ -510,14 +514,15 @@ export const getSwapProposalInfo = async (hex: string | undefined) => {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	return data;
 };
 
 export async function getWhiteList() {
 	const fetchedWhiteList = await fetch('https://api.zano.org/assets_whitelist.json')
-		.then((response) => response.json())
+		.then((response) => response.text())
+		.then((text) => JSONbig.parse(text))
 		.then((data) => data.assets);
 
 	if (fetchedWhiteList.every((e: { asset_id: string }) => e.asset_id !== ZANO_ASSET_ID)) {
@@ -539,7 +544,7 @@ export async function getAssetInfo(assetId: string) {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 
 	return data;
 }
@@ -570,7 +575,8 @@ export async function addAssetToWhitelist(assetId: string) {
 	if (!response.ok) {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
+
 	return data;
 }
 
@@ -602,6 +608,6 @@ export const burnAsset = async ({
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	const data = await response.json();
+	const data = JSONbig.parse(await response.text());
 	return data;
 };

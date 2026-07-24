@@ -1,4 +1,4 @@
-import JSONbig from 'json-bigint';
+import JSONbigConstructor from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
@@ -41,6 +41,8 @@ import {
 } from '../app/utils/utils';
 import { getPermissions, hasPermission, permissionMiddleware } from '../app/utils/permission';
 import { RequestResponse } from '../types';
+
+const JSONbig = JSONbigConstructor({ storeAsString: true });
 
 const POPUP_HEIGHT = 630;
 const POPUP_WIDTH = 370;
@@ -404,7 +406,8 @@ async function processRequest(
 
 		case 'PING_WALLET':
 			fetch(`http://localhost:${apiCredentials.port}/ping`)
-				.then((res) => res.json())
+				.then((res) => res.text())
+				.then((text) => JSONbig.parse(text))
 				.then((_res) => sendResponse({ data: true }))
 				.catch((_err) => sendResponse({ data: false }));
 			break;
@@ -496,7 +499,8 @@ async function processRequest(
 
 		case 'SET_ACTIVE_WALLET':
 			fetchData('mw_select_wallet', { wallet_id: request.id })
-				.then((response) => response.json())
+				.then((response) => response.text())
+				.then((text) => JSONbig.parse(text))
 				.then((data) => {
 					sendResponse({ data });
 				})
