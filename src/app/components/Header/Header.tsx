@@ -4,7 +4,7 @@ import checkIcon from '../../assets/svg/check-icon-blue.svg';
 import copyBlueIcon from '../../assets/svg/copy-blue.svg';
 import { useCopy } from '../../hooks/useCopy';
 import { Store } from '../../store/store-reducer';
-import { updateActiveWalletId, updateLoading } from '../../store/actions';
+import { updateActiveWalletKey, updateLoading } from '../../store/actions';
 import s from './Header.module.scss';
 import { fetchBackground, shortenAddress } from '../../utils/utils';
 
@@ -37,18 +37,20 @@ const Header = () => {
 	const formatWalletAddress = (address: string) =>
 		address.length > 14 ? shortenAddress(address, 6, 6) : address;
 
-	const switchWallet = (id: number | undefined) => {
+	const switchWallet = (wallet: { wallet_id?: number; walletKey?: string }) => {
+		if (!wallet.walletKey) return;
+
 		// eslint-disable-next-line no-undef
-		chrome.storage.local.set({ key: id }, () => {
+		chrome.storage.local.set({ walletKey: wallet.walletKey }, () => {
 			updateLoading(dispatch as () => void, true);
-			updateActiveWalletId(dispatch as () => void, String(id));
+			updateActiveWalletKey(dispatch as () => void, wallet.walletKey as string);
 
 			fetchBackground({
 				method: 'SET_ACTIVE_WALLET',
-				id,
+				id: wallet.wallet_id,
 			});
 
-			console.log('Active wallet set to', id);
+			console.log('Active wallet set to', wallet.walletKey);
 			setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
 		});
 
@@ -57,14 +59,14 @@ const Header = () => {
 
 	const handleWalletKeyDown = (
 		event: React.KeyboardEvent<HTMLDivElement>,
-		id: number | undefined,
+		wallet: { wallet_id?: number; walletKey?: string },
 	) => {
 		if (event.key !== 'Enter' && event.key !== ' ') {
 			return;
 		}
 
 		event.preventDefault();
-		switchWallet(id);
+		switchWallet(wallet);
 	};
 
 	const copyAlias = (alias: string, walletAddress: string) => {
@@ -135,19 +137,16 @@ const Header = () => {
 				<div onClick={toggleDropdown} className={s.dropdown}>
 					<div onClick={(event) => event.stopPropagation()} className={s.dropdownList}>
 						{state.walletsList.map((wallet) => {
-							const isActiveWallet =
-								String(wallet.wallet_id) === String(state.activeWalletId);
+							const isActiveWallet = wallet.walletKey === state.activeWalletKey;
 							const aliasLabel = wallet.alias ? `@${wallet.alias}` : '';
 							const isCopySuccessful = copiedWalletAddress === wallet.address;
 
 							return (
 								<div
-									key={String(wallet.wallet_id)}
+									key={wallet.walletKey ?? wallet.address}
 									className={`${s.dropdownItem} ${isActiveWallet ? s.dropdownItemActive : ''}`}
-									onClick={() => switchWallet(wallet.wallet_id)}
-									onKeyDown={(event) =>
-										handleWalletKeyDown(event, wallet.wallet_id)
-									}
+									onClick={() => switchWallet(wallet)}
+									onKeyDown={(event) => handleWalletKeyDown(event, wallet)}
 									role="button"
 									tabIndex={0}
 								>

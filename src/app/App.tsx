@@ -18,7 +18,7 @@ import {
 } from './utils/utils';
 import {
 	updateWalletConnected,
-	updateActiveWalletId,
+	updateActiveWalletKey,
 	updateWalletsList,
 	updateWalletData,
 	updatePriceData,
@@ -140,7 +140,7 @@ function App() {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [dispatch, state.isConnected, state.activeWalletId, loggedIn]);
+	}, [dispatch, state.isConnected, state.activeWalletKey, loggedIn]);
 
 	useEffect(() => {
 		async function updateWhiteList() {
@@ -160,21 +160,29 @@ function App() {
 	}, [dispatch]);
 
 	useEffect(() => {
-		chrome.storage?.local?.get?.(['key'], (result) => {
-			let walletId = 0;
-			if (!result.key) {
-				chrome.storage?.local?.set?.({ key: walletId }, () => {
-					console.log('Active wallet set to', walletId);
-				});
-			} else {
-				walletId = result.key;
+		(async () => {
+			if (!chrome?.runtime?.sendMessage) return;
+
+			const walletsResponse = await fetchBackground({ method: 'GET_WALLETS' });
+			const wallets = walletsResponse?.data;
+			if (!Array.isArray(wallets) || wallets.length === 0) return;
+
+			const storedKey = await new Promise<string | undefined>((resolve) => {
+				chrome.storage?.local?.get?.(['walletKey'], (result) => resolve(result?.walletKey));
+			});
+
+			let target = wallets.find((wallet) => wallet.walletKey === storedKey);
+			if (!target) {
+				target = wallets[0] as unknown;
+				chrome.storage?.local?.set?.({ walletKey: target.walletKey });
 			}
+
 			fetchBackground({
 				method: 'SET_ACTIVE_WALLET',
-				id: walletId,
+				id: target.wallet_id,
 			});
-			updateActiveWalletId(dispatch as dispatchType, walletId);
-		});
+			updateActiveWalletKey(dispatch as dispatchType, target.walletKey);
+		})();
 	}, [dispatch]);
 
 	const appConnected = !!(

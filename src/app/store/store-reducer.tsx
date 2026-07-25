@@ -65,10 +65,11 @@ interface State {
 		alias: string;
 		balance: number;
 		wallet_id?: number;
+		walletKey?: string;
 		is_watch_only?: boolean;
 		is_auditable?: boolean;
 	}[];
-	activeWalletId: number;
+	activeWalletKey: string;
 	wallet: Wallet;
 	displayUsd: boolean;
 	isLoading: boolean;
@@ -99,7 +100,7 @@ const initialState: State = {
 			balance: 27,
 		},
 	],
-	activeWalletId: 0,
+	activeWalletKey: '',
 	wallet: {
 		address:
 			'ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9',
@@ -153,7 +154,7 @@ type Action =
 			type: 'WALLETS_LIST_UPDATED';
 			payload: { address: string; alias: string; balance: number }[];
 	  }
-	| { type: 'ACTIVE_WALLET_ID_UPDATED'; payload: number }
+	| { type: 'ACTIVE_WALLET_KEY_UPDATED'; payload: string }
 	| { type: 'WALLET_DATA_UPDATED'; payload: Wallet }
 	| { type: 'PRICE_DATA_UPDATED'; payload: PriceData }
 	| { type: 'DISPLAY_CURRENCY_UPDATED'; payload: boolean }
@@ -175,8 +176,8 @@ const reducer = (state: State, action: Action): State => {
 			return { ...state, isConnected: action.payload };
 		case 'WALLETS_LIST_UPDATED':
 			return { ...state, walletsList: action.payload };
-		case 'ACTIVE_WALLET_ID_UPDATED':
-			return { ...state, activeWalletId: action.payload };
+		case 'ACTIVE_WALLET_KEY_UPDATED':
+			return { ...state, activeWalletKey: action.payload };
 		case 'WALLET_DATA_UPDATED':
 			return { ...state, wallet: action.payload };
 		case 'PRICE_DATA_UPDATED':

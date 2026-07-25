@@ -18,7 +18,7 @@ import {
 	getWalletData,
 	getWallets,
 	getCurrentWalletFlags,
-	getActiveWalletId,
+	getActiveWalletKey,
 	transfer,
 	ionicSwap,
 	ionicSwapAccept,
@@ -95,13 +95,13 @@ class PopupRequestsMethods {
 	): Promise<void> {
 		console.log('Creating request', reqParams);
 
-		const boundWalletId = await getActiveWalletId();
+		const boundWalletKey = await getActiveWalletKey();
 
 		openWindow().then((requestWindow) => {
 			const reqId = crypto.randomUUID();
 			const req = {
 				...reqParams,
-				boundWalletId,
+				boundWalletKey,
 				windowId: requestWindow.id,
 				finalizer: (data: unknown) => sendResponse(data as RequestResponse),
 			};
@@ -153,10 +153,10 @@ class PopupRequestsMethods {
 				finalize({ error: 'Request denied by user' });
 				sendResponse({ data: true });
 			} else {
-				if (req.boundWalletId !== undefined) {
+				if (req.boundWalletKey) {
 					try {
-						const currentWalletId = await getActiveWalletId();
-						if (String(currentWalletId) !== String(req.boundWalletId)) {
+						const currentWalletKey = await getActiveWalletKey();
+						if (currentWalletKey !== req.boundWalletKey) {
 							finalize({ error: 'Active wallet changed' });
 							return sendResponse({ error: 'Active wallet changed' });
 						}

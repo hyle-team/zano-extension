@@ -3,7 +3,7 @@ interface WalletState {
 	wallets: string[];
 	walletData: object;
 	isConnected: boolean;
-	activeWalletId: string | number;
+	activeWalletKey: string;
 	priceData: object;
 	displayCurrency: string;
 	isLoading: boolean;
@@ -46,12 +46,12 @@ export const updateWalletConnected = (
 		payload: state,
 	});
 
-export const updateActiveWalletId = (
+export const updateActiveWalletKey = (
 	dispatch: DispatchFunction,
-	state: WalletState['activeWalletId'],
+	state: WalletState['activeWalletKey'],
 ): void =>
 	dispatch({
-		type: 'ACTIVE_WALLET_ID_UPDATED',
+		type: 'ACTIVE_WALLET_KEY_UPDATED',
 		payload: state,
 	});
 

@@ -131,6 +131,9 @@ export const getAliasDetails = async (alias: string) => {
 	return '';
 };
 
+export const computeWalletKey = (address: string, isWatchOnly: boolean): string =>
+	`${address}:${isWatchOnly ? 'view-only' : 'full'}`;
+
 export const getWallets = async () => {
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
@@ -155,6 +158,7 @@ export const getWallets = async () => {
 				is_watch_only: !!wallet.wi.is_watch_only,
 				is_auditable: !!wallet.wi.is_auditable,
 				wallet_id: wallet.wallet_id,
+				walletKey: computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only),
 			};
 		}),
 	);
@@ -162,41 +166,50 @@ export const getWallets = async () => {
 	return wallets;
 };
 
-export const getActiveWalletId = async (): Promise<number> => {
+export const getActiveWalletKey = async (): Promise<string | null> => {
 	return new Promise((resolve) => {
-		chrome.storage.local.get(['key'], (result) => {
-			resolve(Number(result?.key ?? 0));
+		chrome.storage.local.get(['walletKey'], (result) => {
+			resolve(typeof result?.walletKey === 'string' ? result.walletKey : null);
 		});
 	});
 };
 
-const fetchWalletFlags = async (
-	walletId: number,
-): Promise<{ isWatchOnly: boolean; isAuditable: boolean }> => {
+const resolveActiveWallet = async (): Promise<WalletRaw> => {
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
 	const wallets: WalletRaw[] = data?.result?.wallets || [];
-	const matches = wallets.filter((wallet) => String(wallet.wallet_id) === String(walletId));
 
-	if (matches.length !== 1) {
-		throw new Error('Unable to resolve active wallet capabilities');
+	if (wallets.length === 0) {
+		throw new Error('No wallets available');
 	}
 
-	const current = matches[0];
+	const storedKey = await getActiveWalletKey();
 
-	return {
-		isWatchOnly: !!current.wi?.is_watch_only,
-		isAuditable: !!current.wi?.is_auditable,
-	};
+	if (!storedKey) {
+		return wallets[0];
+	}
+
+	const matches = wallets.filter(
+		(wallet) => computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only) === storedKey,
+	);
+
+	if (matches.length !== 1) {
+		throw new Error('Unable to resolve active wallet');
+	}
+
+	return matches[0];
 };
 
 export const getCurrentWalletFlags = async (): Promise<{
 	isWatchOnly: boolean;
 	isAuditable: boolean;
 }> => {
-	const walletId = await getActiveWalletId();
+	const current = await resolveActiveWallet();
 
-	return fetchWalletFlags(walletId);
+	return {
+		isWatchOnly: !!current.wi?.is_watch_only,
+		isAuditable: !!current.wi?.is_auditable,
+	};
 };
 
 const getMixin = async (): Promise<number> => {
@@ -268,8 +281,7 @@ export const getWalletData = async () => {
 
 	const alias = await getAlias(address);
 
-	const walletId = await getActiveWalletId();
-	const { isWatchOnly, isAuditable } = await fetchWalletFlags(walletId);
+	const { isWatchOnly, isAuditable } = await getCurrentWalletFlags();
 
 	return {
 		address,
