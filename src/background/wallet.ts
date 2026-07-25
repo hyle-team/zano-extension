@@ -131,8 +131,18 @@ export const getAliasDetails = async (alias: string) => {
 	return '';
 };
 
-export const computeWalletKey = (address: string, isWatchOnly: boolean): string =>
-	`${address}:${isWatchOnly ? 'view-only' : 'full'}`;
+export const computeWalletKey = (
+	address: string,
+	isWatchOnly: boolean,
+	isAuditable: boolean,
+): string =>
+	`${address}:${isWatchOnly ? 'view-only' : 'full'}:${isAuditable ? 'auditable' : 'regular'}`;
+
+const walletKeyOf = (wallet: WalletRaw): string =>
+	computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only, !!wallet.wi.is_auditable);
+
+const pickDeterministic = (wallets: WalletRaw[]): WalletRaw =>
+	wallets.reduce((a, b) => (Number(a.wallet_id) <= Number(b.wallet_id) ? a : b));
 
 export const getWallets = async () => {
 	const response = await fetchData('mw_get_wallets');
@@ -158,7 +168,7 @@ export const getWallets = async () => {
 				is_watch_only: !!wallet.wi.is_watch_only,
 				is_auditable: !!wallet.wi.is_auditable,
 				wallet_id: wallet.wallet_id,
-				walletKey: computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only),
+				walletKey: walletKeyOf(wallet),
 			};
 		}),
 	);
@@ -174,30 +184,52 @@ export const getActiveWalletKey = async (): Promise<string | null> => {
 	});
 };
 
-const resolveActiveWallet = async (): Promise<WalletRaw> => {
+export const setActiveWalletKey = async (walletKey: string): Promise<void> => {
+	return new Promise((resolve) => {
+		chrome.storage.local.set({ walletKey }, () => resolve());
+	});
+};
+
+const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
-	const wallets: WalletRaw[] = data?.result?.wallets || [];
+	return data?.result?.wallets || [];
+};
+
+const resolveActiveWallet = async (): Promise<WalletRaw> => {
+	const wallets = await fetchRawWallets();
 
 	if (wallets.length === 0) {
 		throw new Error('No wallets available');
 	}
 
 	const storedKey = await getActiveWalletKey();
+	const matches = storedKey ? wallets.filter((wallet) => walletKeyOf(wallet) === storedKey) : [];
 
-	if (!storedKey) {
-		return wallets[0];
+	const target = matches.length > 0 ? pickDeterministic(matches) : wallets[0];
+	const targetKey = walletKeyOf(target);
+
+	if (storedKey !== targetKey) {
+		await setActiveWalletKey(targetKey);
 	}
 
-	const matches = wallets.filter(
-		(wallet) => computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only) === storedKey,
-	);
+	await fetchData('mw_select_wallet', { wallet_id: target.wallet_id });
 
-	if (matches.length !== 1) {
-		throw new Error('Unable to resolve active wallet');
+	return target;
+};
+
+export const selectWalletByKey = async (walletKey: string): Promise<void> => {
+	const wallets = await fetchRawWallets();
+	const matches = wallets.filter((wallet) => walletKeyOf(wallet) === walletKey);
+
+	if (matches.length === 0) {
+		throw new Error('Wallet not found');
 	}
 
-	return matches[0];
+	const target = pickDeterministic(matches);
+
+	await fetchData('mw_select_wallet', { wallet_id: target.wallet_id });
+	await setActiveWalletKey(walletKey);
 };
 
 export const getCurrentWalletFlags = async (): Promise<{
@@ -218,6 +250,10 @@ const getMixin = async (): Promise<number> => {
 };
 
 export const getWalletData = async () => {
+	const active = await resolveActiveWallet();
+	const isWatchOnly = !!active.wi?.is_watch_only;
+	const isAuditable = !!active.wi?.is_auditable;
+
 	const addressResponse = await fetchData('getaddress');
 	const addressParsed: ParsedAddress = await addressResponse.json();
 	const { address } = addressParsed.result;
@@ -280,8 +316,6 @@ export const getWalletData = async () => {
 	}
 
 	const alias = await getAlias(address);
-
-	const { isWatchOnly, isAuditable } = await getCurrentWalletFlags();
 
 	return {
 		address,

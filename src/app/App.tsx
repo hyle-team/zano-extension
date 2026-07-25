@@ -27,6 +27,7 @@ import {
 	setWhiteList,
 } from './store/actions';
 import { Store } from './store/store-reducer';
+import { computeWalletKey } from '../background/wallet';
 import { getZanoPrice } from './api/coingecko';
 import './styles/App.scss';
 import PasswordPage from './components/PasswordPage/PasswordPage';
@@ -126,6 +127,11 @@ function App() {
 				isAuditable,
 			});
 
+			updateActiveWalletKey(
+				dispatch as dispatchType,
+				computeWalletKey(address, !!isWatchOnly, !!isAuditable),
+			);
+
 			console.log('wallet data updated');
 			updateLoading(dispatch as dispatchType, false);
 			setFirstWalletLoaded(true);
@@ -157,32 +163,6 @@ function App() {
 			console.log('price data', priceData);
 			updatePriceData(dispatch as dispatchType, priceData);
 		});
-	}, [dispatch]);
-
-	useEffect(() => {
-		(async () => {
-			if (!chrome?.runtime?.sendMessage) return;
-
-			const walletsResponse = await fetchBackground({ method: 'GET_WALLETS' });
-			const wallets = walletsResponse?.data;
-			if (!Array.isArray(wallets) || wallets.length === 0) return;
-
-			const storedKey = await new Promise<string | undefined>((resolve) => {
-				chrome.storage?.local?.get?.(['walletKey'], (result) => resolve(result?.walletKey));
-			});
-
-			let target = wallets.find((wallet) => wallet.walletKey === storedKey);
-			if (!target) {
-				target = wallets[0] as unknown;
-				chrome.storage?.local?.set?.({ walletKey: target.walletKey });
-			}
-
-			fetchBackground({
-				method: 'SET_ACTIVE_WALLET',
-				id: target.wallet_id,
-			});
-			updateActiveWalletKey(dispatch as dispatchType, target.walletKey);
-		})();
 	}, [dispatch]);
 
 	const appConnected = !!(

@@ -128,7 +128,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 							)}
 						</div>
 
-						{hasAlias && (
+						{hasAlias && !isTrackingWallet && (
 							<div className={s.aliasWrapper__actions}>
 								<NavLink
 									component={AliasManagePage}

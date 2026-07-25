@@ -19,6 +19,7 @@ import {
 	getWallets,
 	getCurrentWalletFlags,
 	getActiveWalletKey,
+	selectWalletByKey,
 	transfer,
 	ionicSwap,
 	ionicSwapAccept,
@@ -153,18 +154,20 @@ class PopupRequestsMethods {
 				finalize({ error: 'Request denied by user' });
 				sendResponse({ data: true });
 			} else {
-				if (req.boundWalletKey) {
-					try {
-						const currentWalletKey = await getActiveWalletKey();
-						if (currentWalletKey !== req.boundWalletKey) {
-							finalize({ error: 'Active wallet changed' });
-							return sendResponse({ error: 'Active wallet changed' });
-						}
-					} catch (error) {
-						console.error('Failed to verify active wallet:', error);
-						finalize({ error: 'Failed to verify active wallet' });
-						return sendResponse({ error: 'Failed to verify active wallet' });
+				try {
+					const currentWalletKey = await getActiveWalletKey();
+					if (
+						!req.boundWalletKey ||
+						!currentWalletKey ||
+						currentWalletKey !== req.boundWalletKey
+					) {
+						finalize({ error: 'Active wallet changed' });
+						return sendResponse({ error: 'Active wallet changed' });
 					}
+				} catch (error) {
+					console.error('Failed to verify active wallet:', error);
+					finalize({ error: 'Failed to verify active wallet' });
+					return sendResponse({ error: 'Failed to verify active wallet' });
 				}
 
 				apiCallFunc(req)
@@ -519,17 +522,20 @@ async function processRequest(
 			break;
 		}
 
-		case 'SET_ACTIVE_WALLET':
-			fetchData('mw_select_wallet', { wallet_id: request.id })
-				.then((response) => response.json())
-				.then((data) => {
-					sendResponse({ data });
-				})
-				.catch((error) => {
-					console.error('Error fetching wallets:', error);
-					sendResponse({ error: 'An error occurred while fetching wallets' });
-				});
+		case 'SET_ACTIVE_WALLET': {
+			if (!request.walletKey) {
+				return sendResponse({ error: 'walletKey is required' });
+			}
+
+			try {
+				await selectWalletByKey(request.walletKey);
+				sendResponse({ data: true });
+			} catch (error) {
+				console.error('Error selecting wallet:', error);
+				sendResponse({ error: 'An error occurred while selecting wallet' });
+			}
 			break;
+		}
 
 		case 'GET_WALLET_BALANCE':
 			fetchData('getbalance')

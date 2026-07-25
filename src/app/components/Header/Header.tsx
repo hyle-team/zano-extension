@@ -37,24 +37,22 @@ const Header = () => {
 	const formatWalletAddress = (address: string) =>
 		address.length > 14 ? shortenAddress(address, 6, 6) : address;
 
-	const switchWallet = (wallet: { wallet_id?: number; walletKey?: string }) => {
+	const switchWallet = async (wallet: { wallet_id?: number; walletKey?: string }) => {
 		if (!wallet.walletKey) return;
 
-		// eslint-disable-next-line no-undef
-		chrome.storage.local.set({ walletKey: wallet.walletKey }, () => {
-			updateLoading(dispatch as () => void, true);
-			updateActiveWalletKey(dispatch as () => void, wallet.walletKey as string);
+		setDropdownOpen(false);
+		updateLoading(dispatch as () => void, true);
 
-			fetchBackground({
-				method: 'SET_ACTIVE_WALLET',
-				id: wallet.wallet_id,
-			});
-
-			console.log('Active wallet set to', wallet.walletKey);
-			setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
+		const response = await fetchBackground({
+			method: 'SET_ACTIVE_WALLET',
+			walletKey: wallet.walletKey,
 		});
 
-		setDropdownOpen(false);
+		if (!response?.error) {
+			updateActiveWalletKey(dispatch as () => void, wallet.walletKey);
+		}
+
+		setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
 	};
 
 	const handleWalletKeyDown = (

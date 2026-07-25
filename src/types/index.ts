@@ -242,6 +242,7 @@ export interface RequestType {
 	destinationAsset: AssetDataType;
 	hex_raw_proposal?: string;
 	address?: string;
+	walletKey?: string;
 	alias?: string;
 	sender?: string;
 	transfer?: unknown;
