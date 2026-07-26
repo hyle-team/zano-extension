@@ -2,7 +2,7 @@ import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import JSONbig from 'json-bigint';
 import { apiCredentials } from './background';
-import { addZeros, removeZeros } from '../app/utils/utils';
+import { addZeros, computeWalletKey, removeZeros } from '../app/utils/utils';
 import { WALLET_MIXIN, ZANO_ASSET_ID } from '../constants';
 import {
 	BurnAssetDataType,
@@ -131,31 +131,44 @@ export const getAliasDetails = async (alias: string) => {
 	return '';
 };
 
-export const computeWalletKey = (
-	address: string,
-	isWatchOnly: boolean,
-	isAuditable: boolean,
-): string =>
-	`${address}:${isWatchOnly ? 'view-only' : 'full'}:${isAuditable ? 'auditable' : 'regular'}`;
-
 const walletKeyOf = (wallet: WalletRaw): string =>
 	computeWalletKey(wallet.wi.address, !!wallet.wi.is_watch_only, !!wallet.wi.is_auditable);
 
-const pickDeterministic = (wallets: WalletRaw[]): WalletRaw =>
-	wallets.reduce((a, b) => (Number(a.wallet_id) <= Number(b.wallet_id) ? a : b));
+const pickDeterministic = (wallets: WalletRaw[]): WalletRaw => {
+	if (wallets.length === 0) {
+		throw new Error('No wallets to select from');
+	}
+	return wallets.reduce((a, b) => (Number(a.wallet_id) <= Number(b.wallet_id) ? a : b));
+};
 
-export const getWallets = async () => {
+const RAW_WALLETS_CACHE_TTL_MS = 800;
+let rawWalletsCache: { wallets: WalletRaw[]; timestamp: number } | null = null;
+
+const fetchRawWallets = async (): Promise<WalletRaw[]> => {
+	const now = Date.now();
+
+	if (rawWalletsCache && now - rawWalletsCache.timestamp < RAW_WALLETS_CACHE_TTL_MS) {
+		return rawWalletsCache.wallets;
+	}
+
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
+	const wallets: WalletRaw[] = data?.result?.wallets || [];
 
-	if (!data?.result?.wallets) {
+	rawWalletsCache = { wallets, timestamp: now };
+
+	return wallets;
+};
+
+export const getWallets = async () => {
+	const rawWallets = await fetchRawWallets();
+
+	if (rawWallets.length === 0) {
 		return [];
 	}
 
-	// console.log("wallets:", data.result.wallets);
-
 	const wallets = await Promise.all(
-		data.result.wallets.map(async (wallet: WalletRaw) => {
+		rawWallets.map(async (wallet: WalletRaw) => {
 			const alias = await getAlias(wallet.wi.address);
 			const balanceRaw =
 				wallet?.wi?.balances?.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
@@ -190,12 +203,6 @@ export const setActiveWalletKey = async (walletKey: string): Promise<void> => {
 	});
 };
 
-const fetchRawWallets = async (): Promise<WalletRaw[]> => {
-	const response = await fetchData('mw_get_wallets');
-	const data = await response.json();
-	return data?.result?.wallets || [];
-};
-
 const resolveActiveWallet = async (): Promise<WalletRaw> => {
 	const wallets = await fetchRawWallets();
 
@@ -203,19 +210,34 @@ const resolveActiveWallet = async (): Promise<WalletRaw> => {
 		throw new Error('No wallets available');
 	}
 
-	const storedKey = await getActiveWalletKey();
-	const matches = storedKey ? wallets.filter((wallet) => walletKeyOf(wallet) === storedKey) : [];
+	const addressResponse = await fetchData('getaddress');
 
-	const target = matches.length > 0 ? pickDeterministic(matches) : wallets[0];
-	const targetKey = walletKeyOf(target);
-
-	if (storedKey !== targetKey) {
-		await setActiveWalletKey(targetKey);
+	if (!addressResponse.ok) {
+		throw new Error(`HTTP error! status: ${addressResponse.status}`);
 	}
 
-	await fetchData('mw_select_wallet', { wallet_id: target.wallet_id });
+	const addressParsed: ParsedAddress = await addressResponse.json();
+	const currentAddress = addressParsed?.result?.address;
 
-	return target;
+	const addressMatches = wallets.filter((wallet) => wallet.wi.address === currentAddress);
+
+	if (addressMatches.length === 0) {
+		throw new Error('Active wallet not found among available wallets');
+	}
+
+	const storedKey = await getActiveWalletKey();
+
+	const active =
+		addressMatches.find((wallet) => walletKeyOf(wallet) === storedKey) ??
+		pickDeterministic(addressMatches);
+
+	const activeKey = walletKeyOf(active);
+
+	if (storedKey !== activeKey) {
+		await setActiveWalletKey(activeKey);
+	}
+
+	return active;
 };
 
 export const selectWalletByKey = async (walletKey: string): Promise<void> => {
@@ -228,7 +250,16 @@ export const selectWalletByKey = async (walletKey: string): Promise<void> => {
 
 	const target = pickDeterministic(matches);
 
-	await fetchData('mw_select_wallet', { wallet_id: target.wallet_id });
+	const res = await fetchData('mw_select_wallet', { wallet_id: target.wallet_id });
+
+	if (!res.ok) {
+		throw new Error(`HTTP error! status: ${res.status}`);
+	}
+
+	const json = await res.json();
+
+	if (json.error) throw new Error(json.error.message || 'Unknown error while selecting wallet');
+
 	await setActiveWalletKey(walletKey);
 };
 
@@ -257,6 +288,10 @@ export const getWalletData = async () => {
 	const addressResponse = await fetchData('getaddress');
 	const addressParsed: ParsedAddress = await addressResponse.json();
 	const { address } = addressParsed.result;
+
+	if (address !== active.wi.address) {
+		throw new Error(`Wallet mismatch. Expected ${active.wi.address}, got ${address}`);
+	}
 
 	const balanceResponse = await fetchData('getbalance');
 	const balanceParsed: ParsedBalance = JSONbig.parse(await balanceResponse.text());

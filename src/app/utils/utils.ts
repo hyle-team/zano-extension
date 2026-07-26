@@ -179,3 +179,10 @@ export function isSecureOrigin(origin: string): boolean {
 		return false;
 	}
 }
+
+export const computeWalletKey = (
+	address: string,
+	isWatchOnly: boolean,
+	isAuditable: boolean,
+): string =>
+	`${address}:${isWatchOnly ? 'view-only' : 'full'}:${isAuditable ? 'auditable' : 'regular'}`;

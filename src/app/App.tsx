@@ -10,6 +10,7 @@ import AppLoader from './components/UI/AppLoader/AppLoader';
 import Wallet from './components/Wallet/Wallet';
 import {
 	comparePasswords,
+	computeWalletKey,
 	fetchBackground,
 	getSessionPassword,
 	passwordExists,
@@ -27,7 +28,6 @@ import {
 	setWhiteList,
 } from './store/actions';
 import { Store } from './store/store-reducer';
-import { computeWalletKey } from '../background/wallet';
 import { getZanoPrice } from './api/coingecko';
 import './styles/App.scss';
 import PasswordPage from './components/PasswordPage/PasswordPage';
