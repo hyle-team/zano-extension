@@ -141,36 +141,11 @@ const pickDeterministic = (wallets: WalletRaw[]): WalletRaw => {
 	return wallets.reduce((a, b) => (Number(a.wallet_id) <= Number(b.wallet_id) ? a : b));
 };
 
-const RAW_WALLETS_CACHE_TTL_MS = 800;
-let rawWalletsCache: { wallets: WalletRaw[]; timestamp: number } | null = null;
-
-const invalidateRawWalletsCache = () => {
-	rawWalletsCache = null;
-};
-
-const fetchRawWallets = async (forceRefresh = false): Promise<WalletRaw[]> => {
-	const now = Date.now();
-
-	if (
-		!forceRefresh &&
-		rawWalletsCache &&
-		now - rawWalletsCache.timestamp < RAW_WALLETS_CACHE_TTL_MS
-	) {
-		return rawWalletsCache.wallets;
-	}
-
+const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 	const response = await fetchData('mw_get_wallets');
 	const data = await response.json();
-	const wallets: WalletRaw[] = data?.result?.wallets || [];
 
-	if (wallets.length === 0) {
-		invalidateRawWalletsCache();
-		return wallets;
-	}
-
-	rawWalletsCache = { wallets, timestamp: now };
-
-	return wallets;
+	return data?.result?.wallets || [];
 };
 
 export const getWallets = async () => {
@@ -232,14 +207,7 @@ const resolveActiveWallet = async (): Promise<WalletRaw> => {
 	const addressParsed: ParsedAddress = await addressResponse.json();
 	const currentAddress = addressParsed?.result?.address;
 
-	const matchByAddress = (list: WalletRaw[]) =>
-		list.filter((wallet) => wallet.wi.address === currentAddress);
-
-	let addressMatches = matchByAddress(wallets);
-
-	if (addressMatches.length === 0) {
-		addressMatches = matchByAddress(await fetchRawWallets(true));
-	}
+	const addressMatches = wallets.filter((wallet) => wallet.wi.address === currentAddress);
 
 	if (addressMatches.length === 0) {
 		throw new Error('Active wallet not found among available wallets');
@@ -261,14 +229,8 @@ const resolveActiveWallet = async (): Promise<WalletRaw> => {
 };
 
 export const selectWalletByKey = async (walletKey: string): Promise<void> => {
-	const matchByKey = (list: WalletRaw[]) =>
-		list.filter((wallet) => walletKeyOf(wallet) === walletKey);
-
-	let matches = matchByKey(await fetchRawWallets());
-
-	if (matches.length === 0) {
-		matches = matchByKey(await fetchRawWallets(true));
-	}
+	const wallets = await fetchRawWallets();
+	const matches = wallets.filter((wallet) => walletKeyOf(wallet) === walletKey);
 
 	if (matches.length === 0) {
 		throw new Error('Wallet not found');
@@ -285,8 +247,6 @@ export const selectWalletByKey = async (walletKey: string): Promise<void> => {
 	const json = await res.json();
 
 	if (json.error) throw new Error(json.error.message || 'Unknown error while selecting wallet');
-
-	invalidateRawWalletsCache();
 
 	await setActiveWalletKey(walletKey);
 };

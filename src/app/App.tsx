@@ -102,15 +102,23 @@ function App() {
 		const getWalletData = async () => {
 			if (!chrome?.runtime?.sendMessage) return;
 
-			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
-
-			if (!walletsList.data) return;
-			updateWalletsList(dispatch as dispatchType, walletsList.data);
-
 			const walletData = await fetchBackground({
 				method: 'GET_WALLET_DATA',
 			});
-			if (!walletData.data) return;
+
+			updateWalletConnected(dispatch as dispatchType, !walletData.error);
+
+			if (!walletData.data) {
+				updateLoading(dispatch as dispatchType, false);
+				return;
+			}
+
+			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
+
+			if (walletsList.data) {
+				updateWalletsList(dispatch as dispatchType, walletsList.data);
+			}
+
 			const { address, alias, balance, transactions, assets, isWatchOnly, isAuditable } =
 				walletData.data;
 
@@ -138,11 +146,12 @@ function App() {
 		};
 
 		const intervalId = setInterval(async () => {
-			await checkConnection();
-			console.log('connected', state.isConnected);
-			if (state.isConnected && loggedIn) {
-				await getWalletData();
+			if (!loggedIn) {
+				await checkConnection();
+				return;
 			}
+
+			await getWalletData();
 		}, 1000);
 
 		return () => clearInterval(intervalId);
