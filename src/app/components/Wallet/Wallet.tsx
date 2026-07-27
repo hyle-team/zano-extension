@@ -200,12 +200,10 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 								{state.isBalancesHidden ? 'Show values' : 'Hide values'}
 							</button>
 
-							{!isTrackingWallet && (
-								<NavLink component={PermissionsPage} className={s.settingsBtn}>
-									<img src={dappIcon} alt="dapp icon" />
-									dApps
-								</NavLink>
-							)}
+							<NavLink component={PermissionsPage} className={s.settingsBtn}>
+								<img src={dappIcon} alt="dapp icon" />
+								dApps
+							</NavLink>
 						</div>
 					)}
 				</div>

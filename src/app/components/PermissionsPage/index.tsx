@@ -32,7 +32,6 @@ const permissionMap: Record<string, { info: string; icon: string }> = {
 const PermissionsPage = () => {
 	const { state } = useContext(Store);
 	const walletAddress = state.wallet.address;
-	const isReadOnly = !!state.wallet.isWatchOnly;
 	const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [confirmDisconnectAll, setConfirmDisconnectAll] = useState(false);
 	const [permissions, setPermissions] = useState<PermissionsState>({});
@@ -239,7 +238,6 @@ const PermissionsPage = () => {
 							<Button
 								onClick={() => setConfirmDisconnectAll(true)}
 								theme={ButtonThemes.Danger}
-								disabled={isReadOnly}
 							>
 								<img src={logoutIcon} alt="logout" />
 								Disconnect All
@@ -320,14 +318,12 @@ const PermissionsPage = () => {
 							</div>
 
 							<div className={styles.popup__actions}>
-								{!isReadOnly && (
-									<Button
-										onClick={() => disconnectSite(selectedSiteData.origin)}
-										theme={ButtonThemes.Danger}
-									>
-										Disconnect dApp
-									</Button>
-								)}
+								<Button
+									onClick={() => disconnectSite(selectedSiteData.origin)}
+									theme={ButtonThemes.Danger}
+								>
+									Disconnect dApp
+								</Button>
 
 								<Button onClick={onHandleClosePopup} theme={ButtonThemes.Outline}>
 									Close
