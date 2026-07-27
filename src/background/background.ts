@@ -393,16 +393,12 @@ async function processRequest(
 	if (!allowed) return;
 
 	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
-		try {
-			const { isWatchOnly } = await getCurrentWalletFlags();
-			if (isWatchOnly) {
-				return sendResponse({
-					error: 'This operation is not available for tracking wallets',
-				});
-			}
-		} catch (error) {
-			console.error('Failed to check wallet type:', error);
-			return sendResponse({ error: 'Failed to verify wallet type' });
+		const { isWatchOnly } = await getCurrentWalletFlags();
+
+		if (isWatchOnly) {
+			return sendResponse({
+				error: 'No permissions',
+			});
 		}
 	}
 
