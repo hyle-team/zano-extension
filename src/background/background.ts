@@ -336,10 +336,6 @@ async function requestAccess(
 		return { error: 'Request already pending' };
 	}
 
-	if (wallet.isWatchOnly) {
-		return { error: 'This operation is not available for tracking wallets' };
-	}
-
 	return new Promise((resolve) => {
 		openWindow()
 			.then((requestWindow) => {
@@ -396,10 +392,7 @@ async function processRequest(
 
 	if (!allowed) return;
 
-	if (
-		WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method) &&
-		!request.method.startsWith('FINALIZE')
-	) {
+	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
 		try {
 			const { isWatchOnly } = await getCurrentWalletFlags();
 			if (isWatchOnly) {
