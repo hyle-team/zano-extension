@@ -92,6 +92,17 @@ const savedRequests: Record<
 	BURN_ASSET: {},
 };
 
+async function getSpendBlockReason(): Promise<string | null> {
+	try {
+		const { isWatchOnly } = await getCurrentWalletFlags();
+
+		return isWatchOnly ? 'No permissions' : null;
+	} catch (error) {
+		console.error('Failed to check wallet type:', error);
+		return 'Failed to verify wallet type';
+	}
+}
+
 const allPopupIds: number[] = [];
 class PopupRequestsMethods {
 	static async onRequestCreate(
@@ -174,6 +185,13 @@ class PopupRequestsMethods {
 					console.error('Failed to verify active wallet:', error);
 					finalize({ error: 'Failed to verify active wallet' });
 					return sendResponse({ error: 'Failed to verify active wallet' });
+				}
+
+				const blockReason = await getSpendBlockReason();
+
+				if (blockReason) {
+					finalize({ error: blockReason });
+					return sendResponse({ error: blockReason });
 				}
 
 				apiCallFunc(req)
@@ -944,6 +962,13 @@ async function processRequest(
 						console.error('Failed to verify active wallet:', error);
 						finalize({ error: 'Failed to verify active wallet' });
 						return sendResponse({ error: 'Failed to verify active wallet' });
+					}
+
+					const blockReason = await getSpendBlockReason();
+
+					if (blockReason) {
+						finalize({ error: blockReason });
+						return sendResponse({ error: blockReason });
 					}
 
 					if (secure) {
