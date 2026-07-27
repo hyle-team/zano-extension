@@ -336,6 +336,8 @@ async function requestAccess(
 		return { error: 'Request already pending' };
 	}
 
+	const boundWalletKey = await getActiveWalletKey();
+
 	return new Promise((resolve) => {
 		openWindow()
 			.then((requestWindow) => {
@@ -353,6 +355,8 @@ async function requestAccess(
 					hostname,
 					favicon,
 					permissions: cleanPermissions,
+					boundWalletKey,
+					boundAddress: address,
 				});
 			})
 			.catch((error) => {
@@ -462,8 +466,24 @@ async function processRequest(
 				return sendResponse({ data: true });
 			}
 
-			const wallet = await getWalletData();
-			const { address } = wallet;
+			try {
+				const currentWalletKey = await getActiveWalletKey();
+
+				if (
+					!req.boundWalletKey ||
+					!currentWalletKey ||
+					currentWalletKey !== req.boundWalletKey
+				) {
+					finalize({ error: 'Active wallet changed' });
+					return sendResponse({ error: 'Active wallet changed' });
+				}
+			} catch (error) {
+				console.error('Failed to verify active wallet:', error);
+				finalize({ error: 'Failed to verify active wallet' });
+				return sendResponse({ error: 'Failed to verify active wallet' });
+			}
+
+			const address = req.boundAddress;
 
 			const stored = await chrome.storage.local.get('permissions');
 			const map = stored.permissions || {};

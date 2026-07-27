@@ -279,6 +279,8 @@ export interface AccessRequestType {
 	hostname: string;
 	favicon: string;
 	permissions?: { type: PermissionType }[];
+	boundWalletKey: string | null;
+	boundAddress: string;
 }
 
 export interface TransferDataType {
