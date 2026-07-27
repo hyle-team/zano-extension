@@ -61,6 +61,12 @@
 	border: 0;
 	padding: 0;
 	cursor: pointer;
+
+	&:disabled {
+		cursor: default;
+		color: #fff;
+		opacity: 1;
+	}
 }
 
 .dropdownButtonLabel {

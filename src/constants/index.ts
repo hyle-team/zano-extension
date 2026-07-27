@@ -65,6 +65,9 @@ export const METHOD_EXTRA_PERMISSIONS: Record<string, string[]> = {
 
 export const PUBLIC_METHODS = ['REQUEST_ACCESS', 'GET_PERMISSIONS'];
 
+export const WINDOW_MODE_PARAM = 'windowMode';
+export const REQUEST_CONFIRMATION_WINDOW_MODE = 'request-confirmation';
+
 export const PASSWORD_HASH_SALT_STORAGE_KEY = 'salt2';
 export const PASSWORD_HASH_STORAGE_KEY = 'hash2';
 

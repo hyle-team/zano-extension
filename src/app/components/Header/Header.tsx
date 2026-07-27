@@ -6,11 +6,12 @@ import { useCopy } from '../../hooks/useCopy';
 import { Store } from '../../store/store-reducer';
 import { updateActiveWalletKey, updateLoading } from '../../store/actions';
 import s from './Header.module.scss';
-import { fetchBackground, shortenAddress } from '../../utils/utils';
+import { fetchBackground, isRequestConfirmationWindow, shortenAddress } from '../../utils/utils';
 
 const Header = () => {
 	const { dispatch, state } = useContext(Store);
 	const { copyToClipboard } = useCopy();
+	const walletSwitchingDisabled = isRequestConfirmationWindow();
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [copiedWalletAddress, setCopiedWalletAddress] = useState<string | null>(null);
 	const copyFeedbackTimeoutRef = useRef<number | null>(null);
@@ -32,7 +33,11 @@ const Header = () => {
 		[],
 	);
 
-	const toggleDropdown = () => setDropdownOpen((currentState) => !currentState);
+	const toggleDropdown = () => {
+		if (walletSwitchingDisabled) return;
+
+		setDropdownOpen((currentState) => !currentState);
+	};
 
 	const formatWalletAddress = (address: string) =>
 		address.length > 14 ? shortenAddress(address, 6, 6) : address;
@@ -112,18 +117,21 @@ const Header = () => {
 				className={s.dropdownButton}
 				aria-expanded={dropdownOpen}
 				aria-label="Toggle wallets list"
+				disabled={walletSwitchingDisabled}
 			>
 				<span className={s.dropdownButtonLabel} title={state.wallet.address}>
 					{state.wallet.alias
 						? `@${state.wallet.alias}`
 						: formatWalletAddress(state.wallet.address)}
 				</span>
-				<img
-					src={arrowIcon}
-					alt=""
-					aria-hidden="true"
-					className={`${s.dropdownButtonIcon} ${dropdownOpen ? s.dropdownButtonIconOpen : ''}`}
-				/>
+				{!walletSwitchingDisabled && (
+					<img
+						src={arrowIcon}
+						alt=""
+						aria-hidden="true"
+						className={`${s.dropdownButtonIcon} ${dropdownOpen ? s.dropdownButtonIconOpen : ''}`}
+					/>
+				)}
 			</button>
 
 			<div className={s.headerStatus}>

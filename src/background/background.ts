@@ -2,7 +2,13 @@ import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
-import { SELF_ONLY_REQUESTS, WATCH_ONLY_BLOCKED_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import {
+	REQUEST_CONFIRMATION_WINDOW_MODE,
+	SELF_ONLY_REQUESTS,
+	WATCH_ONLY_BLOCKED_REQUESTS,
+	WINDOW_MODE_PARAM,
+	ZANO_ASSET_ID,
+} from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
@@ -263,11 +269,14 @@ const signReqs: {
 	message: string;
 	host: string;
 	secure: boolean;
+	boundWalletKey: string | null;
 }[] = [];
 
 function openWindow(): Promise<chrome.windows.Window> {
 	return chrome.windows.create({
-		url: chrome.runtime.getURL('index.html'),
+		url: chrome.runtime.getURL(
+			`index.html?${WINDOW_MODE_PARAM}=${REQUEST_CONFIRMATION_WINDOW_MODE}`,
+		),
 		type: 'popup',
 		width: POPUP_WIDTH,
 		height: POPUP_HEIGHT,
@@ -920,6 +929,23 @@ async function processRequest(
 				} else {
 					const { message, secure } = signReq;
 
+					try {
+						const currentWalletKey = await getActiveWalletKey();
+
+						if (
+							!signReq.boundWalletKey ||
+							!currentWalletKey ||
+							currentWalletKey !== signReq.boundWalletKey
+						) {
+							finalize({ error: 'Active wallet changed' });
+							return sendResponse({ error: 'Active wallet changed' });
+						}
+					} catch (error) {
+						console.error('Failed to verify active wallet:', error);
+						finalize({ error: 'Failed to verify active wallet' });
+						return sendResponse({ error: 'Failed to verify active wallet' });
+					}
+
 					if (secure) {
 						const parsedMessageResult = parseSecureMessageForSigning({
 							message,
@@ -1031,6 +1057,8 @@ async function processRequest(
 				}
 			}
 
+			const boundWalletKey = await getActiveWalletKey();
+
 			openWindow().then(async (requestWindow) => {
 				const signReqId = crypto.randomUUID();
 
@@ -1046,6 +1074,7 @@ async function processRequest(
 					message: String(request.message),
 					host,
 					secure: isInSecureMode,
+					boundWalletKey,
 				});
 
 				if (typeof request.timeout === 'number') {
