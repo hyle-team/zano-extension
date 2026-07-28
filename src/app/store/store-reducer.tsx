@@ -77,6 +77,7 @@ interface State {
 	isBalancesHidden: boolean;
 	priceData: PriceData;
 	confirmationModal: null | string;
+	openRequestConfirmations: number;
 	transactionStatus: TransactionStatus;
 	connectCredentials: ConnectCredentials;
 	whitelistedAssets: string[];
@@ -133,6 +134,7 @@ const initialState: State = {
 	isBalancesHidden: false,
 	priceData: { price: 1, change: -4.6 },
 	confirmationModal: null,
+	openRequestConfirmations: 0,
 	transactionStatus: {
 		visible: false,
 		type: '',
@@ -161,6 +163,8 @@ type Action =
 	| { type: 'LOADING_UPDATED'; payload: boolean }
 	| { type: 'BALANCES_HIDDEN_UPDATED'; payload: boolean }
 	| { type: 'CONFIRMATION_MODAL_UPDATED'; payload: string | null }
+	| { type: 'REQUEST_CONFIRMATION_OPENED' }
+	| { type: 'REQUEST_CONFIRMATION_CLOSED' }
 	| { type: 'TRANSACTION_STATUS_UPDATED'; payload: TransactionStatus }
 	| { type: 'SET_CONNECT_DATA'; payload: ConnectCredentials }
 	| { type: 'SET_WHITE_LIST'; payload: string[] }
@@ -190,6 +194,13 @@ const reducer = (state: State, action: Action): State => {
 			return { ...state, isBalancesHidden: action.payload };
 		case 'CONFIRMATION_MODAL_UPDATED':
 			return { ...state, confirmationModal: action.payload };
+		case 'REQUEST_CONFIRMATION_OPENED':
+			return { ...state, openRequestConfirmations: state.openRequestConfirmations + 1 };
+		case 'REQUEST_CONFIRMATION_CLOSED':
+			return {
+				...state,
+				openRequestConfirmations: Math.max(0, state.openRequestConfirmations - 1),
+			};
 		case 'TRANSACTION_STATUS_UPDATED':
 			return { ...state, transactionStatus: action.payload };
 		case 'SET_CONNECT_DATA':

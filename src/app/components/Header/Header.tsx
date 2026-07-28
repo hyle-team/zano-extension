@@ -6,15 +6,25 @@ import { useCopy } from '../../hooks/useCopy';
 import { Store } from '../../store/store-reducer';
 import { updateActiveWalletKey, updateLoading } from '../../store/actions';
 import s from './Header.module.scss';
-import { fetchBackground, isRequestConfirmationWindow, shortenAddress } from '../../utils/utils';
+import { fetchBackground, shortenAddress } from '../../utils/utils';
 
 const Header = () => {
 	const { dispatch, state } = useContext(Store);
 	const { copyToClipboard } = useCopy();
-	const walletSwitchingDisabled = isRequestConfirmationWindow();
+	// A request is bound to the wallet it was made for, so switching stays locked for as long
+	// as a confirmation screen is open — in the popup window and the extension popup alike.
+	const walletSwitchingDisabled = state.openRequestConfirmations > 0;
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [copiedWalletAddress, setCopiedWalletAddress] = useState<string | null>(null);
 	const copyFeedbackTimeoutRef = useRef<number | null>(null);
+
+	// A request can arrive while the list is open, so close it instead of leaving a
+	// still-clickable dropdown on top of the confirmation screen.
+	useEffect(() => {
+		if (walletSwitchingDisabled) {
+			setDropdownOpen(false);
+		}
+	}, [walletSwitchingDisabled]);
 
 	useEffect(() => {
 		document.body.style.overflow = dropdownOpen ? 'hidden' : '';

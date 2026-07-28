@@ -14,6 +14,7 @@ import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
 import { ParamsTypeFormat } from './OuterConfirmation.types';
 import { ExpandableAssetId } from './ui/ExpandableAssetId/ExpandableAssetId';
 import { CopyableParam } from './ui/CopyableParam/CopyableParam';
+import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
 
 interface ParamsType {
 	format?: ParamsTypeFormat;
@@ -30,6 +31,8 @@ const OuterConfirmation = () => {
 	const { state } = useContext(Store);
 	const { props } = getCurrent();
 	const { reqs } = props;
+
+	useRequestConfirmationScreen();
 
 	const [reqIndex, setReqIndex] = useState(0);
 	const [accepting, setAccepting] = useState(false);

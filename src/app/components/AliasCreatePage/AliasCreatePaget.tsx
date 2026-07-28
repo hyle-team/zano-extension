@@ -5,6 +5,7 @@ import styles from './AliasCreatePage.module.scss';
 import { fetchBackground } from '../../utils/utils';
 import InfoTooltip from '../UI/InfoTooltip';
 import { useFeeCheck } from '../../hooks/useFeeCheck';
+import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
 
 const fee = 0.11;
 
@@ -13,6 +14,8 @@ export default function AliasCreatePage() {
 	const { notEnoughFee } = useFeeCheck(fee);
 
 	const { createRequests } = props;
+
+	useRequestConfirmationScreen();
 
 	const [reqIndex, setReqIndex] = useState(0);
 	const [accepting, setAccepting] = useState(false);

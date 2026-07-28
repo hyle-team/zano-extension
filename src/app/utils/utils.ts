@@ -8,8 +8,6 @@ import {
 	PASSWORD_HASH_SALT_STORAGE_KEY,
 	PASSWORD_HASH_STORAGE_KEY,
 	PASSWORD_HASH_STORAGE_KEY_DEPRECATED,
-	REQUEST_CONFIRMATION_WINDOW_MODE,
-	WINDOW_MODE_PARAM,
 } from '../../constants';
 
 interface BackgroundResponse {
@@ -177,17 +175,6 @@ export function isSecureOrigin(origin: string): boolean {
 		const isLoopback =
 			hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
 		return protocol === 'https:' || (protocol === 'http:' && isLoopback);
-	} catch {
-		return false;
-	}
-}
-
-export function isRequestConfirmationWindow(): boolean {
-	try {
-		return (
-			new URLSearchParams(window.location.search).get(WINDOW_MODE_PARAM) ===
-			REQUEST_CONFIRMATION_WINDOW_MODE
-		);
 	} catch {
 		return false;
 	}

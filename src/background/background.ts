@@ -2,13 +2,7 @@ import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
-import {
-	REQUEST_CONFIRMATION_WINDOW_MODE,
-	SELF_ONLY_REQUESTS,
-	WATCH_ONLY_BLOCKED_REQUESTS,
-	WINDOW_MODE_PARAM,
-	ZANO_ASSET_ID,
-} from '../constants';
+import { SELF_ONLY_REQUESTS, WATCH_ONLY_BLOCKED_REQUESTS, ZANO_ASSET_ID } from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
@@ -292,9 +286,7 @@ const signReqs: {
 
 function openWindow(): Promise<chrome.windows.Window> {
 	return chrome.windows.create({
-		url: chrome.runtime.getURL(
-			`index.html?${WINDOW_MODE_PARAM}=${REQUEST_CONFIRMATION_WINDOW_MODE}`,
-		),
+		url: chrome.runtime.getURL('index.html'),
 		type: 'popup',
 		width: POPUP_WIDTH,
 		height: POPUP_HEIGHT,
