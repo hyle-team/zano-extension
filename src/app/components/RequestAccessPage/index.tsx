@@ -9,6 +9,7 @@ import historyIcon from '../../assets/svg/history.svg';
 import { fetchBackground } from '../../utils/utils';
 import { PermissionType } from '../../../types';
 import FaviconImg from '../UI/FaviconImg/FaviconImg';
+import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
 
 const permissionMap = {
 	general: {
@@ -34,6 +35,8 @@ const RequestAccessPage = () => {
 	const [reqIndex, setReqIndex] = useState(0);
 	const [accepting, setAccepting] = useState(false);
 	const [denying, setDenying] = useState(false);
+
+	useRequestConfirmationScreen();
 
 	if (!accessRequests?.length) return null;
 

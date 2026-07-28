@@ -22,6 +22,7 @@ export async function fetchBackground(data: {
 	credentials?: { port: string };
 	alias?: string;
 	address?: string;
+	walletKey?: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): Promise<any> {
 	return new Promise((resolve, reject) => {
@@ -178,3 +179,10 @@ export function isSecureOrigin(origin: string): boolean {
 		return false;
 	}
 }
+
+export const computeWalletKey = (
+	address: string,
+	isWatchOnly: boolean,
+	isAuditable: boolean,
+): string =>
+	`${address}:${isWatchOnly ? 'view-only' : 'full'}:${isAuditable ? 'auditable' : 'regular'}`;

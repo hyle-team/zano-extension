@@ -3,11 +3,14 @@ import { getCurrent, goBack } from 'react-chrome-extension-router';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './MessageSignPage.module.scss';
 import { fetchBackground } from '../../utils/utils';
+import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
 
 export default function MessageSignPage() {
 	const { props } = getCurrent();
 
 	const { signRequests } = props;
+
+	useRequestConfirmationScreen();
 
 	const [reqIndex, setReqIndex] = useState(0);
 	const [accepting, setAccepting] = useState(false);

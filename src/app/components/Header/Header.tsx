@@ -4,16 +4,27 @@ import checkIcon from '../../assets/svg/check-icon-blue.svg';
 import copyBlueIcon from '../../assets/svg/copy-blue.svg';
 import { useCopy } from '../../hooks/useCopy';
 import { Store } from '../../store/store-reducer';
-import { updateActiveWalletId, updateLoading } from '../../store/actions';
+import { updateActiveWalletKey, updateLoading } from '../../store/actions';
 import s from './Header.module.scss';
 import { fetchBackground, shortenAddress } from '../../utils/utils';
 
 const Header = () => {
 	const { dispatch, state } = useContext(Store);
 	const { copyToClipboard } = useCopy();
+	// A request is bound to the wallet it was made for, so switching stays locked for as long
+	// as a confirmation screen is open — in the popup window and the extension popup alike.
+	const walletSwitchingDisabled = state.openRequestConfirmations > 0;
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [copiedWalletAddress, setCopiedWalletAddress] = useState<string | null>(null);
 	const copyFeedbackTimeoutRef = useRef<number | null>(null);
+
+	// A request can arrive while the list is open, so close it instead of leaving a
+	// still-clickable dropdown on top of the confirmation screen.
+	useEffect(() => {
+		if (walletSwitchingDisabled) {
+			setDropdownOpen(false);
+		}
+	}, [walletSwitchingDisabled]);
 
 	useEffect(() => {
 		document.body.style.overflow = dropdownOpen ? 'hidden' : '';
@@ -32,39 +43,43 @@ const Header = () => {
 		[],
 	);
 
-	const toggleDropdown = () => setDropdownOpen((currentState) => !currentState);
+	const toggleDropdown = () => {
+		if (walletSwitchingDisabled) return;
+
+		setDropdownOpen((currentState) => !currentState);
+	};
 
 	const formatWalletAddress = (address: string) =>
 		address.length > 14 ? shortenAddress(address, 6, 6) : address;
 
-	const switchWallet = (id: number | undefined) => {
-		// eslint-disable-next-line no-undef
-		chrome.storage.local.set({ key: id }, () => {
-			updateLoading(dispatch as () => void, true);
-			updateActiveWalletId(dispatch as () => void, String(id));
-
-			fetchBackground({
-				method: 'SET_ACTIVE_WALLET',
-				id,
-			});
-
-			console.log('Active wallet set to', id);
-			setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
-		});
+	const switchWallet = async (wallet: { wallet_id?: number; walletKey?: string }) => {
+		if (!wallet.walletKey) return;
 
 		setDropdownOpen(false);
+		updateLoading(dispatch as () => void, true);
+
+		const response = await fetchBackground({
+			method: 'SET_ACTIVE_WALLET',
+			walletKey: wallet.walletKey,
+		});
+
+		if (!response?.error) {
+			updateActiveWalletKey(dispatch as () => void, wallet.walletKey);
+		}
+
+		setTimeout(() => updateLoading(dispatch as () => void, false), 1000);
 	};
 
 	const handleWalletKeyDown = (
 		event: React.KeyboardEvent<HTMLDivElement>,
-		id: number | undefined,
+		wallet: { wallet_id?: number; walletKey?: string },
 	) => {
 		if (event.key !== 'Enter' && event.key !== ' ') {
 			return;
 		}
 
 		event.preventDefault();
-		switchWallet(id);
+		switchWallet(wallet);
 	};
 
 	const copyAlias = (alias: string, walletAddress: string) => {
@@ -112,18 +127,21 @@ const Header = () => {
 				className={s.dropdownButton}
 				aria-expanded={dropdownOpen}
 				aria-label="Toggle wallets list"
+				disabled={walletSwitchingDisabled}
 			>
 				<span className={s.dropdownButtonLabel} title={state.wallet.address}>
 					{state.wallet.alias
 						? `@${state.wallet.alias}`
 						: formatWalletAddress(state.wallet.address)}
 				</span>
-				<img
-					src={arrowIcon}
-					alt=""
-					aria-hidden="true"
-					className={`${s.dropdownButtonIcon} ${dropdownOpen ? s.dropdownButtonIconOpen : ''}`}
-				/>
+				{!walletSwitchingDisabled && (
+					<img
+						src={arrowIcon}
+						alt=""
+						aria-hidden="true"
+						className={`${s.dropdownButtonIcon} ${dropdownOpen ? s.dropdownButtonIconOpen : ''}`}
+					/>
+				)}
 			</button>
 
 			<div className={s.headerStatus}>
@@ -135,18 +153,16 @@ const Header = () => {
 				<div onClick={toggleDropdown} className={s.dropdown}>
 					<div onClick={(event) => event.stopPropagation()} className={s.dropdownList}>
 						{state.walletsList.map((wallet) => {
-							const isActiveWallet = wallet.address === state.wallet.address;
+							const isActiveWallet = wallet.walletKey === state.activeWalletKey;
 							const aliasLabel = wallet.alias ? `@${wallet.alias}` : '';
 							const isCopySuccessful = copiedWalletAddress === wallet.address;
 
 							return (
 								<div
-									key={wallet.address}
+									key={wallet.walletKey ?? wallet.address}
 									className={`${s.dropdownItem} ${isActiveWallet ? s.dropdownItemActive : ''}`}
-									onClick={() => switchWallet(wallet.wallet_id)}
-									onKeyDown={(event) =>
-										handleWalletKeyDown(event, wallet.wallet_id)
-									}
+									onClick={() => switchWallet(wallet)}
+									onKeyDown={(event) => handleWalletKeyDown(event, wallet)}
 									role="button"
 									tabIndex={0}
 								>

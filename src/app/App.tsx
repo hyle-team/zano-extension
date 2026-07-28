@@ -10,6 +10,7 @@ import AppLoader from './components/UI/AppLoader/AppLoader';
 import Wallet from './components/Wallet/Wallet';
 import {
 	comparePasswords,
+	computeWalletKey,
 	fetchBackground,
 	getSessionPassword,
 	passwordExists,
@@ -18,7 +19,7 @@ import {
 } from './utils/utils';
 import {
 	updateWalletConnected,
-	updateActiveWalletId,
+	updateActiveWalletKey,
 	updateWalletsList,
 	updateWalletData,
 	updatePriceData,
@@ -101,15 +102,23 @@ function App() {
 		const getWalletData = async () => {
 			if (!chrome?.runtime?.sendMessage) return;
 
-			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
-
-			if (!walletsList.data) return;
-			updateWalletsList(dispatch as dispatchType, walletsList.data);
-
 			const walletData = await fetchBackground({
 				method: 'GET_WALLET_DATA',
 			});
-			if (!walletData.data) return;
+
+			updateWalletConnected(dispatch as dispatchType, !walletData.error);
+
+			if (!walletData.data) {
+				updateLoading(dispatch as dispatchType, false);
+				return;
+			}
+
+			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
+
+			if (walletsList.data) {
+				updateWalletsList(dispatch as dispatchType, walletsList.data);
+			}
+
 			const { address, alias, balance, transactions, assets, isWatchOnly, isAuditable } =
 				walletData.data;
 
@@ -126,21 +135,27 @@ function App() {
 				isAuditable,
 			});
 
+			updateActiveWalletKey(
+				dispatch as dispatchType,
+				computeWalletKey(address, !!isWatchOnly, !!isAuditable),
+			);
+
 			console.log('wallet data updated');
 			updateLoading(dispatch as dispatchType, false);
 			setFirstWalletLoaded(true);
 		};
 
 		const intervalId = setInterval(async () => {
-			await checkConnection();
-			console.log('connected', state.isConnected);
-			if (state.isConnected && loggedIn) {
-				await getWalletData();
+			if (!loggedIn) {
+				await checkConnection();
+				return;
 			}
+
+			await getWalletData();
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [dispatch, state.isConnected, state.activeWalletId, loggedIn]);
+	}, [dispatch, state.isConnected, state.activeWalletKey, loggedIn]);
 
 	useEffect(() => {
 		async function updateWhiteList() {
@@ -156,24 +171,6 @@ function App() {
 		getZanoPrice().then((priceData) => {
 			console.log('price data', priceData);
 			updatePriceData(dispatch as dispatchType, priceData);
-		});
-	}, [dispatch]);
-
-	useEffect(() => {
-		chrome.storage?.local?.get?.(['key'], (result) => {
-			let walletId = 0;
-			if (!result.key) {
-				chrome.storage?.local?.set?.({ key: walletId }, () => {
-					console.log('Active wallet set to', walletId);
-				});
-			} else {
-				walletId = result.key;
-			}
-			fetchBackground({
-				method: 'SET_ACTIVE_WALLET',
-				id: walletId,
-			});
-			updateActiveWalletId(dispatch as dispatchType, walletId);
 		});
 	}, [dispatch]);
 

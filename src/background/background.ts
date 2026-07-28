@@ -18,6 +18,8 @@ import {
 	getWalletData,
 	getWallets,
 	getCurrentWalletFlags,
+	getActiveWalletKey,
+	selectWalletByKey,
 	transfer,
 	ionicSwap,
 	ionicSwapAccept,
@@ -84,20 +86,34 @@ const savedRequests: Record<
 	BURN_ASSET: {},
 };
 
+async function getSpendBlockReason(): Promise<string | null> {
+	try {
+		const { isWatchOnly } = await getCurrentWalletFlags();
+
+		return isWatchOnly ? 'No permissions' : null;
+	} catch (error) {
+		console.error('Failed to check wallet type:', error);
+		return 'Failed to verify wallet type';
+	}
+}
+
 const allPopupIds: number[] = [];
 class PopupRequestsMethods {
-	static onRequestCreate(
+	static async onRequestCreate(
 		requestType: SavedRequestType,
 		request: { timeout?: number },
 		sendResponse: (response: RequestResponse) => void,
 		reqParams: PopupRequest,
-	): void {
+	): Promise<void> {
 		console.log('Creating request', reqParams);
+
+		const boundWalletKey = await getActiveWalletKey();
 
 		openWindow().then((requestWindow) => {
 			const reqId = crypto.randomUUID();
 			const req = {
 				...reqParams,
+				boundWalletKey,
 				windowId: requestWindow.id,
 				finalizer: (data: unknown) => sendResponse(data as RequestResponse),
 			};
@@ -127,13 +143,13 @@ class PopupRequestsMethods {
 		});
 	}
 
-	static onRequestFinalize(
+	static async onRequestFinalize(
 		requestType: keyof typeof savedRequests,
 		request: { id: string; success: boolean },
 		sendResponse: (response: RequestResponse) => void,
 		apiCallFunc: (req: PopupRequest) => Promise<unknown>,
 		errorMessages: ErrorMessages,
-	): void {
+	): Promise<void> {
 		const reqId = request.id;
 		const { success } = request;
 		const req = savedRequests[requestType][reqId];
@@ -149,6 +165,29 @@ class PopupRequestsMethods {
 				finalize({ error: 'Request denied by user' });
 				sendResponse({ data: true });
 			} else {
+				try {
+					const currentWalletKey = await getActiveWalletKey();
+					if (
+						!req.boundWalletKey ||
+						!currentWalletKey ||
+						currentWalletKey !== req.boundWalletKey
+					) {
+						finalize({ error: 'Active wallet changed' });
+						return sendResponse({ error: 'Active wallet changed' });
+					}
+				} catch (error) {
+					console.error('Failed to verify active wallet:', error);
+					finalize({ error: 'Failed to verify active wallet' });
+					return sendResponse({ error: 'Failed to verify active wallet' });
+				}
+
+				const blockReason = await getSpendBlockReason();
+
+				if (blockReason) {
+					finalize({ error: blockReason });
+					return sendResponse({ error: blockReason });
+				}
+
 				apiCallFunc(req)
 					.then((data) => {
 						finalize({ data });
@@ -242,6 +281,7 @@ const signReqs: {
 	message: string;
 	host: string;
 	secure: boolean;
+	boundWalletKey: string | null;
 }[] = [];
 
 function openWindow(): Promise<chrome.windows.Window> {
@@ -315,6 +355,8 @@ async function requestAccess(
 		return { error: 'Request already pending' };
 	}
 
+	const boundWalletKey = await getActiveWalletKey();
+
 	return new Promise((resolve) => {
 		openWindow()
 			.then((requestWindow) => {
@@ -332,6 +374,8 @@ async function requestAccess(
 					hostname,
 					favicon,
 					permissions: cleanPermissions,
+					boundWalletKey,
+					boundAddress: address,
 				});
 			})
 			.catch((error) => {
@@ -356,20 +400,6 @@ async function processRequest(
 		return sendResponse({ error: 'Unauthorized request' });
 	}
 
-	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
-		try {
-			const { isWatchOnly } = await getCurrentWalletFlags();
-			if (isWatchOnly) {
-				return sendResponse({
-					error: 'This operation is not available for tracking wallets',
-				});
-			}
-		} catch (error) {
-			console.error('Failed to check wallet type:', error);
-			return sendResponse({ error: 'Failed to verify wallet type' });
-		}
-	}
-
 	const allowed = await permissionMiddleware(
 		request,
 		sender,
@@ -384,6 +414,16 @@ async function processRequest(
 	);
 
 	if (!allowed) return;
+
+	if (WATCH_ONLY_BLOCKED_REQUESTS.includes(request.method)) {
+		const { isWatchOnly } = await getCurrentWalletFlags();
+
+		if (isWatchOnly) {
+			return sendResponse({
+				error: 'No permissions',
+			});
+		}
+	}
 
 	switch (request.method) {
 		case 'SET_API_CREDENTIALS':
@@ -441,8 +481,24 @@ async function processRequest(
 				return sendResponse({ data: true });
 			}
 
-			const wallet = await getWalletData();
-			const { address } = wallet;
+			try {
+				const currentWalletKey = await getActiveWalletKey();
+
+				if (
+					!req.boundWalletKey ||
+					!currentWalletKey ||
+					currentWalletKey !== req.boundWalletKey
+				) {
+					finalize({ error: 'Active wallet changed' });
+					return sendResponse({ error: 'Active wallet changed' });
+				}
+			} catch (error) {
+				console.error('Failed to verify active wallet:', error);
+				finalize({ error: 'Failed to verify active wallet' });
+				return sendResponse({ error: 'Failed to verify active wallet' });
+			}
+
+			const address = req.boundAddress;
 
 			const stored = await chrome.storage.local.get('permissions');
 			const map = stored.permissions || {};
@@ -475,36 +531,39 @@ async function processRequest(
 		case 'GET_PERMISSIONS': {
 			try {
 				if (!sender.origin && !sender.url) {
-					return sendResponse({ error: 'Unknown origin' });
+					return sendResponse({ data: [] });
 				}
 
 				const origin = normalizeOrigin(sender.origin || new URL(sender.url!).origin);
-				const wallet = await getWalletData();
-				const permissions = await getPermissions(origin, wallet.address);
+				const addressResponse = await fetchData('getaddress');
+				const addressParsed = await addressResponse.json();
+				const address = addressParsed?.result?.address;
+				const permissions = address ? await getPermissions(origin, address) : [];
 
 				sendResponse({
 					data: permissions,
 				});
 			} catch {
-				sendResponse({
-					error: 'Failed to get permissions',
-				});
+				sendResponse({ data: [] });
 			}
 
 			break;
 		}
 
-		case 'SET_ACTIVE_WALLET':
-			fetchData('mw_select_wallet', { wallet_id: request.id })
-				.then((response) => response.json())
-				.then((data) => {
-					sendResponse({ data });
-				})
-				.catch((error) => {
-					console.error('Error fetching wallets:', error);
-					sendResponse({ error: 'An error occurred while fetching wallets' });
-				});
+		case 'SET_ACTIVE_WALLET': {
+			if (!request.walletKey) {
+				return sendResponse({ error: 'walletKey is required' });
+			}
+
+			try {
+				await selectWalletByKey(request.walletKey);
+				sendResponse({ data: true });
+			} catch (error) {
+				console.error('Error selecting wallet:', error);
+				sendResponse({ error: 'An error occurred while selecting wallet' });
+			}
 			break;
+		}
 
 		case 'GET_WALLET_BALANCE':
 			fetchData('getbalance')
@@ -880,6 +939,30 @@ async function processRequest(
 				} else {
 					const { message, secure } = signReq;
 
+					try {
+						const currentWalletKey = await getActiveWalletKey();
+
+						if (
+							!signReq.boundWalletKey ||
+							!currentWalletKey ||
+							currentWalletKey !== signReq.boundWalletKey
+						) {
+							finalize({ error: 'Active wallet changed' });
+							return sendResponse({ error: 'Active wallet changed' });
+						}
+					} catch (error) {
+						console.error('Failed to verify active wallet:', error);
+						finalize({ error: 'Failed to verify active wallet' });
+						return sendResponse({ error: 'Failed to verify active wallet' });
+					}
+
+					const blockReason = await getSpendBlockReason();
+
+					if (blockReason) {
+						finalize({ error: blockReason });
+						return sendResponse({ error: blockReason });
+					}
+
 					if (secure) {
 						const parsedMessageResult = parseSecureMessageForSigning({
 							message,
@@ -991,6 +1074,8 @@ async function processRequest(
 				}
 			}
 
+			const boundWalletKey = await getActiveWalletKey();
+
 			openWindow().then(async (requestWindow) => {
 				const signReqId = crypto.randomUUID();
 
@@ -1006,6 +1091,7 @@ async function processRequest(
 					message: String(request.message),
 					host,
 					secure: isInSecureMode,
+					boundWalletKey,
 				});
 
 				if (typeof request.timeout === 'number') {

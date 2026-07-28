@@ -128,7 +128,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 							)}
 						</div>
 
-						{hasAlias && canCreateAlias && (
+						{hasAlias && !isTrackingWallet && (
 							<div className={s.aliasWrapper__actions}>
 								<NavLink
 									component={AliasManagePage}
@@ -191,6 +191,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 								<img src={settingsIcon} alt="settings icon" />
 								Settings
 							</div>
+
 							<button onClick={flipBalancesVisibility} className={s.settingsBtn}>
 								<img
 									src={state.isBalancesHidden ? showIcon : hideIcon}
@@ -198,6 +199,7 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 								/>
 								{state.isBalancesHidden ? 'Show values' : 'Hide values'}
 							</button>
+
 							<NavLink component={PermissionsPage} className={s.settingsBtn}>
 								<img src={dappIcon} alt="dapp icon" />
 								dApps

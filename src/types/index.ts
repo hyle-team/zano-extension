@@ -242,6 +242,7 @@ export interface RequestType {
 	destinationAsset: AssetDataType;
 	hex_raw_proposal?: string;
 	address?: string;
+	walletKey?: string;
 	alias?: string;
 	sender?: string;
 	transfer?: unknown;
@@ -278,6 +279,8 @@ export interface AccessRequestType {
 	hostname: string;
 	favicon: string;
 	permissions?: { type: PermissionType }[];
+	boundWalletKey: string | null;
+	boundAddress: string;
 }
 
 export interface TransferDataType {
