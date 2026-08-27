@@ -45,7 +45,8 @@ const OuterConfirmation = () => {
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
-	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST';
+	const isIonicSwapMethod =
+		method === 'FINALIZE_IONIC_SWAP_REQUEST' || method === 'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST';
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
