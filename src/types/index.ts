@@ -54,6 +54,7 @@ export type SwapProposal = {
 };
 
 export type Asset = {
+	asset_id: string;
 	decimal_point: number;
 	[key: string]: unknown;
 };

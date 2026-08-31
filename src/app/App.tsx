@@ -348,73 +348,76 @@ function App() {
 				});
 				const acceptSwapReqs = ionicSwapAcceptRes.data;
 
-				const acceptPageReqs = await Promise.all(
-					acceptSwapReqs.map(async (e: AcceptSwapReq) => {
-						const hex_raw_proposal = e?.hex_raw_proposal;
+				const acceptPageReqs = (
+					await Promise.all(
+						acceptSwapReqs.map(async (e: AcceptSwapReq) => {
+							const hex_raw_proposal = e?.hex_raw_proposal;
 
-						const swap = e?.swapProposal;
+							const swap = e?.swapProposal;
 
-						const swapParams: {
-							receiving?: React.JSX.Element;
-							sending?: React.JSX.Element;
-						} = {};
+							const swapToInitiator = swap?.to_initiator[0];
+							const swapToFinalizer = swap?.to_finalizer[0];
 
-						function toBigWithDecimal(amount: Big, decimalPoint: number) {
-							if (amount) {
+							if (swapToInitiator === undefined || swapToFinalizer === undefined) {
+								return;
+							}
+
+							const swapParams: {
+								receiving?: React.JSX.Element;
+								sending?: React.JSX.Element;
+							} = {};
+
+							function toBigWithDecimal(amount: Big, decimalPoint: number) {
 								return new Big(amount).div(new Big(10).pow(decimalPoint));
 							}
-						}
 
-						if (swap) {
 							const receivingAsset = e?.receivingAsset;
 							const receivingAmount = toBigWithDecimal(
-								swap.to_finalizer[0]?.amount,
+								swapToFinalizer.amount,
 								receivingAsset.decimal_point,
 							);
 
-							if (receivingAmount !== undefined) {
-								swapParams.receiving = getSwapAmountText(
-									receivingAmount,
-									receivingAsset as unknown as { ticker: string },
-								);
-							}
+							swapParams.receiving = getSwapAmountText(
+								receivingAmount,
+								receivingAsset as unknown as { ticker: string },
+							);
 
 							const sendingAsset = e?.sendingAsset;
 							const sendingAmount = toBigWithDecimal(
-								swap.to_initiator[0]?.amount,
+								swapToInitiator.amount,
 								sendingAsset.decimal_point,
 							);
 
-							if (sendingAmount !== undefined) {
-								swapParams.sending = getSwapAmountText(
-									sendingAmount,
-									sendingAsset as unknown as { ticker: string },
-								);
-							}
-						}
+							swapParams.sending = getSwapAmountText(
+								sendingAmount,
+								sendingAsset as unknown as { ticker: string },
+							);
 
-						return {
-							id: e.id,
-							method: 'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
-							name: 'Accept Ionic Swap',
-							params: [
-								{
-									format: ParamsTypeFormat.COPYABLE,
-									key: 'Hex Proposal',
-									value: hex_raw_proposal ?? '???',
-								},
-								{
-									key: 'Sending',
-									value: swapParams.sending || '???',
-								},
-								{
-									key: 'Receiving',
-									value: swapParams.receiving || '???',
-								},
-							],
-						};
-					}),
-				);
+							return {
+								id: e.id,
+								method: 'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST',
+								name: 'Accept Ionic Swap',
+								sendingAmount: sendingAmount.toFixed(),
+								assetId: e.sendingAsset.asset_id,
+								params: [
+									{
+										format: ParamsTypeFormat.COPYABLE,
+										key: 'Hex Proposal',
+										value: hex_raw_proposal ?? '???',
+									},
+									{
+										key: 'Sending',
+										value: swapParams.sending || '???',
+									},
+									{
+										key: 'Receiving',
+										value: swapParams.receiving || '???',
+									},
+								],
+							};
+						}),
+					)
+				).filter((result) => result !== undefined);
 
 				const pageReqs = [...swapPageReqs, ...acceptPageReqs];
 
