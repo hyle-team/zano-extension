@@ -50,6 +50,22 @@ import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmati
 import RequestAccessPage from './components/RequestAccessPage';
 import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
 
+const IONIC_SWAP_TOTAL_FEE = '0.01';
+const ZANO_DECIMAL_POINT = 12;
+
+function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
+	if (feePaidByInitiator === undefined || feePaidByInitiator === null) {
+		return undefined;
+	}
+
+	const paidByInitiator = new Big(String(feePaidByInitiator)).div(
+		new Big(10).pow(ZANO_DECIMAL_POINT),
+	);
+	const feeLeftToFinalizer = new Big(IONIC_SWAP_TOTAL_FEE).minus(paidByInitiator);
+
+	return feeLeftToFinalizer.lt(0) ? '0' : feeLeftToFinalizer.toFixed();
+}
+
 function App() {
 	const { state, dispatch } = useContext(Store);
 	const [accessOpened, setAccessOpened] = useState(false);
@@ -399,6 +415,7 @@ function App() {
 								name: 'Accept Ionic Swap',
 								sendingAmount: sendingAmount.toFixed(),
 								assetId: e.sendingAsset.asset_id,
+								fee: getAcceptSwapFee(swap?.fee_paid_by_a),
 								params: [
 									{
 										format: ParamsTypeFormat.COPYABLE,

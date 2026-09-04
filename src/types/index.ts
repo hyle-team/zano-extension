@@ -51,6 +51,7 @@ export type SwapRequest = {
 export type SwapProposal = {
 	to_finalizer: { amount: Big }[];
 	to_initiator: { amount: Big }[];
+	fee_paid_by_a?: number | string;
 };
 
 export type Asset = {

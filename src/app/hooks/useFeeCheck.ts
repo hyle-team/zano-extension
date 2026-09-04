@@ -1,19 +1,18 @@
 import { useContext, useMemo } from 'react';
 import Decimal from 'decimal.js';
 import { Store } from '../store/store-reducer';
+import { ZANO_ASSET_ID } from '../../constants';
 
 export const useFeeCheck = (fee: number) => {
 	const { state } = useContext(Store);
 
 	const notEnoughFee = useMemo(() => {
-		const balance = Number(state.wallet.balance ?? 0);
-		const locked = Number(state.wallet.lockedBalance ?? 0);
-
-		const available = new Decimal(balance).minus(locked);
+		const zanoAsset = state.wallet.assets?.find((asset) => asset.assetId === ZANO_ASSET_ID);
+		const available = new Decimal(zanoAsset?.unlockedBalance ?? state.wallet.balance ?? 0);
 		const feeBig = new Decimal(fee);
 
 		return available.lessThan(feeBig);
-	}, [state.wallet.balance, state.wallet.lockedBalance, fee]);
+	}, [state.wallet.assets, state.wallet.balance, fee]);
 
 	return { notEnoughFee };
 };
