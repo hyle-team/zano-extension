@@ -8,6 +8,7 @@ import {
 	PASSWORD_HASH_SALT_STORAGE_KEY,
 	PASSWORD_HASH_STORAGE_KEY,
 	PASSWORD_HASH_STORAGE_KEY_DEPRECATED,
+	ZANO_ASSET_ID,
 } from '../../constants';
 
 interface BackgroundResponse {
@@ -186,3 +187,19 @@ export const computeWalletKey = (
 	isAuditable: boolean,
 ): string =>
 	`${address}:${isWatchOnly ? 'view-only' : 'full'}:${isAuditable ? 'auditable' : 'regular'}`;
+
+interface ZanoBalanceSource {
+	balance?: number | string;
+	lockedBalance?: number | string;
+	assets?: { assetId: string; unlockedBalance?: number | string }[];
+}
+
+export const getAvailableZanoBalance = (wallet?: ZanoBalanceSource): Decimal => {
+	const zanoAsset = wallet?.assets?.find((asset) => asset.assetId === ZANO_ASSET_ID);
+
+	if (zanoAsset?.unlockedBalance !== undefined && zanoAsset?.unlockedBalance !== null) {
+		return new Decimal(zanoAsset.unlockedBalance);
+	}
+
+	return new Decimal(wallet?.balance ?? 0).minus(new Decimal(wallet?.lockedBalance ?? 0));
+};

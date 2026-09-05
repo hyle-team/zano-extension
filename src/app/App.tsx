@@ -3,6 +3,7 @@ import React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { Router, goTo } from 'react-chrome-extension-router';
 import Big from 'big.js';
+import Decimal from 'decimal.js';
 import AppPlug from './components/AppPlug/AppPlug';
 import Header from './components/Header/Header';
 import TokensTabs from './components/TokensTabs/TokensTabs';
@@ -49,6 +50,20 @@ import { useFullscreenMac } from './hooks/useFullscreenMac';
 import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 import RequestAccessPage from './components/RequestAccessPage';
 import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
+import { DEFAULT_FEE, ZANO_DECIMAL_POINT } from '../constants';
+
+function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
+	if (feePaidByInitiator === undefined || feePaidByInitiator === null) {
+		return undefined;
+	}
+
+	const paidByInitiator = new Decimal(String(feePaidByInitiator)).div(
+		new Decimal(10).pow(ZANO_DECIMAL_POINT),
+	);
+	const feeLeftToFinalizer = new Decimal(DEFAULT_FEE).minus(paidByInitiator);
+
+	return feeLeftToFinalizer.lt(0) ? '0' : feeLeftToFinalizer.toFixed();
+}
 
 function App() {
 	const { state, dispatch } = useContext(Store);
@@ -226,7 +241,6 @@ function App() {
 					return {
 						id: e.id,
 						assetId: transfer.assetId,
-						fee: 'fee' in transfer ? transfer.fee : '???',
 						method: 'FINALIZE_TRANSFER_REQUEST',
 						name: 'Transfer',
 						params: transferParams,
@@ -336,8 +350,18 @@ function App() {
 								value: swapParams.sending || '???',
 							},
 							{
+								format: ParamsTypeFormat.ASSET_ID,
+								key: 'Sending asset ID',
+								value: swap.currentAssetID,
+							},
+							{
 								key: 'Receiving',
 								value: swapParams.receiving || '???',
+							},
+							{
+								format: ParamsTypeFormat.ASSET_ID,
+								key: 'Receiving asset ID',
+								value: swap.destinationAssetID,
 							},
 						],
 					};
@@ -399,6 +423,7 @@ function App() {
 								name: 'Accept Ionic Swap',
 								sendingAmount: sendingAmount.toFixed(),
 								assetId: e.sendingAsset.asset_id,
+								fee: getAcceptSwapFee(swap?.fee_paid_by_a),
 								params: [
 									{
 										format: ParamsTypeFormat.COPYABLE,
@@ -410,8 +435,18 @@ function App() {
 										value: swapParams.sending || '???',
 									},
 									{
+										format: ParamsTypeFormat.ASSET_ID,
+										key: 'Sending asset ID',
+										value: sendingAsset.asset_id,
+									},
+									{
 										key: 'Receiving',
 										value: swapParams.receiving || '???',
+									},
+									{
+										format: ParamsTypeFormat.ASSET_ID,
+										key: 'Receiving asset ID',
+										value: receivingAsset.asset_id,
 									},
 								],
 							};

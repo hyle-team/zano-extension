@@ -16,7 +16,7 @@ import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import s from './WalletSend.module.scss';
 import { fetchBackground, isPositiveFloatStr } from '../../utils/utils';
-import { WALLET_MIXIN } from '../../../constants';
+import { DEFAULT_FEE, WALLET_MIXIN } from '../../../constants';
 import AssetsSelect from './ui/AssetsSelect/AssetsSelect';
 import AdditionalDetails from './ui/AdditionalDetails/AdditionalDetails';
 
@@ -80,7 +80,7 @@ const WalletSend = () => {
 		state.wallet.isAuditable ? WALLET_MIXIN.AUDITABLE : WALLET_MIXIN.DEFAULT,
 		{ isEmpty: true },
 	);
-	const fee = useInput(0.01, { isEmpty: true });
+	const fee = useInput(DEFAULT_FEE, { isEmpty: true });
 
 	useEffect(() => {
 		mixin.setValue(state.wallet.isAuditable ? WALLET_MIXIN.AUDITABLE : WALLET_MIXIN.DEFAULT);

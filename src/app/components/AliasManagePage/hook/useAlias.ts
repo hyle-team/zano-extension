@@ -3,6 +3,7 @@ import { fetchBackground } from '../../../utils/utils';
 import { RegisterAliasParams } from '../types';
 import { useInput } from '../../../hooks/useInput';
 import { useFeeCheck } from '../../../hooks/useFeeCheck';
+import { ALIAS_CREATE_FEE, DEFAULT_FEE } from '../../../../constants';
 
 enum AliasMethods {
 	REGISTER = 'REGISTER_ALIAS',
@@ -19,7 +20,7 @@ export const useAlias = ({
 	walletAddress: string;
 	walletAlias: string;
 }) => {
-	const fee = mode === 'create' ? 0.11 : 0.01;
+	const fee = mode === 'create' ? ALIAS_CREATE_FEE : DEFAULT_FEE;
 	const { notEnoughFee } = useFeeCheck(fee);
 
 	const [transactionSuccess, setTransactionSuccess] = useState<null | boolean>(null);

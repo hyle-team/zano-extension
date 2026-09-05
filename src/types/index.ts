@@ -42,6 +42,7 @@ export type SwapRequest = {
 		destinationAddress: string;
 		destinationAsset: string;
 		destinationAssetAmount: string;
+		destinationAssetID: string;
 		currentAsset: string;
 		currentAssetAmount: string;
 		currentAssetID: string;
@@ -51,6 +52,7 @@ export type SwapRequest = {
 export type SwapProposal = {
 	to_finalizer: { amount: Big }[];
 	to_initiator: { amount: Big }[];
+	fee_paid_by_a?: number | string;
 };
 
 export type Asset = {

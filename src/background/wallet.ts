@@ -643,7 +643,7 @@ export async function getAsset(assetId: string): Promise<IAsset | undefined> {
 		return undefined;
 	}
 
-	return asset;
+	return { ...asset, asset_id: assetId };
 }
 
 export async function addAssetToWhitelist(assetId: string) {
