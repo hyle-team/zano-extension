@@ -3,6 +3,7 @@ import React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { Router, goTo } from 'react-chrome-extension-router';
 import Big from 'big.js';
+import Decimal from 'decimal.js';
 import AppPlug from './components/AppPlug/AppPlug';
 import Header from './components/Header/Header';
 import TokensTabs from './components/TokensTabs/TokensTabs';
@@ -56,10 +57,10 @@ function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
 		return undefined;
 	}
 
-	const paidByInitiator = new Big(String(feePaidByInitiator)).div(
-		new Big(10).pow(ZANO_DECIMAL_POINT),
+	const paidByInitiator = new Decimal(String(feePaidByInitiator)).div(
+		new Decimal(10).pow(ZANO_DECIMAL_POINT),
 	);
-	const feeLeftToFinalizer = new Big(DEFAULT_FEE).minus(paidByInitiator);
+	const feeLeftToFinalizer = new Decimal(DEFAULT_FEE).minus(paidByInitiator);
 
 	return feeLeftToFinalizer.lt(0) ? '0' : feeLeftToFinalizer.toFixed();
 }
