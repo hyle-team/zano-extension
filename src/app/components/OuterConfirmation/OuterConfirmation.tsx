@@ -363,6 +363,10 @@ const OuterConfirmation = () => {
 								);
 							}
 
+							if (item.format === ParamsTypeFormat.ASSET_ID) {
+								return <ExpandableAssetId key={idx} value={item.value} />;
+							}
+
 							if (item.format === ParamsTypeFormat.COPYABLE) {
 								return (
 									<CopyableParam

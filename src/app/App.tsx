@@ -350,8 +350,18 @@ function App() {
 								value: swapParams.sending || '???',
 							},
 							{
+								format: ParamsTypeFormat.ASSET_ID,
+								key: 'Sending asset ID',
+								value: swap.currentAssetID,
+							},
+							{
 								key: 'Receiving',
 								value: swapParams.receiving || '???',
+							},
+							{
+								format: ParamsTypeFormat.ASSET_ID,
+								key: 'Receiving asset ID',
+								value: swap.destinationAssetID,
 							},
 						],
 					};
@@ -425,8 +435,18 @@ function App() {
 										value: swapParams.sending || '???',
 									},
 									{
+										format: ParamsTypeFormat.ASSET_ID,
+										key: 'Sending asset ID',
+										value: sendingAsset.asset_id,
+									},
+									{
 										key: 'Receiving',
 										value: swapParams.receiving || '???',
+									},
+									{
+										format: ParamsTypeFormat.ASSET_ID,
+										key: 'Receiving asset ID',
+										value: receivingAsset.asset_id,
 									},
 								],
 							};
