@@ -49,9 +49,7 @@ import { useFullscreenMac } from './hooks/useFullscreenMac';
 import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 import RequestAccessPage from './components/RequestAccessPage';
 import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
-
-const IONIC_SWAP_TOTAL_FEE = '0.01';
-const ZANO_DECIMAL_POINT = 12;
+import { DEFAULT_FEE, ZANO_DECIMAL_POINT } from '../constants';
 
 function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
 	if (feePaidByInitiator === undefined || feePaidByInitiator === null) {
@@ -61,7 +59,7 @@ function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
 	const paidByInitiator = new Big(String(feePaidByInitiator)).div(
 		new Big(10).pow(ZANO_DECIMAL_POINT),
 	);
-	const feeLeftToFinalizer = new Big(IONIC_SWAP_TOTAL_FEE).minus(paidByInitiator);
+	const feeLeftToFinalizer = new Big(DEFAULT_FEE).minus(paidByInitiator);
 
 	return feeLeftToFinalizer.lt(0) ? '0' : feeLeftToFinalizer.toFixed();
 }
