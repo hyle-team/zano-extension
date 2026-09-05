@@ -3,7 +3,7 @@ import { getCurrent, goBack } from 'react-chrome-extension-router';
 import Decimal from 'decimal.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
-import { fetchBackground, shortenAddress } from '../../utils/utils';
+import { fetchBackground, getAvailableZanoBalance, shortenAddress } from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType } from '../../../types';
@@ -105,8 +105,7 @@ const OuterConfirmation = () => {
 			? acceptSwapFee
 			: DEFAULT_FEE;
 	const showFee = fee > 0;
-	const zanoAsset = state.wallet?.assets?.find((a) => a.assetId === ZANO_ASSET_ID);
-	const zanoBalance = new Decimal(zanoAsset?.unlockedBalance ?? state.wallet?.balance ?? 0);
+	const zanoBalance = getAvailableZanoBalance(state.wallet);
 	const rawTotalAmount = isMultipleDestinations
 		? destinations.reduce(
 				(sum: Decimal, dest: { amount: string }) => sum.plus(new Decimal(dest.amount || 0)),
@@ -120,6 +119,7 @@ const OuterConfirmation = () => {
 			? zanoBalance
 			: new Decimal(sendingAsset?.unlockedBalance ?? sendingAsset?.balance ?? 0);
 	const feeBig = new Decimal(fee);
+	const feeText = feeBig.toFixed();
 	const swapAmount = new Decimal(sendingAmount || 0);
 
 	const notEnoughFee = useMemo(() => {
@@ -409,7 +409,7 @@ const OuterConfirmation = () => {
 								<p
 									className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}
 								>
-									{fee} ZANO
+									{feeText} ZANO
 								</p>
 							</div>
 						)}
