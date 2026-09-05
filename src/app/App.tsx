@@ -49,6 +49,20 @@ import { useFullscreenMac } from './hooks/useFullscreenMac';
 import { ParamsTypeFormat } from './components/OuterConfirmation/OuterConfirmation.types';
 import RequestAccessPage from './components/RequestAccessPage';
 import { useInitialClearDeprecatedLocalData } from './hooks/useClearDeprecatedLocalData';
+import { DEFAULT_FEE, ZANO_DECIMAL_POINT } from '../constants';
+
+function getAcceptSwapFee(feePaidByInitiator: number | string | undefined) {
+	if (feePaidByInitiator === undefined || feePaidByInitiator === null) {
+		return undefined;
+	}
+
+	const paidByInitiator = new Big(String(feePaidByInitiator)).div(
+		new Big(10).pow(ZANO_DECIMAL_POINT),
+	);
+	const feeLeftToFinalizer = new Big(DEFAULT_FEE).minus(paidByInitiator);
+
+	return feeLeftToFinalizer.lt(0) ? '0' : feeLeftToFinalizer.toFixed();
+}
 
 function App() {
 	const { state, dispatch } = useContext(Store);
@@ -399,6 +413,7 @@ function App() {
 								name: 'Accept Ionic Swap',
 								sendingAmount: sendingAmount.toFixed(),
 								assetId: e.sendingAsset.asset_id,
+								fee: getAcceptSwapFee(swap?.fee_paid_by_a),
 								params: [
 									{
 										format: ParamsTypeFormat.COPYABLE,

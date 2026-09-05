@@ -6,8 +6,9 @@ import { fetchBackground } from '../../utils/utils';
 import InfoTooltip from '../UI/InfoTooltip';
 import { useFeeCheck } from '../../hooks/useFeeCheck';
 import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
+import { ALIAS_CREATE_FEE } from '../../../constants';
 
-const fee = 0.11;
+const fee = ALIAS_CREATE_FEE;
 
 export default function AliasCreatePage() {
 	const { props } = getCurrent();

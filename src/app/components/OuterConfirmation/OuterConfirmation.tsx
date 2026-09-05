@@ -7,7 +7,7 @@ import { fetchBackground, shortenAddress } from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType } from '../../../types';
-import { ZANO_ASSET_ID } from '../../../constants';
+import { DEFAULT_FEE, ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
@@ -41,7 +41,7 @@ const OuterConfirmation = () => {
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations, assetId, sendingAmount } = req;
+	const { id, name, params, method, destinations, assetId, sendingAmount, fee: reqFee } = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
@@ -99,10 +99,10 @@ const OuterConfirmation = () => {
 		return name;
 	};
 
-	const fee = 0.01;
-	const balance = new Decimal(state.wallet?.balance || 0);
-	const locked = new Decimal(state.wallet?.lockedBalance || 0);
-	const zanoBalance = balance.minus(locked);
+	const fee = reqFee === undefined || reqFee === null ? DEFAULT_FEE : Number(reqFee);
+	const showFee = fee > 0;
+	const zanoAsset = state.wallet?.assets?.find((a) => a.assetId === ZANO_ASSET_ID);
+	const zanoBalance = new Decimal(zanoAsset?.unlockedBalance ?? state.wallet?.balance ?? 0);
 	const rawTotalAmount = isMultipleDestinations
 		? destinations.reduce(
 				(sum: Decimal, dest: { amount: string }) => sum.plus(new Decimal(dest.amount || 0)),
@@ -110,10 +110,11 @@ const OuterConfirmation = () => {
 			)
 		: new Decimal(transactionParams.Amount || 0);
 
+	const sendingAsset = state.wallet?.assets?.find((a) => a.assetId === assetId);
 	const assetBalance =
 		assetId === ZANO_ASSET_ID
 			? zanoBalance
-			: new Decimal(state.wallet?.assets?.find((a) => a.assetId === assetId)?.balance || 0);
+			: new Decimal(sendingAsset?.unlockedBalance ?? sendingAsset?.balance ?? 0);
 	const feeBig = new Decimal(fee);
 	const swapAmount = new Decimal(sendingAmount || 0);
 
@@ -396,18 +397,22 @@ const OuterConfirmation = () => {
 			<div className={styles.confirmation__bottom}>
 				{(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
 					<>
-						<div className={styles.confirmation__bottom_row}>
-							<h5 className={styles.label}>
-								Transaction fee <InfoTooltip title="Total network fee" />
-							</h5>
-							<p className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}>
-								{fee} ZANO
-							</p>
-						</div>
+						{showFee && (
+							<div className={styles.confirmation__bottom_row}>
+								<h5 className={styles.label}>
+									Transaction fee <InfoTooltip title="Total network fee" />
+								</h5>
+								<p
+									className={`${styles.value} ${notEnoughFee ? styles.error : ''}`}
+								>
+									{fee} ZANO
+								</p>
+							</div>
+						)}
 
 						{(isTransferMethod || isIonicSwapMethod) && (
 							<>
-								<div className={styles.divider} />
+								{showFee && <div className={styles.divider} />}
 
 								<div
 									className={`${styles.confirmation__bottom_row} ${styles.total}`}
