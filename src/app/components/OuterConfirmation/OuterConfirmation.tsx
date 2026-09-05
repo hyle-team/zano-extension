@@ -7,7 +7,7 @@ import { fetchBackground, shortenAddress } from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType } from '../../../types';
-import { ZANO_ASSET_ID } from '../../../constants';
+import { DEFAULT_FEE, ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
@@ -15,8 +15,6 @@ import { ParamsTypeFormat } from './OuterConfirmation.types';
 import { ExpandableAssetId } from './ui/ExpandableAssetId/ExpandableAssetId';
 import { CopyableParam } from './ui/CopyableParam/CopyableParam';
 import { useRequestConfirmationScreen } from '../../hooks/useRequestConfirmationScreen';
-
-const DEFAULT_FEE = 0.01;
 
 interface ParamsType {
 	format?: ParamsTypeFormat;

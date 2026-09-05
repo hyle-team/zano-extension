@@ -3,8 +3,9 @@ import { useFeeCheck } from '../../../hooks/useFeeCheck';
 import { useInput } from '../../../hooks/useInput';
 import { fetchBackground } from '../../../utils/utils';
 import { GetAliasByAdderssParams, TransferAliasParams } from '../types';
+import { DEFAULT_FEE } from '../../../../constants';
 
-const fee = 0.01;
+const fee = DEFAULT_FEE;
 
 export const useAliasTransfer = ({ alias }: { alias: string }) => {
 	const { notEnoughFee } = useFeeCheck(fee);
