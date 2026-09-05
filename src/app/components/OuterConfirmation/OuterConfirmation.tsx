@@ -45,8 +45,8 @@ const OuterConfirmation = () => {
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
-	const isIonicSwapMethod =
-		method === 'FINALIZE_IONIC_SWAP_REQUEST' || method === 'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST';
+	const isAcceptSwapMethod = method === 'FINALIZE_ACCEPT_IONIC_SWAP_REQUEST';
+	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST' || isAcceptSwapMethod;
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
@@ -99,7 +99,11 @@ const OuterConfirmation = () => {
 		return name;
 	};
 
-	const fee = reqFee === undefined || reqFee === null ? DEFAULT_FEE : Number(reqFee);
+	const acceptSwapFee = Number(reqFee);
+	const fee =
+		isAcceptSwapMethod && Number.isFinite(acceptSwapFee) && acceptSwapFee >= 0
+			? acceptSwapFee
+			: DEFAULT_FEE;
 	const showFee = fee > 0;
 	const zanoAsset = state.wallet?.assets?.find((a) => a.assetId === ZANO_ASSET_ID);
 	const zanoBalance = new Decimal(zanoAsset?.unlockedBalance ?? state.wallet?.balance ?? 0);

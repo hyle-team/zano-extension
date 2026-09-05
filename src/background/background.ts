@@ -393,6 +393,9 @@ async function processRequest(
 	const isFromExtensionFrontend = isExtensionFrontend(sender);
 
 	if (!isFromExtensionFrontend) {
+		// Custom fee is not supported.
+		delete (request as unknown as Record<string, unknown>).fee;
+
 		await recoverApiCredentials();
 	}
 
