@@ -191,7 +191,7 @@ export const setActiveWalletKey = async (walletKey: string): Promise<void> => {
 	});
 };
 
-const resolveActiveWallet = async (): Promise<WalletRaw> => {
+export const resolveActiveWallet = async (): Promise<WalletRaw> => {
 	const wallets = await fetchRawWallets();
 
 	if (wallets.length === 0) {

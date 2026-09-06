@@ -18,6 +18,7 @@ import {
 	getWalletData,
 	getWallets,
 	getCurrentWalletFlags,
+	resolveActiveWallet,
 	getActiveWalletKey,
 	selectWalletByKey,
 	transfer,
@@ -166,6 +167,8 @@ class PopupRequestsMethods {
 				sendResponse({ data: true });
 			} else {
 				try {
+					// Refresh the cached wallet key from the companion before comparing it.
+					await resolveActiveWallet();
 					const currentWalletKey = await getActiveWalletKey();
 					if (
 						!req.boundWalletKey ||
