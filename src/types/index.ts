@@ -88,7 +88,7 @@ export interface BurnAssetRequest {
 export interface BurnAssetDataType {
 	assetId: string;
 	burnAmount: string;
-	nativeAmount?: string;
+	nativeAmount?: string | number;
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
 }
@@ -266,7 +266,7 @@ export interface RequestType {
 	asset_name?: string;
 	comment: string;
 	burnAmount: string;
-	nativeAmount?: string;
+	nativeAmount?: string | number;
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
 	destinations?: destinationsType;

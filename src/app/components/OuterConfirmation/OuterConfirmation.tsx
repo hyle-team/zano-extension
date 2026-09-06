@@ -263,6 +263,9 @@ const OuterConfirmation = () => {
 				pointTxToAddress,
 				serviceEntries,
 			}: BurnAssetDataType = params[0];
+			const showNativeAmount =
+				(typeof nativeAmount === 'string' || typeof nativeAmount === 'number') &&
+				Number(nativeAmount) > 0;
 
 			return (
 				<>
@@ -273,7 +276,7 @@ const OuterConfirmation = () => {
 							<p>{burnAmount}</p>
 						</div>
 
-						{typeof nativeAmount === 'string' && (
+						{showNativeAmount && (
 							<div className={styles.row}>
 								<h5>Native Amount</h5>
 								<p>{nativeAmount}</p>

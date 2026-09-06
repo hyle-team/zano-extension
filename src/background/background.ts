@@ -1211,6 +1211,16 @@ async function processRequest(
 			break;
 		}
 		case 'BURN_ASSET':
+			if (
+				request.nativeAmount !== undefined &&
+				typeof request.nativeAmount !== 'string' &&
+				(typeof request.nativeAmount !== 'number' || !Number.isFinite(request.nativeAmount))
+			) {
+				return sendResponse({
+					error: 'nativeAmount must be a string, a finite number, or undefined',
+				});
+			}
+
 			PopupRequestsMethods.onRequestCreate('BURN_ASSET', request, sendResponse, {
 				method: 'FINALIZE_BURN_ASSET_REQUEST',
 				name: 'Burn asset',
