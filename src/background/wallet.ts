@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import JSONbig from 'json-bigint';
 import { apiCredentials } from './background';
 import { addZeros, computeWalletKey, removeZeros } from '../app/utils/utils';
-import { WALLET_MIXIN, ZANO_ASSET_ID } from '../constants';
+import { GlobalBackgroundErrorMessage, WALLET_MIXIN, ZANO_ASSET_ID } from '../constants';
 import {
 	BurnAssetDataType,
 	ionicSwapType,
@@ -47,7 +47,7 @@ function generateRandomString(length: number) {
 
 function generateAccessToken(httpBody: string) {
 	if (!apiCredentials?.token) {
-		throw new Error('No API credentials found, extension is not connected');
+		throw new Error(GlobalBackgroundErrorMessage.COMPANION_OFFLINE_ERROR_MESSAGE);
 	}
 
 	// Calculate the SHA-256 hash of the HTTP body

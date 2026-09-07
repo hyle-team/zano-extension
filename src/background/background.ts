@@ -2,7 +2,12 @@ import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
-import { SELF_ONLY_REQUESTS, WATCH_ONLY_BLOCKED_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import {
+	GlobalBackgroundErrorMessage,
+	SELF_ONLY_REQUESTS,
+	WATCH_ONLY_BLOCKED_REQUESTS,
+	ZANO_ASSET_ID,
+} from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
@@ -301,8 +306,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		try {
 			await processRequest(request, sender, sendResponse);
 		} catch (error) {
+			if (error instanceof Error) {
+				if (
+					error.message === GlobalBackgroundErrorMessage.COMPANION_OFFLINE_ERROR_MESSAGE
+				) {
+					sendResponse({ error: 'Companion is offline' });
+					return;
+				}
+			}
+
 			console.error('Unhandled error in processRequest:', error);
-			sendResponse({ error: 'UNHANDLED_ERROR' });
+			sendResponse({
+				error: `Internal error: ${error instanceof Error ? error.message : error}`,
+			});
 		}
 	})();
 	return true;

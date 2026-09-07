@@ -66,3 +66,7 @@ export const PASSWORD_HASH_SALT_STORAGE_KEY = 'salt2';
 export const PASSWORD_HASH_STORAGE_KEY = 'hash2';
 
 export const PASSWORD_HASH_STORAGE_KEY_DEPRECATED = 'hash';
+
+export enum GlobalBackgroundErrorMessage {
+	COMPANION_OFFLINE_ERROR_MESSAGE = 'Companion is offline',
+}
