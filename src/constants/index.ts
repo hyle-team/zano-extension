@@ -66,3 +66,7 @@ export const PASSWORD_HASH_SALT_STORAGE_KEY = 'salt2';
 export const PASSWORD_HASH_STORAGE_KEY = 'hash2';
 
 export const PASSWORD_HASH_STORAGE_KEY_DEPRECATED = 'hash';
+
+export const VISIBLE_ATTACHMENTS_LIMIT = 10;
+export const MAX_SERVICE_ENTRIES = 100;
+export const MAX_SERVICE_ENTRY_FLAGS = 8;

@@ -2,14 +2,19 @@ import JSONbig from 'json-bigint';
 // @ts-expect-error - Disabling TS error while importing /shared submodule
 // due to global tsconfig "moduleResolution" prop is set to "node"
 import { parseSecureMessageForSigning } from 'zano_web3/shared';
-import { SELF_ONLY_REQUESTS, WATCH_ONLY_BLOCKED_REQUESTS, ZANO_ASSET_ID } from '../constants';
+import {
+	MAX_SERVICE_ENTRIES,
+	MAX_SERVICE_ENTRY_FLAGS,
+	SELF_ONLY_REQUESTS,
+	WATCH_ONLY_BLOCKED_REQUESTS,
+	ZANO_ASSET_ID,
+} from '../constants';
 import {
 	AccessRequestType,
 	BurnAssetDataType,
 	ionicSwapType,
 	PermissionType,
 	RequestType,
-	serviceEntriesType,
 	TransferDataType,
 	GetWalletDataRes,
 	SendResponse,
@@ -88,26 +93,52 @@ const savedRequests: Record<
 	BURN_ASSET: {},
 };
 
-function isValidServiceEntries(value: unknown): value is serviceEntriesType[] {
+function getServiceEntriesError(value: unknown): string | null {
 	if (!Array.isArray(value)) {
-		return false;
+		return 'service_entries must be an array of service entry objects';
 	}
 
-	return value.every((entry) => {
+	if (value.length > MAX_SERVICE_ENTRIES) {
+		return `service_entries must not contain more than ${MAX_SERVICE_ENTRIES} entries, got ${value.length}`;
+	}
+
+	for (let index = 0; index < value.length; index++) {
+		const entry = value[index];
+
 		if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
-			return false;
+			return `service_entries[${index}] must be an object`;
 		}
 
 		const { service_id, instruction, body, flags, security } = entry as Record<string, unknown>;
 
-		return (
-			typeof service_id === 'string' &&
-			typeof instruction === 'string' &&
-			typeof body === 'string' &&
-			(flags === undefined || (typeof flags === 'number' && Number.isFinite(flags))) &&
-			(security === undefined || typeof security === 'string')
-		);
-	});
+		if (typeof service_id !== 'string') {
+			return `service_entries[${index}].service_id must be a string`;
+		}
+
+		if (typeof body !== 'string') {
+			return `service_entries[${index}].body must be a hex-encoded string`;
+		}
+
+		if (instruction !== undefined && typeof instruction !== 'string') {
+			return `service_entries[${index}].instruction must be a string`;
+		}
+
+		if (security !== undefined && typeof security !== 'string') {
+			return `service_entries[${index}].security must be a hex-encoded string`;
+		}
+
+		if (
+			flags !== undefined &&
+			(typeof flags !== 'number' ||
+				!Number.isInteger(flags) ||
+				flags < 0 ||
+				flags > MAX_SERVICE_ENTRY_FLAGS)
+		) {
+			return `service_entries[${index}].flags must be an integer between 0 and ${MAX_SERVICE_ENTRY_FLAGS}`;
+		}
+	}
+
+	return null;
 }
 
 async function getSpendBlockReason(): Promise<string | null> {
@@ -760,11 +791,12 @@ async function processRequest(
 					throw new Error('Invalid decimal amount(s)');
 				}
 
-				if (
-					request.service_entries !== undefined &&
-					!isValidServiceEntries(request.service_entries)
-				) {
-					throw new Error('Invalid service entries');
+				if (request.service_entries !== undefined) {
+					const serviceEntriesError = getServiceEntriesError(request.service_entries);
+
+					if (serviceEntriesError) {
+						throw new Error(serviceEntriesError);
+					}
 				}
 
 				if (

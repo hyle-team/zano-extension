@@ -7,7 +7,7 @@ import { fetchBackground, getAvailableZanoBalance, shortenAddress } from '../../
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType, serviceEntriesType } from '../../../types';
-import { DEFAULT_FEE, ZANO_ASSET_ID } from '../../../constants';
+import { DEFAULT_FEE, VISIBLE_ATTACHMENTS_LIMIT, ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
@@ -39,6 +39,7 @@ const OuterConfirmation = () => {
 	const [denying, setDenying] = useState(false);
 	const [showFullItems, setShowFullItems] = useState(false);
 	const [showFullComment, setShowFullComment] = useState(false);
+	const [showAllAttachments, setShowAllAttachments] = useState(false);
 
 	const req = reqs[reqIndex] || {};
 	const {
@@ -64,6 +65,11 @@ const OuterConfirmation = () => {
 	const hasUnencryptedAttachment = attachments.some((entry) => !entry?.flags);
 	const hasMarketplaceAttachment = attachments.some((entry) => entry?.service_id === 'M');
 	const hasBridgeAttachment = attachments.some((entry) => entry?.service_id === 'W');
+	const hasHiddenAttachments = attachments.length > VISIBLE_ATTACHMENTS_LIMIT;
+	const visibleAttachments =
+		hasHiddenAttachments && !showAllAttachments
+			? attachments.slice(0, VISIBLE_ATTACHMENTS_LIMIT)
+			: attachments;
 
 	const transactionParams = params
 		? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
@@ -299,7 +305,7 @@ const OuterConfirmation = () => {
 								</p>
 							)}
 
-							{attachments.map((item, idx) => (
+							{visibleAttachments.map((item, idx) => (
 								<div className={styles.confirmation__destinationWrapper} key={idx}>
 									{attachments.length > 1 && (
 										<p className={styles.title}>Attachment {idx + 1}</p>
@@ -310,10 +316,12 @@ const OuterConfirmation = () => {
 											<h5>Service Id</h5>
 											<p>{item.service_id}</p>
 										</div>
-										<div className={styles.row}>
-											<h5>Instruction</h5>
-											<p>{item.instruction}</p>
-										</div>
+										{item.instruction && (
+											<div className={styles.row}>
+												<h5>Instruction</h5>
+												<p>{item.instruction}</p>
+											</div>
+										)}
 										<div className={styles.row}>
 											<h5>Flags</h5>
 											<p>{item.flags ?? 0}</p>
@@ -335,6 +343,25 @@ const OuterConfirmation = () => {
 									</div>
 								</div>
 							))}
+
+							{hasHiddenAttachments && (
+								<button
+									onClick={() => setShowAllAttachments((prev) => !prev)}
+									className={styles.confirmation__showAddressesBtn}
+								>
+									{showAllAttachments
+										? 'Show less'
+										: `Show all ${attachments.length} attachments`}{' '}
+									<img
+										style={{
+											transform: `rotate(${showAllAttachments ? '180deg' : 0})`,
+										}}
+										width={18}
+										src={arrowIcon}
+										alt="arrow"
+									/>
+								</button>
+							)}
 						</div>
 					)}
 				</>

@@ -4,7 +4,7 @@ export type destinationsType = { address: string; amount: number }[];
 export type serviceEntriesType = {
 	body: string;
 	flags?: number;
-	instruction: string;
+	instruction?: string;
 	security?: string;
 	service_id: string;
 };
