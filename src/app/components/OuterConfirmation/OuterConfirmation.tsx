@@ -6,7 +6,7 @@ import styles from './OuterConfirmation.module.scss';
 import { fetchBackground, getAvailableZanoBalance, shortenAddress } from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
-import { BurnAssetDataType } from '../../../types';
+import { BurnAssetDataType, serviceEntriesType } from '../../../types';
 import { DEFAULT_FEE, ZANO_ASSET_ID } from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
@@ -41,7 +41,17 @@ const OuterConfirmation = () => {
 	const [showFullComment, setShowFullComment] = useState(false);
 
 	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations, assetId, sendingAmount, fee: reqFee } = req;
+	const {
+		id,
+		name,
+		params,
+		method,
+		destinations,
+		assetId,
+		sendingAmount,
+		fee: reqFee,
+		serviceEntries,
+	} = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
@@ -49,6 +59,11 @@ const OuterConfirmation = () => {
 	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST' || isAcceptSwapMethod;
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
+
+	const attachments: serviceEntriesType[] = Array.isArray(serviceEntries) ? serviceEntries : [];
+	const hasUnencryptedAttachment = attachments.some((entry) => !entry?.flags);
+	const hasMarketplaceAttachment = attachments.some((entry) => entry?.service_id === 'M');
+	const hasBridgeAttachment = attachments.some((entry) => entry?.service_id === 'W');
 
 	const transactionParams = params
 		? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
@@ -251,6 +266,76 @@ const OuterConfirmation = () => {
 									</div>
 								))}
 						</>
+					)}
+
+					{attachments.length > 0 && (
+						<div className={styles.confirmation__attachments}>
+							<div className={styles.attachmentsHeader}>
+								<span>Attachments</span>
+								{attachments.length > 1 && (
+									<span className={styles.attachmentsCount}>
+										{attachments.length}
+									</span>
+								)}
+							</div>
+
+							{hasUnencryptedAttachment && (
+								<p className={`${styles.warning} ${styles.danger}`}>
+									These attachments may be partially or fully unencrypted and will
+									become publicly visible once the transaction is executed.
+								</p>
+							)}
+
+							{hasMarketplaceAttachment && (
+								<p className={`${styles.warning} ${styles.caution}`}>
+									This transaction will perform an action on the onchain
+									marketplace.
+								</p>
+							)}
+
+							{hasBridgeAttachment && (
+								<p className={`${styles.warning} ${styles.caution}`}>
+									This transaction will interact with the Ethereum Bridge.
+								</p>
+							)}
+
+							{attachments.map((item, idx) => (
+								<div className={styles.confirmation__destinationWrapper} key={idx}>
+									{attachments.length > 1 && (
+										<p className={styles.title}>Attachment {idx + 1}</p>
+									)}
+
+									<div className={styles.confirmation__block}>
+										<div className={styles.row}>
+											<h5>Service Id</h5>
+											<p>{item.service_id}</p>
+										</div>
+										<div className={styles.row}>
+											<h5>Instruction</h5>
+											<p>{item.instruction}</p>
+										</div>
+										<div className={styles.row}>
+											<h5>Flags</h5>
+											<p>{item.flags ?? 0}</p>
+										</div>
+										<ExpandableParam
+											label="Body"
+											value={item.body ?? ''}
+											prefixLength={8}
+											suffixLength={8}
+										/>
+										{item.security && (
+											<ExpandableParam
+												label="Security"
+												value={item.security}
+												prefixLength={8}
+												suffixLength={8}
+											/>
+										)}
+									</div>
+								</div>
+							))}
+						</div>
 					)}
 				</>
 			);

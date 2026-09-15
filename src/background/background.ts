@@ -9,6 +9,7 @@ import {
 	ionicSwapType,
 	PermissionType,
 	RequestType,
+	serviceEntriesType,
 	TransferDataType,
 	GetWalletDataRes,
 	SendResponse,
@@ -86,6 +87,28 @@ const savedRequests: Record<
 	ASSETS_WHITELIST_ADD: {},
 	BURN_ASSET: {},
 };
+
+function isValidServiceEntries(value: unknown): value is serviceEntriesType[] {
+	if (!Array.isArray(value)) {
+		return false;
+	}
+
+	return value.every((entry) => {
+		if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+			return false;
+		}
+
+		const { service_id, instruction, body, flags, security } = entry as Record<string, unknown>;
+
+		return (
+			typeof service_id === 'string' &&
+			typeof instruction === 'string' &&
+			typeof body === 'string' &&
+			(flags === undefined || (typeof flags === 'number' && Number.isFinite(flags))) &&
+			(security === undefined || typeof security === 'string')
+		);
+	});
+}
 
 async function getSpendBlockReason(): Promise<string | null> {
 	try {
@@ -736,6 +759,20 @@ async function processRequest(
 				if (wrongDecimalPoint) {
 					throw new Error('Invalid decimal amount(s)');
 				}
+
+				if (
+					request.service_entries !== undefined &&
+					!isValidServiceEntries(request.service_entries)
+				) {
+					throw new Error('Invalid service entries');
+				}
+
+				if (
+					request.service_entries_permanent !== undefined &&
+					typeof request.service_entries_permanent !== 'boolean'
+				) {
+					throw new Error('service_entries_permanent must be a boolean');
+				}
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					return sendResponse({ error: e.message });
@@ -756,8 +793,16 @@ async function processRequest(
 				sendResponse,
 				(req) => {
 					const transferData = req.transfer;
-					const { assetId, destination, amount, asset, comment, destinations } =
-						transferData as TransferDataType;
+					const {
+						assetId,
+						destination,
+						amount,
+						asset,
+						comment,
+						destinations,
+						service_entries,
+						service_entries_permanent,
+					} = transferData as TransferDataType;
 
 					const hasMultipleDestinations =
 						Array.isArray(destinations) && destinations.length > 0;
@@ -769,6 +814,8 @@ async function processRequest(
 						asset?.decimal_point ?? 12,
 						comment ?? undefined,
 						hasMultipleDestinations ? destinations : [],
+						service_entries,
+						service_entries_permanent,
 					);
 				},
 				{

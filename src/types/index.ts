@@ -1,6 +1,14 @@
 export type dispatchType = () => void;
 export type destinationsType = { address: string; amount: number }[];
 
+export type serviceEntriesType = {
+	body: string;
+	flags?: number;
+	instruction: string;
+	security?: string;
+	service_id: string;
+};
+
 export type transferType = {
 	id?: string;
 	transfer: {
@@ -13,15 +21,8 @@ export type transferType = {
 		};
 		assetId: string;
 		comment?: string;
+		service_entries?: serviceEntriesType[];
 	};
-};
-
-type serviceEntriesType = {
-	body: string;
-	flags: number;
-	instruction: string;
-	security?: string;
-	service_id: string;
 };
 
 export type BurnAssetRequestType = {
@@ -269,6 +270,8 @@ export interface RequestType {
 	nativeAmount?: string | number;
 	pointTxToAddress?: string;
 	serviceEntries?: serviceEntriesType[];
+	service_entries?: unknown;
+	service_entries_permanent?: unknown;
 	destinations?: destinationsType;
 	destinationAssetAmount?: string;
 	currentAssetAmount?: string;
@@ -296,6 +299,8 @@ export interface TransferDataType {
 	asset: {
 		decimal_point: number;
 	};
+	service_entries?: serviceEntriesType[];
+	service_entries_permanent?: boolean;
 }
 
 export interface IAsset {
