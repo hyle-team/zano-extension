@@ -77,3 +77,8 @@ export const SERVICE_ENTRY_FLAGS = {
 };
 
 export const MAX_SERVICE_ENTRY_FLAGS = 15;
+
+export const SERVICE_ENTRY_IDS = {
+	MARKETPLACE: 'M',
+	BRIDGE: 'W',
+};

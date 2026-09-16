@@ -15,6 +15,7 @@ import { BurnAssetDataType, serviceEntriesType } from '../../../types';
 import {
 	DEFAULT_FEE,
 	SERVICE_ENTRY_FLAGS,
+	SERVICE_ENTRY_IDS,
 	VISIBLE_ATTACHMENTS_LIMIT,
 	ZANO_ASSET_ID,
 } from '../../../constants';
@@ -75,8 +76,12 @@ const OuterConfirmation = () => {
 	const hasUnencryptedAttachment = attachments.some(
 		(entry) => !hasServiceEntryFlag(entry?.flags, SERVICE_ENTRY_FLAGS.ENCRYPT_BODY),
 	);
-	const hasMarketplaceAttachment = attachments.some((entry) => entry?.service_id === 'M');
-	const hasBridgeAttachment = attachments.some((entry) => entry?.service_id === 'W');
+	const hasMarketplaceAttachment = attachments.some(
+		(entry) => entry?.service_id === SERVICE_ENTRY_IDS.MARKETPLACE,
+	);
+	const hasBridgeAttachment = attachments.some(
+		(entry) => entry?.service_id === SERVICE_ENTRY_IDS.BRIDGE,
+	);
 	const hasHiddenAttachments = attachments.length > VISIBLE_ATTACHMENTS_LIMIT;
 	const visibleAttachments =
 		hasHiddenAttachments && !showAllAttachments
@@ -96,11 +101,20 @@ const OuterConfirmation = () => {
 			: transactionParams.Amount,
 	).toLocaleString();
 
+	function resetExpandedSections() {
+		setShowFullItems(false);
+		setShowFullComment(false);
+		setShowAllAttachments(false);
+	}
+
 	useEffect(() => {
 		setReqIndex(0);
+		resetExpandedSections();
 	}, [reqs]);
 
 	function nextRequest() {
+		resetExpandedSections();
+
 		if (reqIndex < reqs.length - 1) {
 			setReqIndex(reqIndex + 1);
 		} else {
