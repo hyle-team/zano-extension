@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef, useCallback } from 'react';
 import { getCurrent, goBack } from 'react-chrome-extension-router';
 import Decimal from 'decimal.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
@@ -38,6 +38,8 @@ interface DestionationType {
 	amount: string;
 }
 
+const SCROLL_BOTTOM_THRESHOLD = 4;
+
 const OuterConfirmation = () => {
 	const { state } = useContext(Store);
 	const { props } = getCurrent();
@@ -51,6 +53,10 @@ const OuterConfirmation = () => {
 	const [showFullItems, setShowFullItems] = useState(false);
 	const [showFullComment, setShowFullComment] = useState(false);
 	const [showAllAttachments, setShowAllAttachments] = useState(false);
+	const [hasReachedBottom, setHasReachedBottom] = useState(false);
+
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const contentRef = useRef<HTMLDivElement>(null);
 
 	const req = reqs[reqIndex] || {};
 	const {
@@ -101,20 +107,66 @@ const OuterConfirmation = () => {
 			: transactionParams.Amount,
 	).toLocaleString();
 
+	const trackReachedBottom = useCallback(() => {
+		const container = scrollContainerRef.current;
+
+		if (!container) {
+			return;
+		}
+
+		const distanceToBottom =
+			container.scrollHeight - container.scrollTop - container.clientHeight;
+
+		if (distanceToBottom <= SCROLL_BOTTOM_THRESHOLD) {
+			setHasReachedBottom(true);
+		}
+	}, []);
+
+	function scrollToBottom() {
+		const container = scrollContainerRef.current;
+
+		if (!container) {
+			return;
+		}
+
+		container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+	}
+
 	function resetExpandedSections() {
 		setShowFullItems(false);
 		setShowFullComment(false);
 		setShowAllAttachments(false);
+		scrollContainerRef.current?.scrollTo({ top: 0 });
 	}
 
 	useEffect(() => {
 		setReqIndex(0);
-		resetExpandedSections();
 	}, [reqs]);
 
-	function nextRequest() {
+	useEffect(() => {
 		resetExpandedSections();
+		setHasReachedBottom(false);
+	}, [id]);
 
+	useEffect(() => {
+		trackReachedBottom();
+	}, [id, showFullItems, showFullComment, showAllAttachments, trackReachedBottom]);
+
+	useEffect(() => {
+		const content = contentRef.current;
+
+		if (!content || typeof ResizeObserver === 'undefined') {
+			return undefined;
+		}
+
+		const observer = new ResizeObserver(() => trackReachedBottom());
+
+		observer.observe(content);
+
+		return () => observer.disconnect();
+	}, [trackReachedBottom]);
+
+	function nextRequest() {
 		if (reqIndex < reqs.length - 1) {
 			setReqIndex(reqIndex + 1);
 		} else {
@@ -537,11 +589,13 @@ const OuterConfirmation = () => {
 	}
 
 	return (
-		<div className={styles.confirmation}>
+		<div className={styles.confirmation} ref={scrollContainerRef} onScroll={trackReachedBottom}>
 			<h3 className={styles.confirmation__title}>Request Confirmation</h3>
 			<h5 className={styles.confirmation__subtitle}>{getConfirmationName()}</h5>
 
-			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
+			<div className={styles.confirmation__content} ref={contentRef}>
+				{getConfirmationContent()}
+			</div>
 
 			<div className={styles.confirmation__bottom}>
 				{(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
@@ -586,6 +640,16 @@ const OuterConfirmation = () => {
 					</>
 				)}
 
+				{!hasReachedBottom && (
+					<button
+						type="button"
+						className={styles.confirmation__bottom_hint}
+						onClick={scrollToBottom}
+					>
+						Scroll down to confirm
+					</button>
+				)}
+
 				<div className={styles.confirmation__bottom_buttons}>
 					<div className={styles.content}>
 						<Button
@@ -599,7 +663,7 @@ const OuterConfirmation = () => {
 
 						<Button
 							className={styles.btn}
-							disabled={disabled || insufficientBalance}
+							disabled={disabled || insufficientBalance || !hasReachedBottom}
 							onClick={acceptClick}
 						>
 							Confirm
