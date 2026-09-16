@@ -3,11 +3,21 @@ import { getCurrent, goBack } from 'react-chrome-extension-router';
 import Decimal from 'decimal.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
-import { fetchBackground, getAvailableZanoBalance, shortenAddress } from '../../utils/utils';
+import {
+	fetchBackground,
+	getAvailableZanoBalance,
+	hasServiceEntryFlag,
+	shortenAddress,
+} from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
 import { BurnAssetDataType, serviceEntriesType } from '../../../types';
-import { DEFAULT_FEE, VISIBLE_ATTACHMENTS_LIMIT, ZANO_ASSET_ID } from '../../../constants';
+import {
+	DEFAULT_FEE,
+	SERVICE_ENTRY_FLAGS,
+	VISIBLE_ATTACHMENTS_LIMIT,
+	ZANO_ASSET_ID,
+} from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
@@ -62,7 +72,9 @@ const OuterConfirmation = () => {
 	const isMultipleDestinations = destinations && destinations.length > 0;
 
 	const attachments: serviceEntriesType[] = Array.isArray(serviceEntries) ? serviceEntries : [];
-	const hasUnencryptedAttachment = attachments.some((entry) => !entry?.flags);
+	const hasUnencryptedAttachment = attachments.some(
+		(entry) => !hasServiceEntryFlag(entry?.flags, SERVICE_ENTRY_FLAGS.ENCRYPT_BODY),
+	);
 	const hasMarketplaceAttachment = attachments.some((entry) => entry?.service_id === 'M');
 	const hasBridgeAttachment = attachments.some((entry) => entry?.service_id === 'W');
 	const hasHiddenAttachments = attachments.length > VISIBLE_ATTACHMENTS_LIMIT;

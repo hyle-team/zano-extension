@@ -203,3 +203,9 @@ export const getAvailableZanoBalance = (wallet?: ZanoBalanceSource): Decimal => 
 
 	return new Decimal(wallet?.balance ?? 0).minus(new Decimal(wallet?.lockedBalance ?? 0));
 };
+
+// Service entry flags are a bitmask. So "flags" can have multiple flags set simultaneously. This
+// method checks if a specific flag is set within the bitmask
+export const hasServiceEntryFlag = (flags: number | undefined, flag: number): boolean =>
+	// eslint-disable-next-line no-bitwise
+	((flags ?? 0) & flag) !== 0;
