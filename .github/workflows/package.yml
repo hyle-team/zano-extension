@@ -1,0 +1,175 @@
+name: Package release
+
+# Builds the Chrome Web Store artifact from a version tag, verifies it against
+# source, scans the bytes that would actually be uploaded, and attaches the zip
+# to a GitHub Release.
+#
+# It deliberately does NOT publish to the Chrome Web Store. No store credentials
+# exist in this repository, so a compromised push or action cannot reach users'
+# wallets. Uploading the attached zip stays a human step.
+#
+# The existing ci-security workflows exclude build/ and dist/, so the artifact
+# scan below is the only check that looks at the shipped bytes.
+
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag to package (dry run, no release is created)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: 0
+
+jobs:
+  package:
+    name: Build, verify and attach artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install from lockfile
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify built manifest matches source
+        shell: bash
+        run: |
+          set -euo pipefail
+          # webpack copies public/manifest.json verbatim; if it ever stops doing
+          # so, the artifact no longer corresponds to reviewable source.
+          diff public/manifest.json build/manifest.json
+
+      - name: Verify manifest version matches tag
+        shell: bash
+        env:
+          TAG: ${{ inputs.ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="$(node -p 'require("./build/manifest.json").version')"
+          if [ "$version" != "$TAG" ]; then
+            echo "::error::manifest version '$version' does not match tag '$TAG'"
+            exit 1
+          fi
+          echo "manifest version $version matches tag"
+
+      - name: Reject unshippable contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+
+          # Source maps expose original source and are never wanted in a release.
+          if find build -name '*.map' -print -quit | grep -q .; then
+            echo "::error::source maps present in build output"; fail=1
+          fi
+
+          # Dotfiles, private context dirs and dependency trees must not ship.
+          while IFS= read -r bad; do
+            echo "::error::unexpected path in build output: $bad"; fail=1
+          done < <(find build \( -name '.*' -o -name 'node_modules' -o -name '.context' -o -name '.claude' \) -print)
+
+          # A "key" field pins the extension ID and must not be in the store zip.
+          if node -e 'process.exit(require("./build/manifest.json").key === undefined ? 0 : 1)'; then
+            echo "manifest carries no key field"
+          else
+            echo "::error::manifest contains a key field"; fail=1
+          fi
+
+          exit "$fail"
+
+      - name: Install checksum-pinned Gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf -- "$tmp"' EXIT
+          curl --fail --silent --show-error --location \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \
+            --output "$tmp/gitleaks.tar.gz"
+          printf '%s  %s\n' '5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba' "$tmp/gitleaks.tar.gz" | sha256sum --check -
+          tar -xzf "$tmp/gitleaks.tar.gz" -C "$tmp" gitleaks
+          install -m 0755 "$tmp/gitleaks" /usr/local/bin/gitleaks
+
+      - name: Scan the bytes that would be uploaded
+        shell: bash
+        run: |
+          set -euo pipefail
+          # --redact so a hit is reported by rule and path, never by value.
+          gitleaks detect --source build --no-git --redact --exit-code 1
+
+      - name: Create deterministic zip
+        id: zip
+        shell: bash
+        env:
+          TAG: ${{ inputs.ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          name="zano-companion-${TAG}.zip"
+
+          # Normalise mtimes to the tagged commit so the same commit always
+          # produces the same bytes and the published artifact is verifiable.
+          commit_date="$(git log -1 --format=%cI)"
+          TZ=UTC find build -exec touch -d "$commit_date" {} +
+
+          # -X drops uid/gid and extra attributes; sorted input fixes entry order.
+          ( cd build && find . -type f | LC_ALL=C sort | zip -X -q "../$name" -@ )
+
+          sha="$(sha256sum "$name" | cut -d' ' -f1)"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "### \`$name\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "sha256: \`$sha\`" >> "$GITHUB_STEP_SUMMARY"
+          unzip -Z1 "$name" | LC_ALL=C sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: ${{ steps.zip.outputs.name }}
+          if-no-files-found: error
+
+      - name: Create draft release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          ZIP: ${{ steps.zip.outputs.name }}
+          SHA256: ${{ steps.zip.outputs.sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Draft, so the release notes get a human read before anything is public.
+          gh release create "$TAG" "$ZIP" \
+            --draft \
+            --title "Zano Companion $TAG" \
+            --notes "Chrome Web Store artifact for $TAG.
+
+          \`$ZIP\`
+          sha256: \`$SHA256\`
+
+          Built from \`$TAG\` by the \`Package release\` workflow. Verified: built manifest matches \`public/manifest.json\`, manifest version matches the tag, no source maps, no dotfiles, no manifest \`key\`, secret scan clean on the unpacked artifact.
+
+          Publishing to the Chrome Web Store is a manual step."
