@@ -1,13 +1,24 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef, useCallback } from 'react';
 import { getCurrent, goBack } from 'react-chrome-extension-router';
 import Decimal from 'decimal.js';
 import Button, { ButtonThemes } from '../UI/Button/Button';
 import styles from './OuterConfirmation.module.scss';
-import { fetchBackground, getAvailableZanoBalance, shortenAddress } from '../../utils/utils';
+import {
+	fetchBackground,
+	getAvailableZanoBalance,
+	hasServiceEntryFlag,
+	shortenAddress,
+} from '../../utils/utils';
 import arrowIcon from '../../assets/svg/arrow-blue.svg';
 import InfoTooltip from '../UI/InfoTooltip';
-import { BurnAssetDataType } from '../../../types';
-import { DEFAULT_FEE, ZANO_ASSET_ID } from '../../../constants';
+import { BurnAssetDataType, serviceEntriesType } from '../../../types';
+import {
+	DEFAULT_FEE,
+	SERVICE_ENTRY_FLAGS,
+	SERVICE_ENTRY_IDS,
+	VISIBLE_ATTACHMENTS_LIMIT,
+	ZANO_ASSET_ID,
+} from '../../../constants';
 import { Store } from '../../store/store-reducer';
 import WhitelistIconImage from '../UI/WhitelistIconImage';
 import ExpandableParam from './ui/ExpandableParam/ExpandableParam';
@@ -27,6 +38,8 @@ interface DestionationType {
 	amount: string;
 }
 
+const SCROLL_BOTTOM_THRESHOLD = 4;
+
 const OuterConfirmation = () => {
 	const { state } = useContext(Store);
 	const { props } = getCurrent();
@@ -39,9 +52,24 @@ const OuterConfirmation = () => {
 	const [denying, setDenying] = useState(false);
 	const [showFullItems, setShowFullItems] = useState(false);
 	const [showFullComment, setShowFullComment] = useState(false);
+	const [showAllAttachments, setShowAllAttachments] = useState(false);
+	const [hasReachedBottom, setHasReachedBottom] = useState(false);
+
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const contentRef = useRef<HTMLDivElement>(null);
 
 	const req = reqs[reqIndex] || {};
-	const { id, name, params, method, destinations, assetId, sendingAmount, fee: reqFee } = req;
+	const {
+		id,
+		name,
+		params,
+		method,
+		destinations,
+		assetId,
+		sendingAmount,
+		fee: reqFee,
+		serviceEntries,
+	} = req;
 
 	const isTransferMethod = name?.toLowerCase() === 'transfer';
 	const isBurnMethod = name?.toLowerCase() === 'burn_asset';
@@ -49,6 +77,22 @@ const OuterConfirmation = () => {
 	const isIonicSwapMethod = method === 'FINALIZE_IONIC_SWAP_REQUEST' || isAcceptSwapMethod;
 
 	const isMultipleDestinations = destinations && destinations.length > 0;
+
+	const attachments: serviceEntriesType[] = Array.isArray(serviceEntries) ? serviceEntries : [];
+	const hasUnencryptedAttachment = attachments.some(
+		(entry) => !hasServiceEntryFlag(entry?.flags, SERVICE_ENTRY_FLAGS.ENCRYPT_BODY),
+	);
+	const hasMarketplaceAttachment = attachments.some(
+		(entry) => entry?.service_id === SERVICE_ENTRY_IDS.MARKETPLACE,
+	);
+	const hasBridgeAttachment = attachments.some(
+		(entry) => entry?.service_id === SERVICE_ENTRY_IDS.BRIDGE,
+	);
+	const hasHiddenAttachments = attachments.length > VISIBLE_ATTACHMENTS_LIMIT;
+	const visibleAttachments =
+		hasHiddenAttachments && !showAllAttachments
+			? attachments.slice(0, VISIBLE_ATTACHMENTS_LIMIT)
+			: attachments;
 
 	const transactionParams = params
 		? Object.fromEntries((params as ParamsType[]).map((item) => [item.key, item.value]))
@@ -63,9 +107,64 @@ const OuterConfirmation = () => {
 			: transactionParams.Amount,
 	).toLocaleString();
 
+	const trackReachedBottom = useCallback(() => {
+		const container = scrollContainerRef.current;
+
+		if (!container) {
+			return;
+		}
+
+		const distanceToBottom =
+			container.scrollHeight - container.scrollTop - container.clientHeight;
+
+		if (distanceToBottom <= SCROLL_BOTTOM_THRESHOLD) {
+			setHasReachedBottom(true);
+		}
+	}, []);
+
+	function scrollToBottom() {
+		const container = scrollContainerRef.current;
+
+		if (!container) {
+			return;
+		}
+
+		container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+	}
+
+	function resetExpandedSections() {
+		setShowFullItems(false);
+		setShowFullComment(false);
+		setShowAllAttachments(false);
+		scrollContainerRef.current?.scrollTo({ top: 0 });
+	}
+
 	useEffect(() => {
 		setReqIndex(0);
 	}, [reqs]);
+
+	useEffect(() => {
+		resetExpandedSections();
+		setHasReachedBottom(false);
+	}, [id]);
+
+	useEffect(() => {
+		trackReachedBottom();
+	}, [id, showFullItems, showFullComment, showAllAttachments, trackReachedBottom]);
+
+	useEffect(() => {
+		const content = contentRef.current;
+
+		if (!content || typeof ResizeObserver === 'undefined') {
+			return undefined;
+		}
+
+		const observer = new ResizeObserver(() => trackReachedBottom());
+
+		observer.observe(content);
+
+		return () => observer.disconnect();
+	}, [trackReachedBottom]);
 
 	function nextRequest() {
 		if (reqIndex < reqs.length - 1) {
@@ -252,6 +351,97 @@ const OuterConfirmation = () => {
 								))}
 						</>
 					)}
+
+					{attachments.length > 0 && (
+						<div className={styles.confirmation__attachments}>
+							<div className={styles.attachmentsHeader}>
+								<span>Attachments</span>
+								{attachments.length > 1 && (
+									<span className={styles.attachmentsCount}>
+										{attachments.length}
+									</span>
+								)}
+							</div>
+
+							{hasUnencryptedAttachment && (
+								<p className={`${styles.warning} ${styles.danger}`}>
+									These attachments may be partially or fully unencrypted and will
+									become publicly visible once the transaction is executed.
+								</p>
+							)}
+
+							{hasMarketplaceAttachment && (
+								<p className={`${styles.warning} ${styles.caution}`}>
+									This transaction will perform an action on the onchain
+									marketplace.
+								</p>
+							)}
+
+							{hasBridgeAttachment && (
+								<p className={`${styles.warning} ${styles.caution}`}>
+									This transaction will interact with the Ethereum Bridge.
+								</p>
+							)}
+
+							{visibleAttachments.map((item, idx) => (
+								<div className={styles.confirmation__destinationWrapper} key={idx}>
+									{attachments.length > 1 && (
+										<p className={styles.title}>Attachment {idx + 1}</p>
+									)}
+
+									<div className={styles.confirmation__block}>
+										<div className={styles.row}>
+											<h5>Service Id</h5>
+											<p>{item.service_id}</p>
+										</div>
+										{item.instruction && (
+											<div className={styles.row}>
+												<h5>Instruction</h5>
+												<p>{item.instruction}</p>
+											</div>
+										)}
+										<div className={styles.row}>
+											<h5>Flags</h5>
+											<p>{item.flags ?? 0}</p>
+										</div>
+										<ExpandableParam
+											label="Body"
+											value={item.body ?? ''}
+											prefixLength={8}
+											suffixLength={8}
+										/>
+										{item.security && (
+											<ExpandableParam
+												label="Security"
+												value={item.security}
+												prefixLength={8}
+												suffixLength={8}
+											/>
+										)}
+									</div>
+								</div>
+							))}
+
+							{hasHiddenAttachments && (
+								<button
+									onClick={() => setShowAllAttachments((prev) => !prev)}
+									className={styles.confirmation__showAddressesBtn}
+								>
+									{showAllAttachments
+										? 'Show less'
+										: `Show all ${attachments.length} attachments`}{' '}
+									<img
+										style={{
+											transform: `rotate(${showAllAttachments ? '180deg' : 0})`,
+										}}
+										width={18}
+										src={arrowIcon}
+										alt="arrow"
+									/>
+								</button>
+							)}
+						</div>
+					)}
 				</>
 			);
 		}
@@ -399,11 +589,13 @@ const OuterConfirmation = () => {
 	}
 
 	return (
-		<div className={styles.confirmation}>
+		<div className={styles.confirmation} ref={scrollContainerRef} onScroll={trackReachedBottom}>
 			<h3 className={styles.confirmation__title}>Request Confirmation</h3>
 			<h5 className={styles.confirmation__subtitle}>{getConfirmationName()}</h5>
 
-			<div className={styles.confirmation__content}>{getConfirmationContent()}</div>
+			<div className={styles.confirmation__content} ref={contentRef}>
+				{getConfirmationContent()}
+			</div>
 
 			<div className={styles.confirmation__bottom}>
 				{(isTransferMethod || isBurnMethod || isIonicSwapMethod) && (
@@ -448,6 +640,16 @@ const OuterConfirmation = () => {
 					</>
 				)}
 
+				{!hasReachedBottom && (
+					<button
+						type="button"
+						className={styles.confirmation__bottom_hint}
+						onClick={scrollToBottom}
+					>
+						Scroll down to confirm
+					</button>
+				)}
+
 				<div className={styles.confirmation__bottom_buttons}>
 					<div className={styles.content}>
 						<Button
@@ -461,7 +663,7 @@ const OuterConfirmation = () => {
 
 						<Button
 							className={styles.btn}
-							disabled={disabled || insufficientBalance}
+							disabled={disabled || insufficientBalance || !hasReachedBottom}
 							onClick={acceptClick}
 						>
 							Confirm

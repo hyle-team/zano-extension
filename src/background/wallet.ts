@@ -9,6 +9,7 @@ import {
 	ionicSwapType,
 	ParsedAddress,
 	ParsedBalance,
+	serviceEntriesType,
 	Transaction,
 	TransactionRaw,
 	WalletAsset,
@@ -458,6 +459,8 @@ export const transfer = async (
 	decimalPoint: number,
 	comment?: string,
 	destinations: { address: string; amount: number }[] = [],
+	serviceEntries?: serviceEntriesType[],
+	serviceEntriesPermanent?: boolean,
 ) => {
 	const allDestinations =
 		destinations.length > 0
@@ -485,6 +488,8 @@ export const transfer = async (
 		fee: number;
 		mixin: number;
 		comment?: string;
+		service_entries?: serviceEntriesType[];
+		service_entries_permanent?: boolean;
 	} = {
 		destinations: allDestinations,
 		fee: 10000000000,
@@ -492,6 +497,14 @@ export const transfer = async (
 	};
 
 	if (comment) options.comment = comment;
+
+	if (serviceEntries && serviceEntries.length > 0) {
+		options.service_entries = serviceEntries;
+	}
+
+	if (typeof serviceEntriesPermanent === 'boolean') {
+		options.service_entries_permanent = serviceEntriesPermanent;
+	}
 
 	const response = await fetchData('transfer', options);
 

@@ -245,6 +245,7 @@ function App() {
 						name: 'Transfer',
 						params: transferParams,
 						destinations,
+						serviceEntries: transfer.service_entries,
 					};
 				});
 
