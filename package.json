@@ -28,7 +28,8 @@
 		"precommit": "lint-staged",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
 		"format": "prettier --write .",
-		"prepare": "husky"
+		"prepare": "husky",
+		"dev:proxy": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file-if-exists=.env dev-proxy.ts"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,css,scss}": [
