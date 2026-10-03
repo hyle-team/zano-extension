@@ -20,7 +20,7 @@
 		"react-dom": "^18.2.0",
 		"react-id-generator": "^3.0.2",
 		"web-vitals": "^2.1.4",
-		"zano_web3": "9.8.0-canary.0"
+		"zano_web3": "^10.3.0"
 	},
 	"scripts": {
 		"build": "webpack --mode production",
@@ -50,7 +50,6 @@
 		]
 	},
 	"devDependencies": {
-		"@babel/cli": "^7.21.0",
 		"@babel/core": "^7.21.4",
 		"@babel/preset-env": "^7.21.4",
 		"@babel/preset-react": "^7.18.6",
