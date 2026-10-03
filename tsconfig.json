@@ -11,6 +11,6 @@
 		"outDir": "./dist",
 		"allowJs": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "dev-proxy.ts"],
 	"exclude": ["node_modules"]
 }
