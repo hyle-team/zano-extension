@@ -39,15 +39,10 @@ type WhitelistedAssetType = {
 	ticker: string;
 };
 
-const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
-	const { state } = useContext(Store);
+const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children }) => {
 	const { copyToClipboard } = useCopy();
 
-	useEffect(() => {
-		document.body.scrollTo(0, 0);
-	}, []);
-
-	const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children }) => (
+	return (
 		<div className={`${copyButton && 'table__row_button'} table__row`}>
 			<div className="table__label">
 				{label}:
@@ -64,6 +59,14 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 			{children}
 		</div>
 	);
+};
+
+const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
+	const { state } = useContext(Store);
+
+	useEffect(() => {
+		document.body.scrollTo(0, 0);
+	}, []);
 
 	return (
 		<div>
