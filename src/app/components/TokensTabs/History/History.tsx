@@ -12,9 +12,9 @@ import { ZANO_ASSET_ID } from '../../../../constants';
 
 interface HistoryItemProps {
 	transfer: {
-		assetId?: string;
-		amount?: string;
-		incoming?: boolean;
+		assetId: string;
+		amount: string;
+		isIncome: boolean;
 	};
 	fee: string;
 	isInitiator: boolean;
@@ -38,7 +38,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	if (amount === undefined) {
 		displayAmount = 'N/A';
 	} else if (transfer.assetId === ZANO_ASSET_ID) {
-		if (!isInitiator || transfer.incoming) {
+		if (!isInitiator || transfer.isIncome) {
 			displayAmount = amount.toFixed();
 		} else {
 			const resultAmount = amount.minus(fixedFee);
@@ -60,7 +60,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	return (
 		<div className={s.historyTop}>
 			<div className={s.historyIcon}>
-				<img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
+				<img src={transfer.isIncome ? receiveIcon : sendIcon} alt="ArrowIcon" />
 			</div>
 			<p>
 				<span>{displayAmount}</span>{' '}
@@ -88,13 +88,15 @@ const History = () => {
 						</div>
 					)}
 
-					{tx.transfers?.map((transfer) => (
-						<HistoryItem
-							transfer={transfer}
-							fee={String(tx.fee)}
-							isInitiator={Boolean(tx.isInitiator)}
-						/>
-					))}
+					{tx.subtransfersByPid
+						.flatMap((group) => group.subtransfers)
+						.map((transfer) => (
+							<HistoryItem
+								transfer={transfer}
+								fee={String(tx.fee)}
+								isInitiator={Boolean(tx.isInitiator)}
+							/>
+						))}
 					<span className={s.historyAddress}>{tx.txHash}</span>
 				</NavLink>
 			))}

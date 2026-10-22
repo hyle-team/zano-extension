@@ -9,14 +9,17 @@ import { Store } from '../../store/store-reducer';
 import styles from './TransactionDetails.module.scss';
 import { ZANO_ASSET_ID } from '../../../constants';
 
-type Transfer = {
-	amount: string;
-	assetId: string;
-	incoming: boolean;
-};
+interface TransactionSubtransfersGroup {
+	paymentId: string;
+	subtransfers: {
+		amount: string;
+		assetId: string;
+		isIncome: boolean;
+	}[];
+}
 
 type TransactionDetailsProps = {
-	transfers?: Transfer[];
+	subtransfersByPid: TransactionSubtransfersGroup[];
 	fee: string;
 	addresses?: string[];
 	txHash: string;
@@ -77,52 +80,58 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 			<div className="table">
 				<TableRow label="Transfers">
 					<div className={styles.transaction__transfers}>
-						{props?.transfers?.map((transfer, index) => {
-							const amount = new Big(transfer.amount);
-							const fixedFee = new Big(props.fee);
+						{props.subtransfersByPid
+							.flatMap((group) => group.subtransfers)
+							.map((transfer, index) => {
+								const amount = new Big(transfer.amount);
+								const fixedFee = new Big(props.fee);
 
-							const isZano = transfer.assetId === ZANO_ASSET_ID;
+								const isZano = transfer.assetId === ZANO_ASSET_ID;
 
-							let amountText: string;
+								let amountText: string;
 
-							if (isZano) {
-								if (!props.isInitiator || transfer.incoming) {
-									amountText = amount.toFixed();
-								} else {
-									const resultAmount = amount.minus(fixedFee);
+								if (isZano) {
+									if (!props.isInitiator || transfer.isIncome) {
+										amountText = amount.toFixed();
+									} else {
+										const resultAmount = amount.minus(fixedFee);
 
-									if (resultAmount.lte(0)) {
-										return;
+										if (resultAmount.lte(0)) {
+											return;
+										}
+
+										amountText = resultAmount.toFixed();
 									}
-
-									amountText = resultAmount.toFixed();
+								} else {
+									amountText = amount.toFixed();
 								}
-							} else {
-								amountText = amount.toFixed();
-							}
 
-							const ticker =
-								(state.whitelistedAssets as unknown as WhitelistedAssetType[]).find(
-									(asset: WhitelistedAssetType) =>
-										asset.asset_id === transfer.assetId,
-								)?.ticker ?? '***';
+								const ticker =
+									(
+										state.whitelistedAssets as unknown as WhitelistedAssetType[]
+									).find(
+										(asset: WhitelistedAssetType) =>
+											asset.asset_id === transfer.assetId,
+									)?.ticker ?? '***';
 
-							return (
-								<div key={index} className={styles.transaction__transfer}>
-									<p className="table__value">
+								return (
+									<div key={index} className={styles.transaction__transfer}>
 										<p className="table__value">
-											{amountText} {ticker}
+											<p className="table__value">
+												{amountText} {ticker}
+											</p>
 										</p>
-									</p>
-									<div className="table__icon">
-										<img
-											src={transfer.incoming ? incomingIcon : outgoingIcon}
-											alt="transfer icon"
-										/>
+										<div className="table__icon">
+											<img
+												src={
+													transfer.isIncome ? incomingIcon : outgoingIcon
+												}
+												alt="transfer icon"
+											/>
+										</div>
 									</div>
-								</div>
-							);
-						})}
+								);
+							})}
 					</div>
 				</TableRow>
 				<TableRow label="Fee" value={`${props.fee} ZANO`} />

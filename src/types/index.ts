@@ -166,6 +166,15 @@ export interface TransactionRaw {
 	}[];
 }
 
+export interface TransactionSubtransfersGroup {
+	paymentId: string;
+	subtransfers: {
+		amount: string;
+		assetId: string;
+		isIncome: boolean;
+	}[];
+}
+
 export interface Transaction {
 	isConfirmed: boolean;
 	txHash: string;
@@ -176,11 +185,7 @@ export interface Transaction {
 	fee: string;
 	addresses: string[];
 	isInitiator: boolean;
-	transfers: {
-		amount: string;
-		assetId: string;
-		incoming: boolean;
-	}[];
+	subtransfersByPid: TransactionSubtransfersGroup[];
 }
 
 export interface WalletAsset {

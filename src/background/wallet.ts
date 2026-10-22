@@ -327,16 +327,17 @@ export const getWalletData = async () => {
 				fee: removeZeros(tx.fee),
 				addresses: tx.remote_addresses,
 				isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
-				transfers: tx.subtransfers_by_pid
-					.flatMap((payment) => payment.subtransfers)
-					.map((transfer) => ({
+				subtransfersByPid: tx.subtransfers_by_pid.map((group) => ({
+					paymentId: group.payment_id,
+					subtransfers: group.subtransfers.map((transfer) => ({
 						amount: removeZeros(
 							transfer.amount,
 							getAssetDecimalPoint(transfer.asset_id) || 12,
 						),
 						assetId: transfer.asset_id,
-						incoming: transfer.is_income,
+						isIncome: transfer.is_income,
 					})),
+				})),
 			}));
 	}
 
