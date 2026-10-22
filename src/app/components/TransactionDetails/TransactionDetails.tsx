@@ -27,7 +27,7 @@ type TransactionDetailsProps = {
 	timestamp: string;
 	height: number;
 	comment: string;
-	isInitiator?: boolean;
+	isInitiator: boolean;
 };
 
 type TableRowProps = {
@@ -40,6 +40,76 @@ type TableRowProps = {
 type WhitelistedAssetType = {
 	asset_id: string;
 	ticker: string;
+};
+
+const PaymentCard: React.FC<{
+	group: TransactionSubtransfersGroup;
+	fee: string;
+	isInitiator: boolean;
+	getTicker: (assetId: string) => string;
+}> = ({ group, getTicker, fee, isInitiator }) => {
+	const { copyToClipboard } = useCopy();
+
+	return (
+		<div className={styles.payment}>
+			<div className={styles.payment__header}>
+				<div className={styles.payment__id}>
+					<span className={styles.payment__label}>Payment ID</span>
+					<span className={styles.payment__value}>
+						{group.paymentId !== '' ? group.paymentId : 'None'}
+					</span>
+				</div>
+				{group.paymentId && (
+					<button
+						className="round-button"
+						onClick={() => copyToClipboard(group.paymentId)}
+					>
+						<img src={copyIcon} alt="copy icon" />
+					</button>
+				)}
+			</div>
+			<div className={styles.payment__transfers}>
+				{group.subtransfers.map((transfer, index) => {
+					const amount = new Big(transfer.amount);
+					const fixedFee = new Big(fee);
+
+					const isZano = transfer.assetId === ZANO_ASSET_ID;
+
+					let amountText: string;
+
+					if (isZano) {
+						if (!isInitiator || transfer.isIncome) {
+							amountText = amount.toFixed();
+						} else {
+							const resultAmount = amount.minus(fixedFee);
+
+							if (resultAmount.lte(0)) {
+								return;
+							}
+
+							amountText = resultAmount.toFixed();
+						}
+					} else {
+						amountText = amount.toFixed();
+					}
+
+					return (
+						<div key={index} className={styles.payment__transfer}>
+							<p className="table__value">
+								{amountText} {getTicker(transfer.assetId)}
+							</p>
+							<div className="table__icon">
+								<img
+									src={transfer.isIncome ? incomingIcon : outgoingIcon}
+									alt="transfer icon"
+								/>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
 };
 
 const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children }) => {
@@ -71,69 +141,28 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 		document.body.scrollTo(0, 0);
 	}, []);
 
+	const getTicker = (assetId: string) =>
+		(state.whitelistedAssets as unknown as WhitelistedAssetType[]).find(
+			(asset: WhitelistedAssetType) => asset.asset_id === assetId,
+		)?.ticker ?? '***';
+
 	return (
 		<div>
-			{/* {SuccessCopyModal} */}
-
 			<RoutersNav title="Transaction details" />
 
 			<div className="table">
-				<TableRow label="Transfers">
-					<div className={styles.transaction__transfers}>
-						{props.subtransfersByPid
-							.flatMap((group) => group.subtransfers)
-							.map((transfer, index) => {
-								const amount = new Big(transfer.amount);
-								const fixedFee = new Big(props.fee);
-
-								const isZano = transfer.assetId === ZANO_ASSET_ID;
-
-								let amountText: string;
-
-								if (isZano) {
-									if (!props.isInitiator || transfer.isIncome) {
-										amountText = amount.toFixed();
-									} else {
-										const resultAmount = amount.minus(fixedFee);
-
-										if (resultAmount.lte(0)) {
-											return;
-										}
-
-										amountText = resultAmount.toFixed();
-									}
-								} else {
-									amountText = amount.toFixed();
-								}
-
-								const ticker =
-									(
-										state.whitelistedAssets as unknown as WhitelistedAssetType[]
-									).find(
-										(asset: WhitelistedAssetType) =>
-											asset.asset_id === transfer.assetId,
-									)?.ticker ?? '***';
-
-								return (
-									<div key={index} className={styles.transaction__transfer}>
-										<p className="table__value">
-											<p className="table__value">
-												{amountText} {ticker}
-											</p>
-										</p>
-										<div className="table__icon">
-											<img
-												src={
-													transfer.isIncome ? incomingIcon : outgoingIcon
-												}
-												alt="transfer icon"
-											/>
-										</div>
-									</div>
-								);
-							})}
-					</div>
-				</TableRow>
+				<div className={styles.payments}>
+					<div className="table__label">Payments:</div>
+					{props.subtransfersByPid.map((group, index) => (
+						<PaymentCard
+							key={index}
+							group={group}
+							getTicker={getTicker}
+							fee={props.fee}
+							isInitiator={props.isInitiator}
+						/>
+					))}
+				</div>
 				<TableRow label="Fee" value={`${props.fee} ZANO`} />
 				{props.addresses && (
 					<TableRow label="Remote address" value={props.addresses[0]} copyButton />
