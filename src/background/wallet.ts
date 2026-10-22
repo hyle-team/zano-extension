@@ -98,7 +98,7 @@ export const fetchData = async (
 };
 
 const fetchTxData = async () => {
-	const response = await fetchData('get_recent_txs_and_info2', {
+	const response = await fetchData('get_recent_txs_and_info3', {
 		offset: 0,
 		update_provision_info: true,
 		exclude_mining_txs: true,
@@ -323,19 +323,20 @@ export const getWalletData = async () => {
 				blobSize: tx.tx_blob_size,
 				timestamp: tx.timestamp,
 				height: tx.height,
-				paymentId: tx.payment_id,
 				comment: tx.comment,
 				fee: removeZeros(tx.fee),
 				addresses: tx.remote_addresses,
 				isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
-				transfers: tx.subtransfers.map((transfer) => ({
-					amount: removeZeros(
-						transfer.amount,
-						getAssetDecimalPoint(transfer.asset_id) || 12,
-					),
-					assetId: transfer.asset_id,
-					incoming: transfer.is_income,
-				})),
+				transfers: tx.subtransfers_by_pid
+					.flatMap((payment) => payment.subtransfers)
+					.map((transfer) => ({
+						amount: removeZeros(
+							transfer.amount,
+							getAssetDecimalPoint(transfer.asset_id) || 12,
+						),
+						assetId: transfer.asset_id,
+						incoming: transfer.is_income,
+					})),
 			}));
 	}
 

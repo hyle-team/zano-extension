@@ -153,15 +153,17 @@ export interface TransactionRaw {
 	tx_blob_size: number;
 	timestamp: number;
 	height: number;
-	payment_id: string;
 	comment?: string;
 	fee: string;
 	remote_addresses: string[];
 	is_service: boolean;
-	subtransfers: TransferRaw[];
 	employed_entries?: {
 		spent?: { index: number }[];
 	};
+	subtransfers_by_pid: {
+		payment_id: string;
+		subtransfers: TransferRaw[];
+	}[];
 }
 
 export interface Transaction {
@@ -170,7 +172,6 @@ export interface Transaction {
 	blobSize: number;
 	timestamp: number;
 	height: number;
-	paymentId: string;
 	comment?: string;
 	fee: string;
 	addresses: string[];

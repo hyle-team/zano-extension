@@ -23,7 +23,6 @@ type TransactionDetailsProps = {
 	blobSize: number;
 	timestamp: string;
 	height: number;
-	paymentId?: string | null;
 	comment: string;
 	isInitiator?: boolean;
 };
@@ -76,42 +75,41 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 				<TableRow label="Transfers">
 					<div className={styles.transaction__transfers}>
 						{props?.transfers?.map((transfer, index) => {
-							if (transfer.amount === props.fee) return null;
 							const amount = new Big(transfer.amount);
 							const fixedFee = new Big(props.fee);
+
+							const isZano = transfer.assetId === ZANO_ASSET_ID;
+
+							let amountText: string;
+
+							if (isZano) {
+								if (!props.isInitiator || transfer.incoming) {
+									amountText = amount.toFixed();
+								} else {
+									const resultAmount = amount.minus(fixedFee);
+
+									if (resultAmount.lte(0)) {
+										return;
+									}
+
+									amountText = resultAmount.toFixed();
+								}
+							} else {
+								amountText = amount.toFixed();
+							}
+
+							const ticker =
+								(state.whitelistedAssets as unknown as WhitelistedAssetType[]).find(
+									(asset: WhitelistedAssetType) =>
+										asset.asset_id === transfer.assetId,
+								)?.ticker ?? '***';
 
 							return (
 								<div key={index} className={styles.transaction__transfer}>
 									<p className="table__value">
-										{(() => {
-											const isZano = transfer.assetId === ZANO_ASSET_ID;
-
-											let amountText: string;
-
-											if (isZano) {
-												if (!props.isInitiator) {
-													amountText = amount.toFixed();
-												} else {
-													amountText = amount.minus(fixedFee).toFixed();
-												}
-											} else {
-												amountText = amount.toFixed();
-											}
-
-											const ticker =
-												(
-													state.whitelistedAssets as unknown as WhitelistedAssetType[]
-												).find(
-													(asset: WhitelistedAssetType) =>
-														asset.asset_id === transfer.assetId,
-												)?.ticker ?? '***';
-
-											return (
-												<p className="table__value">
-													{amountText} {ticker}
-												</p>
-											);
-										})()}
+										<p className="table__value">
+											{amountText} {ticker}
+										</p>
 									</p>
 									<div className="table__icon">
 										<img
@@ -132,11 +130,6 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 				<TableRow label="Blob size" value={`${props.blobSize} bytes`} />
 				<TableRow label="Timestamp" value={props.timestamp} />
 				<TableRow label="Height" value={props.height} />
-				{props.paymentId ? (
-					<TableRow label="Payment Id" value={props.paymentId} copyButton />
-				) : (
-					<TableRow label="Payment Id" value={props.paymentId ?? 'N/A'} />
-				)}
 				<TableRow label="Comment" value={props.comment} />
 			</div>
 		</div>
