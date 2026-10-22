@@ -186,6 +186,12 @@ export interface Transaction {
 	addresses: string[];
 	isInitiator: boolean;
 	subtransfersByPid: TransactionSubtransfersGroup[];
+	transfers: {
+		amount: string;
+		assetId: string;
+		incoming: boolean;
+	}[];
+	paymentId: string;
 }
 
 export interface WalletAsset {

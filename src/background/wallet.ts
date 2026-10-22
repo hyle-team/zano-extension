@@ -338,6 +338,17 @@ export const getWalletData = async () => {
 						isIncome: transfer.is_income,
 					})),
 				})),
+				transfers: tx.subtransfers_by_pid
+					.flatMap((group) => group.subtransfers)
+					.map((transfer) => ({
+						amount: removeZeros(
+							transfer.amount,
+							getAssetDecimalPoint(transfer.asset_id) || 12,
+						),
+						assetId: transfer.asset_id,
+						incoming: transfer.is_income,
+					})),
+				paymentId: tx.subtransfers_by_pid[0]?.payment_id ?? '',
 			}));
 	}
 
