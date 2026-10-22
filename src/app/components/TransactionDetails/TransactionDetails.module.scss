@@ -1,18 +1,5 @@
 @use 'sass:math';
 
-.transaction__transfers {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 10px;
-
-	.transaction__transfer {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-}
-
 .payments {
 	display: flex;
 	flex-direction: column;
@@ -44,14 +31,12 @@
 
 	&__label {
 		font-size: 18px;
-		line-height: math.div(16, 14);
 		color: #1f8feb;
 	}
 
 	&__value {
 		font-weight: 300;
 		font-size: 18px;
-		line-height: math.div(19, 16);
 		color: rgba(255, 255, 255, 0.9);
 		word-break: break-all;
 	}

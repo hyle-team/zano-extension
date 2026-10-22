@@ -327,7 +327,7 @@ export const getWalletData = async () => {
 				fee: removeZeros(tx.fee),
 				addresses: tx.remote_addresses,
 				isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
-				subtransfersByPid: tx.subtransfers_by_pid.map((group) => ({
+				subtransfersByPid: (tx.subtransfers_by_pid ?? []).map((group) => ({
 					paymentId: group.payment_id,
 					subtransfers: group.subtransfers.map((transfer) => ({
 						amount: removeZeros(
@@ -338,7 +338,7 @@ export const getWalletData = async () => {
 						isIncome: transfer.is_income,
 					})),
 				})),
-				transfers: tx.subtransfers_by_pid
+				transfers: (tx.subtransfers_by_pid ?? [])
 					.flatMap((group) => group.subtransfers)
 					.map((transfer) => ({
 						amount: removeZeros(
