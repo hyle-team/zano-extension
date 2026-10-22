@@ -53,14 +53,15 @@ const PaymentCard: React.FC<{
 
 	return (
 		<div className={styles.payment}>
-			<div className={styles.payment__header}>
-				<div className={styles.payment__id}>
-					<span className={styles.payment__label}>Payment ID</span>
-					<span className={styles.payment__value}>
-						{group.paymentId !== '' ? group.paymentId : 'None'}
-					</span>
-				</div>
-				{group.paymentId && (
+			{group.paymentId !== '' && (
+				<div className={styles.payment__header}>
+					<div className={styles.payment__id}>
+						<span className={styles.payment__label}>Payment ID</span>
+						<span className={styles.payment__value}>
+							{group.paymentId !== '' ? group.paymentId : 'None'}
+						</span>
+					</div>
+
 					<button
 						className="round-button"
 						onClick={() => copyToClipboard(group.paymentId)}
@@ -68,8 +69,8 @@ const PaymentCard: React.FC<{
 						<img src={copied ? checkIcon : copyIcon} alt="copy icon" />
 						<span>{copied ? 'copied!' : 'copy payment ID'}</span>
 					</button>
-				)}
-			</div>
+				</div>
+			)}
 			<div className={styles.payment__transfers}>
 				{group.subtransfers.map((transfer, index) => {
 					const amount = new Big(transfer.amount);
