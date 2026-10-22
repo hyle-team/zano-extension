@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import Big from 'big.js';
 import copyIcon from '../../assets/svg/copy-blue.svg';
+import checkIcon from '../../assets/svg/check-icon-blue.svg';
 import incomingIcon from '../../assets/svg/incoming_ico.svg';
 import outgoingIcon from '../../assets/svg/outgoing_ico.svg';
 import { useCopy } from '../../hooks/useCopy';
@@ -48,7 +49,7 @@ const PaymentCard: React.FC<{
 	isInitiator: boolean;
 	getTicker: (assetId: string) => string;
 }> = ({ group, getTicker, fee, isInitiator }) => {
-	const { copyToClipboard } = useCopy();
+	const { copied, copyToClipboard } = useCopy();
 
 	return (
 		<div className={styles.payment}>
@@ -64,7 +65,8 @@ const PaymentCard: React.FC<{
 						className="round-button"
 						onClick={() => copyToClipboard(group.paymentId)}
 					>
-						<img src={copyIcon} alt="copy icon" />
+						<img src={copied ? checkIcon : copyIcon} alt="copy icon" />
+						<span>{copied ? 'copied!' : 'copy payment ID'}</span>
 					</button>
 				)}
 			</div>
@@ -113,7 +115,7 @@ const PaymentCard: React.FC<{
 };
 
 const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children }) => {
-	const { copyToClipboard } = useCopy();
+	const { copied, copyToClipboard } = useCopy();
 
 	return (
 		<div className={`${copyButton && 'table__row_button'} table__row`}>
@@ -124,7 +126,8 @@ const TableRow: React.FC<TableRowProps> = ({ label, value, copyButton, children 
 						className="round-button"
 						onClick={() => copyToClipboard(value.toString())}
 					>
-						<img src={copyIcon} alt="copy icon" />
+						<img src={copied ? checkIcon : copyIcon} alt="copy icon" />
+						<span>{copied ? 'copied!' : 'copy'}</span>
 					</button>
 				)}
 			</div>
