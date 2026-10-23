@@ -86,11 +86,7 @@ const PaymentCard: React.FC<{
 						} else {
 							const resultAmount = amount.minus(fixedFee);
 
-							if (resultAmount.lte(0)) {
-								return;
-							}
-
-							amountText = resultAmount.toFixed();
+							amountText = resultAmount.lte(0) ? '0' : resultAmount.toFixed();
 						}
 					} else {
 						amountText = amount.toFixed();

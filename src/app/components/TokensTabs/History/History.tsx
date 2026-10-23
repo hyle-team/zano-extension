@@ -33,7 +33,6 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	const fixedFee = new Decimal(fee);
 
 	let displayAmount: string;
-	let isFeeOnlyTransfer = false;
 
 	if (amount === undefined) {
 		displayAmount = 'N/A';
@@ -41,20 +40,12 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 		if (!isInitiator || transfer.isIncome) {
 			displayAmount = amount.toFixed();
 		} else {
-			const resultAmount = amount.minus(fixedFee);
-
-			if (resultAmount.lte(0)) {
-				isFeeOnlyTransfer = true;
-			}
+			const resultAmount = Decimal.max(amount.minus(fixedFee), 0);
 
 			displayAmount = resultAmount.toFixed();
 		}
 	} else {
 		displayAmount = amount.toFixed();
-	}
-
-	if (isFeeOnlyTransfer) {
-		return null;
 	}
 
 	return (
