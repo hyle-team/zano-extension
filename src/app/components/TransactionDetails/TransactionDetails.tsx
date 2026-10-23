@@ -15,7 +15,7 @@ interface TransactionSubtransfersGroup {
 	subtransfers: {
 		amount: string;
 		assetId: string;
-		isIncome: boolean;
+		incoming: boolean;
 	}[];
 }
 
@@ -81,7 +81,7 @@ const PaymentCard: React.FC<{
 					let amountText: string;
 
 					if (isZano) {
-						if (!isInitiator || transfer.isIncome) {
+						if (!isInitiator || transfer.incoming) {
 							amountText = amount.toFixed();
 						} else {
 							const resultAmount = amount.minus(fixedFee);
@@ -99,7 +99,7 @@ const PaymentCard: React.FC<{
 							</p>
 							<div className="table__icon">
 								<img
-									src={transfer.isIncome ? incomingIcon : outgoingIcon}
+									src={transfer.incoming ? incomingIcon : outgoingIcon}
 									alt="transfer icon"
 								/>
 							</div>

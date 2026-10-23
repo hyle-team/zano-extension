@@ -17,7 +17,7 @@ export interface TransactionSubtransfersGroup {
 	subtransfers: {
 		amount: string;
 		assetId: string;
-		isIncome: boolean;
+		incoming: boolean;
 	}[];
 }
 

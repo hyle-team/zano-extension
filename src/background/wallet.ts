@@ -329,7 +329,7 @@ export const getWalletData = async () => {
 							getAssetDecimalPoint(transfer.asset_id) || 12,
 						),
 						assetId: transfer.asset_id,
-						isIncome: transfer.is_income,
+						incoming: transfer.is_income,
 					})),
 				}));
 

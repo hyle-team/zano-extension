@@ -14,7 +14,7 @@ interface HistoryItemProps {
 	transfer: {
 		assetId: string;
 		amount: string;
-		isIncome: boolean;
+		incoming: boolean;
 	};
 	fee: string;
 	isInitiator: boolean;
@@ -37,7 +37,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	if (amount === undefined) {
 		displayAmount = 'N/A';
 	} else if (transfer.assetId === ZANO_ASSET_ID) {
-		if (!isInitiator || transfer.isIncome) {
+		if (!isInitiator || transfer.incoming) {
 			displayAmount = amount.toFixed();
 		} else {
 			const resultAmount = Decimal.max(amount.minus(fixedFee), 0);
@@ -51,7 +51,7 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 	return (
 		<div className={s.historyTop}>
 			<div className={s.historyIcon}>
-				<img src={transfer.isIncome ? receiveIcon : sendIcon} alt="ArrowIcon" />
+				<img src={transfer.incoming ? receiveIcon : sendIcon} alt="ArrowIcon" />
 			</div>
 			<p>
 				<span>{displayAmount}</span>{' '}
