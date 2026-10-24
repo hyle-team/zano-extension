@@ -9,6 +9,7 @@ import s from './History.module.scss';
 import NavLink from '../../UI/NavLink/NavLink';
 import useGetAsset from '../../../hooks/useGetAsset';
 import { ZANO_ASSET_ID } from '../../../../constants';
+import { isFeeOnlyTransfer } from '../../../utils/utils';
 
 interface HistoryItemProps {
 	transfer: {
@@ -40,7 +41,11 @@ const HistoryItem = ({ transfer, fee, isInitiator }: HistoryItemProps) => {
 		if (!isInitiator || transfer.incoming) {
 			displayAmount = amount.toFixed();
 		} else {
-			const resultAmount = Decimal.max(amount.minus(fixedFee), 0);
+			const resultAmount = amount.minus(fixedFee);
+
+			if (resultAmount.lte(0)) {
+				return null;
+			}
 
 			displayAmount = resultAmount.toFixed();
 		}
@@ -88,6 +93,15 @@ const History = () => {
 								isInitiator={Boolean(tx.isInitiator)}
 							/>
 						))}
+					{tx.subtransfersByPid
+						.flatMap((group) => group.subtransfers)
+						.every((transfer) =>
+							isFeeOnlyTransfer(transfer, String(tx.fee), Boolean(tx.isInitiator)),
+						) && (
+						<div className={s.historyTop}>
+							<p>[ no assets ]</p>
+						</div>
+					)}
 					<span className={s.historyAddress}>{tx.txHash}</span>
 				</NavLink>
 			))}

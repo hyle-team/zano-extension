@@ -9,6 +9,7 @@ import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import { Store } from '../../store/store-reducer';
 import styles from './TransactionDetails.module.scss';
 import { ZANO_ASSET_ID } from '../../../constants';
+import { isFeeOnlyTransfer } from '../../utils/utils';
 
 interface TransactionSubtransfersGroup {
 	paymentId: string;
@@ -86,7 +87,11 @@ const PaymentCard: React.FC<{
 						} else {
 							const resultAmount = amount.minus(fixedFee);
 
-							amountText = resultAmount.lte(0) ? '0' : resultAmount.toFixed();
+							if (resultAmount.lte(0)) {
+								return null;
+							}
+
+							amountText = resultAmount.toFixed();
 						}
 					} else {
 						amountText = amount.toFixed();
@@ -146,6 +151,10 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 			(asset: WhitelistedAssetType) => asset.asset_id === assetId,
 		)?.ticker ?? '***';
 
+	const hasNoOutgoingAssets = props.subtransfersByPid
+		.flatMap((group) => group.subtransfers)
+		.every((transfer) => isFeeOnlyTransfer(transfer, props.fee, props.isInitiator));
+
 	return (
 		<div>
 			<RoutersNav title="Transaction details" />
@@ -153,15 +162,19 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = (props) => {
 			<div className="table">
 				<div className={styles.payments}>
 					<div className="table__label">Payments:</div>
-					{props.subtransfersByPid.map((group, index) => (
-						<PaymentCard
-							key={index}
-							group={group}
-							getTicker={getTicker}
-							fee={props.fee}
-							isInitiator={props.isInitiator}
-						/>
-					))}
+					{hasNoOutgoingAssets ? (
+						<p className="table__value">[ no outgoing assets ]</p>
+					) : (
+						props.subtransfersByPid.map((group, index) => (
+							<PaymentCard
+								key={index}
+								group={group}
+								getTicker={getTicker}
+								fee={props.fee}
+								isInitiator={props.isInitiator}
+							/>
+						))
+					)}
 				</div>
 				<TableRow label="Fee" value={`${props.fee} ZANO`} />
 				{props.addresses && (

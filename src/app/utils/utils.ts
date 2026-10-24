@@ -52,6 +52,16 @@ export const addZeros = (amount: string | number, decimal_point = 12): Big => {
 	return fixedAmount;
 };
 
+export const isFeeOnlyTransfer = (
+	transfer: { amount: string; assetId: string; incoming: boolean },
+	fee: string,
+	isInitiator: boolean,
+): boolean =>
+	isInitiator &&
+	!transfer.incoming &&
+	transfer.assetId === ZANO_ASSET_ID &&
+	new Big(transfer.amount).lte(new Big(fee));
+
 export const scrypt = async ({
 	str,
 	saltBuffer,
