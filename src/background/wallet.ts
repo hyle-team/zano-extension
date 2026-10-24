@@ -98,7 +98,7 @@ export const fetchData = async (
 };
 
 const fetchTxData = async () => {
-	const response = await fetchData('get_recent_txs_and_info2', {
+	const response = await fetchData('get_recent_txs_and_info3', {
 		offset: 0,
 		update_provision_info: true,
 		exclude_mining_txs: true,
@@ -317,26 +317,51 @@ export const getWalletData = async () => {
 	if (txData) {
 		transactions = txData
 			.filter((tx) => !tx.is_service)
-			.map((tx) => ({
-				isConfirmed: tx.height !== 0,
-				txHash: tx.tx_hash,
-				blobSize: tx.tx_blob_size,
-				timestamp: tx.timestamp,
-				height: tx.height,
-				paymentId: tx.payment_id,
-				comment: tx.comment,
-				fee: removeZeros(tx.fee),
-				addresses: tx.remote_addresses,
-				isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
-				transfers: tx.subtransfers.map((transfer) => ({
-					amount: removeZeros(
-						transfer.amount,
-						getAssetDecimalPoint(transfer.asset_id) || 12,
-					),
-					assetId: transfer.asset_id,
-					incoming: transfer.is_income,
-				})),
-			}));
+			.map((tx) => {
+				const subtransfers_by_pid =
+					tx.subtransfers_by_pid instanceof Array ? tx.subtransfers_by_pid : [];
+
+				const subtransfersByPidMapped = subtransfers_by_pid.map((group) => ({
+					paymentId: group.payment_id,
+					subtransfers: group.subtransfers.map((transfer) => ({
+						amount: removeZeros(
+							transfer.amount,
+							getAssetDecimalPoint(transfer.asset_id) || 12,
+						),
+						assetId: transfer.asset_id,
+						incoming: transfer.is_income,
+					})),
+				}));
+
+				const transfersMapped = subtransfers_by_pid
+					.flatMap((group) => group.subtransfers)
+					.map((transfer) => ({
+						amount: removeZeros(
+							transfer.amount,
+							getAssetDecimalPoint(transfer.asset_id) || 12,
+						),
+						assetId: transfer.asset_id,
+						incoming: transfer.is_income,
+					}));
+
+				return {
+					isConfirmed: tx.height !== 0,
+					txHash: tx.tx_hash,
+					blobSize: tx.tx_blob_size,
+					timestamp: tx.timestamp,
+					height: tx.height,
+					comment: tx.comment,
+					fee: removeZeros(tx.fee),
+					addresses: tx.remote_addresses,
+					isInitiator: !!tx.employed_entries?.spent?.some((e) => e?.index === 0),
+					subtransfersByPid: subtransfersByPidMapped,
+					transfers: transfersMapped,
+					paymentId:
+						subtransfers_by_pid.length === 1
+							? (subtransfers_by_pid[0]?.payment_id ?? '')
+							: '',
+				};
+			});
 	}
 
 	const alias = await getAlias(address);

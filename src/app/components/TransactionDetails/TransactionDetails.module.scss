@@ -1,14 +1,56 @@
 @use 'sass:math';
 
-.transaction__transfers {
+.payments {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-end;
 	gap: 10px;
+	margin-bottom: 16px;
+}
 
-	.transaction__transfer {
+.payment {
+	background: #11316b;
+	border-radius: 8px;
+	padding: 12px;
+
+	&__header {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		padding-bottom: 10px;
+		margin-bottom: 10px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	&__id {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+	}
+
+	&__label {
+		font-size: 18px;
+		color: #1f8feb;
+	}
+
+	&__value {
+		font-weight: 300;
+		font-size: 18px;
+		color: rgba(255, 255, 255, 0.9);
+		word-break: break-all;
+	}
+
+	&__transfers {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__transfer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		gap: 10px;
 	}
 }

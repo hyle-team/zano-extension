@@ -12,10 +12,13 @@ interface Asset {
 	decimalPoint?: number;
 }
 
-interface Transfer {
-	assetId?: string;
-	amount?: string;
-	incoming?: boolean;
+export interface TransactionSubtransfersGroup {
+	paymentId: string;
+	subtransfers: {
+		amount: string;
+		assetId: string;
+		incoming: boolean;
+	}[];
 }
 
 interface Transaction {
@@ -26,7 +29,7 @@ interface Transaction {
 	value?: number;
 	ticker: string;
 	address: string;
-	transfers?: Transfer[];
+	subtransfersByPid: TransactionSubtransfersGroup[];
 	isInitiator?: boolean;
 	fee?: number | string;
 }
@@ -109,24 +112,7 @@ const initialState: State = {
 		balance: 1337,
 		lockedBalance: 0,
 		assets: [],
-		transactions: [
-			{
-				isConfirmed: true,
-				incoming: true,
-				amount: 100,
-				ticker: 'ZANO',
-				address:
-					'ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9',
-			},
-			{
-				isConfirmed: false,
-				incoming: false,
-				value: 17,
-				ticker: 'ZANO',
-				address:
-					'ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9',
-			},
-		],
+		transactions: [],
 	},
 	displayUsd: false,
 	isLoading: true,

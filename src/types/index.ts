@@ -153,15 +153,26 @@ export interface TransactionRaw {
 	tx_blob_size: number;
 	timestamp: number;
 	height: number;
-	payment_id: string;
 	comment?: string;
 	fee: string;
 	remote_addresses: string[];
 	is_service: boolean;
-	subtransfers: TransferRaw[];
 	employed_entries?: {
 		spent?: { index: number }[];
 	};
+	subtransfers_by_pid: {
+		payment_id: string;
+		subtransfers: TransferRaw[];
+	}[];
+}
+
+export interface TransactionSubtransfersGroup {
+	paymentId: string;
+	subtransfers: {
+		amount: string;
+		assetId: string;
+		incoming: boolean;
+	}[];
 }
 
 export interface Transaction {
@@ -170,16 +181,17 @@ export interface Transaction {
 	blobSize: number;
 	timestamp: number;
 	height: number;
-	paymentId: string;
 	comment?: string;
 	fee: string;
 	addresses: string[];
 	isInitiator: boolean;
+	subtransfersByPid: TransactionSubtransfersGroup[];
 	transfers: {
 		amount: string;
 		assetId: string;
 		incoming: boolean;
 	}[];
+	paymentId: string;
 }
 
 export interface WalletAsset {
