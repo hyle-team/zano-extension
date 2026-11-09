@@ -22,6 +22,7 @@ import {
 	updateWalletConnected,
 	updateActiveWalletKey,
 	updateWalletsList,
+	updateWalletsListError,
 	updateWalletData,
 	updatePriceData,
 	updateLoading,
@@ -130,8 +131,11 @@ function App() {
 
 			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
 
-			if (walletsList.data) {
+			if (walletsList?.data) {
 				updateWalletsList(dispatch as dispatchType, walletsList.data);
+				updateWalletsListError(dispatch as dispatchType, false);
+			} else {
+				updateWalletsListError(dispatch as dispatchType, true);
 			}
 
 			const { address, alias, balance, transactions, assets, isWatchOnly, isAuditable } =
@@ -184,8 +188,9 @@ function App() {
 
 	useEffect(() => {
 		getZanoPrice().then((priceData) => {
-			console.log('price data', priceData);
-			updatePriceData(dispatch as dispatchType, priceData);
+			if (priceData) {
+				updatePriceData(dispatch as dispatchType, priceData);
+			}
 		});
 	}, [dispatch]);
 

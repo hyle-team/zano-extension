@@ -132,6 +132,13 @@
 	}
 }
 
+.dropdownEmpty {
+	padding: 14px 16px;
+	font-size: 14px;
+	line-height: 1.4;
+	opacity: 0.7;
+}
+
 .dropdownItemActive {
 	background: rgba(255, 255, 255, 0.04);
 }

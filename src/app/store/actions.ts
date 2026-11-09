@@ -1,10 +1,11 @@
 // Define types for the structure of your state
 interface WalletState {
 	wallets: string[];
+	walletsListError: boolean;
 	walletData: object;
 	isConnected: boolean;
 	activeWalletKey: string;
-	priceData: object;
+	priceData: object | null;
 	displayCurrency: string;
 	isLoading: boolean;
 	balancesHidden: boolean;
@@ -25,6 +26,15 @@ export const updateWalletsList = (
 ): void =>
 	dispatch({
 		type: 'WALLETS_LIST_UPDATED',
+		payload: state,
+	});
+
+export const updateWalletsListError = (
+	dispatch: DispatchFunction,
+	state: WalletState['walletsListError'],
+): void =>
+	dispatch({
+		type: 'WALLETS_LIST_ERROR_UPDATED',
 		payload: state,
 	});
 

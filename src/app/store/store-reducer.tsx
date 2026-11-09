@@ -72,13 +72,14 @@ interface State {
 		is_watch_only?: boolean;
 		is_auditable?: boolean;
 	}[];
+	walletsListError: boolean;
 	activeWalletKey: string;
 	wallet: Wallet;
 	displayUsd: boolean;
 	isLoading: boolean;
 	isConnected: boolean | undefined;
 	isBalancesHidden: boolean;
-	priceData: PriceData;
+	priceData: PriceData | null;
 	confirmationModal: null | string;
 	openRequestConfirmations: number;
 	transactionStatus: TransactionStatus;
@@ -90,26 +91,15 @@ interface State {
 
 // Initial state
 const initialState: State = {
-	walletsList: [
-		{
-			address:
-				'ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9',
-			alias: 'ravaga',
-			balance: 1337,
-		},
-		{
-			address:
-				'ZxDCEeVaHsYXEJotN8Q5y4PW7Y4inrNaibqpmU7P9KGCZ76LBPYkn9Gf8BzCSLSJfpVDJ7GzBPApGEK4BVbogZwN2opPAQDfU',
-			alias: 'test',
-			balance: 27,
-		},
-	],
+	// Real data replaces these on the first successful poll. Keep them empty: anything put
+	// here is shown to the user whenever a wallet request fails.
+	walletsList: [],
+	walletsListError: false,
 	activeWalletKey: '',
 	wallet: {
-		address:
-			'ZxDTZ8LJ88ZK6Ja1P9iqDNgCiBM6FhiBKdDoTAoEp9nY9q8d846iePAGYGjNvrU9uFHDXD3by5CooSBrsXBDfE9M11WBwAxQ9',
-		alias: 'ravaga',
-		balance: 1337,
+		address: '',
+		alias: '',
+		balance: 0,
 		lockedBalance: 0,
 		assets: [],
 		transactions: [],
@@ -118,7 +108,7 @@ const initialState: State = {
 	isLoading: true,
 	isConnected: undefined,
 	isBalancesHidden: false,
-	priceData: { price: 1, change: -4.6 },
+	priceData: null,
 	confirmationModal: null,
 	openRequestConfirmations: 0,
 	transactionStatus: {
@@ -142,6 +132,7 @@ type Action =
 			type: 'WALLETS_LIST_UPDATED';
 			payload: { address: string; alias: string; balance: number }[];
 	  }
+	| { type: 'WALLETS_LIST_ERROR_UPDATED'; payload: boolean }
 	| { type: 'ACTIVE_WALLET_KEY_UPDATED'; payload: string }
 	| { type: 'WALLET_DATA_UPDATED'; payload: Wallet }
 	| { type: 'PRICE_DATA_UPDATED'; payload: PriceData }
@@ -166,6 +157,9 @@ const reducer = (state: State, action: Action): State => {
 			return { ...state, isConnected: action.payload };
 		case 'WALLETS_LIST_UPDATED':
 			return { ...state, walletsList: action.payload };
+		case 'WALLETS_LIST_ERROR_UPDATED':
+			if (state.walletsListError === action.payload) return state;
+			return { ...state, walletsListError: action.payload };
 		case 'ACTIVE_WALLET_KEY_UPDATED':
 			return { ...state, activeWalletKey: action.payload };
 		case 'WALLET_DATA_UPDATED':

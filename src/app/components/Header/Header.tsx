@@ -216,6 +216,13 @@ const Header = () => {
 								</div>
 							);
 						})}
+						{state.walletsList.length === 0 && (
+							<div className={s.dropdownEmpty} role="status">
+								{state.walletsListError
+									? "Couldn't load your wallets. Retrying..."
+									: 'Loading wallets...'}
+							</div>
+						)}
 					</div>
 				</div>
 			)}

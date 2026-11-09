@@ -13,10 +13,13 @@ function AssetPrice({ assetId, balance }: { assetId: string; balance: number }) 
 	const [assetPrice, setAssetPrice] = React.useState<number | null>(null);
 
 	useEffect(() => {
-		if (assetId === ZANO_ASSET_ID) {
-			setAssetPrice(state.priceData.price);
-			return;
-		}
+		if (assetId !== ZANO_ASSET_ID) return;
+
+		setAssetPrice(state.priceData ? state.priceData.price : null);
+	}, [assetId, state.priceData]);
+
+	useEffect(() => {
+		if (assetId === ZANO_ASSET_ID) return;
 
 		fetch(`https://explorer.zano.org/api/price?asset_id=${assetId}`)
 			.then((response) => response.json())

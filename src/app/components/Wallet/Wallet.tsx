@@ -34,9 +34,13 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 	const [menuVisible, setMenuVisible] = useState(false);
 
 	const renderBalance = () => {
-		const fiatBalance = (Number(state.wallet.balance) * state.priceData.price).toFixed(2);
-
 		if (state.displayUsd) {
+			if (!state.priceData) {
+				return <span>$...</span>;
+			}
+
+			const fiatBalance = (Number(state.wallet.balance) * state.priceData.price).toFixed(2);
+
 			return (
 				<>
 					<span>${censorValue(fiatBalance)}</span>

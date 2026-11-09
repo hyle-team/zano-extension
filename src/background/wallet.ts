@@ -114,13 +114,43 @@ const fetchTxData = async () => {
 	return JSONbig.parse(data);
 };
 
-export const getAlias = async (address: string | fetchDataProps | object = {}) => {
-	const response = await fetchData('get_alias_by_address', address);
-	const data = await response.json();
-	if (data.result?.status === 'OK') {
-		return data.result.alias_info_list[0].alias;
+// Aliases are display data and rarely change, but the popup polls every second and the
+// desktop wallet's RPC server is small. Cache lookups, and never let a failed lookup fail
+// the request that needed it: fall back to the last known alias, or none.
+const ALIAS_CACHE_TTL_MS = 60_000;
+const aliasCache = new Map<string, { alias: string; expiresAt: number }>();
+
+export const getAlias = async (address: string): Promise<string> => {
+	const cached = aliasCache.get(address);
+
+	if (cached && cached.expiresAt > Date.now()) {
+		return cached.alias;
 	}
-	return '';
+
+	try {
+		const response = await fetchData('get_alias_by_address', address);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		const status = data?.result?.status;
+		let alias = '';
+
+		if (status === 'OK') {
+			const firstAlias = data.result.alias_info_list?.[0]?.alias;
+			alias = typeof firstAlias === 'string' ? firstAlias : '';
+		} else if (status !== 'NOT_FOUND') {
+			throw new Error(`Unexpected alias lookup status: ${status ?? 'none'}`);
+		}
+
+		aliasCache.set(address, { alias, expiresAt: Date.now() + ALIAS_CACHE_TTL_MS });
+		return alias;
+	} catch (error) {
+		console.warn('Alias lookup failed:', error);
+		return cached?.alias ?? '';
+	}
 };
 
 export const getAliasDetails = async (alias: string) => {
@@ -151,19 +181,18 @@ const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 
 export const getWallets = async () => {
 	const rawWallets = await fetchRawWallets();
+	const wallets = [];
 
-	if (rawWallets.length === 0) {
-		return [];
-	}
-
-	const wallets = await Promise.all(
-		rawWallets.map(async (wallet: WalletRaw) => {
+	// One wallet at a time: these requests share the desktop's RPC server with the rest of
+	// the poll. A bad entry is skipped instead of failing the whole list.
+	for (const wallet of rawWallets) {
+		try {
 			const alias = await getAlias(wallet.wi.address);
 			const balanceRaw =
 				wallet?.wi?.balances?.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
 					?.total || '0';
 
-			return {
+			wallets.push({
 				address: wallet.wi.address,
 				alias,
 				balance: removeZeros(balanceRaw),
@@ -171,9 +200,15 @@ export const getWallets = async () => {
 				is_auditable: !!wallet.wi.is_auditable,
 				wallet_id: wallet.wallet_id,
 				walletKey: walletKeyOf(wallet),
-			};
-		}),
-	);
+			});
+		} catch (error) {
+			console.error('Skipping unreadable wallet entry:', error);
+		}
+	}
+
+	if (rawWallets.length > 0 && wallets.length === 0) {
+		throw new Error('No readable wallet entries');
+	}
 
 	return wallets;
 };
