@@ -123,9 +123,11 @@ const fetchTxData = async () => {
 // authoritative answer (e.g. the CREATE_ALIAS guard) must use getAliasByAddress instead.
 const ALIAS_CACHE_TTL_MS = 60_000;
 const ALIAS_FAILURE_RETRY_MS = 5_000;
-const ALIAS_LOOKUP_TIMEOUT_MS = 2_000;
+const ALIAS_LOOKUP_TIMEOUT_MS = 15_000;
+const ACTIVE_ALIAS_WAIT_MS = 2_000;
+const LIST_ALIAS_WAIT_MS = 500;
 const aliasCache = new Map<string, { alias: string | null; expiresAt: number }>();
-const aliasLookups = new Map<string, Promise<string | null>>();
+const aliasLookups = new Map<string, { lookup: Promise<string | null>; startedAt: number }>();
 
 const lookupAlias = async (address: string): Promise<string | null> => {
 	const controller = new AbortController();
@@ -165,29 +167,89 @@ const lookupAlias = async (address: string): Promise<string | null> => {
 	}
 };
 
-// Resolves to the address's alias, '' when it has none, or null when that is unknown.
-export const getAlias = (address: string): Promise<string | null> => {
+const isFresh = (address: string): boolean => {
 	const cached = aliasCache.get(address);
+	return !!cached && cached.expiresAt > Date.now();
+};
 
-	if (cached && cached.expiresAt > Date.now()) {
-		return Promise.resolve(cached.alias);
-	}
+// The cached alias without a lookup: alias, '' or null (unknown or expired).
+const peekAlias = (address: string): string | null =>
+	isFresh(address) ? (aliasCache.get(address)?.alias ?? null) : null;
 
+// Starts the lookup for an address, or joins the one in flight. Never rejects.
+const requestAlias = (address: string): { lookup: Promise<string | null>; startedAt: number } => {
 	const pending = aliasLookups.get(address);
 
 	if (pending) {
 		return pending;
 	}
 
-	const lookup = lookupAlias(address).finally(() => aliasLookups.delete(address));
-	aliasLookups.set(address, lookup);
-	return lookup;
+	const entry = {
+		lookup: lookupAlias(address).finally(() => aliasLookups.delete(address)),
+		startedAt: Date.now(),
+	};
+	aliasLookups.set(address, entry);
+	return entry;
 };
 
-// The cached alias without a lookup: alias, '' or null (unknown or expired).
-const peekAlias = (address: string): string | null => {
-	const cached = aliasCache.get(address);
-	return cached && cached.expiresAt > Date.now() ? cached.alias : null;
+// Resolves to `value`, or to `fallback` after `ms`.
+const withinMs = async <T>(value: Promise<T>, ms: number, fallback: T): Promise<T> => {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const limit = new Promise<T>((resolve) => {
+		timer = setTimeout(() => resolve(fallback), ms);
+	});
+
+	try {
+		return await Promise.race([value, limit]);
+	} finally {
+		clearTimeout(timer);
+	}
+};
+
+// Resolves to the address's alias, '' when it has none, or null when that is unknown. A
+// lookup is waited for at most ACTIVE_ALIAS_WAIT_MS from when it started, so a stuck lookup
+// delays one poll, not every poll. A slower lookup keeps running and is cached when it ends.
+export const getAlias = async (address: string): Promise<string | null> => {
+	if (isFresh(address)) {
+		return peekAlias(address);
+	}
+
+	const { lookup, startedAt } = requestAlias(address);
+	const remaining = ACTIVE_ALIAS_WAIT_MS - (Date.now() - startedAt);
+
+	return remaining > 0 ? withinMs(lookup, remaining, null) : null;
+};
+
+// Aliases for the wallet list are looked up in the background, one at a time and in the
+// order they were queued, so the list never waits for them and every wallet gets its turn.
+const aliasQueue: string[] = [];
+let aliasQueueRunning = false;
+let aliasQueueIdle: Promise<void> = Promise.resolve();
+
+const queueAliasLookup = (address: string): void => {
+	if (!aliasQueue.includes(address)) {
+		aliasQueue.push(address);
+	}
+
+	if (aliasQueueRunning) {
+		return;
+	}
+
+	aliasQueueRunning = true;
+
+	aliasQueueIdle = (async () => {
+		try {
+			while (aliasQueue.length > 0) {
+				const next = aliasQueue.shift() as string;
+
+				if (!isFresh(next)) {
+					await requestAlias(next).lookup;
+				}
+			}
+		} finally {
+			aliasQueueRunning = false;
+		}
+	})();
 };
 
 export const getAliasDetails = async (alias: string) => {
@@ -216,43 +278,50 @@ const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 	return data?.result?.wallets || [];
 };
 
-const WALLET_LIST_ALIAS_BUDGET_MS = 3_000;
-
 export const getWallets = async () => {
 	const rawWallets = await fetchRawWallets();
-	const wallets = [];
-	const aliasDeadline = Date.now() + WALLET_LIST_ALIAS_BUDGET_MS;
+	const entries = [];
 
-	// One wallet at a time: these requests share the desktop's RPC server with the rest of
-	// the poll. Alias lookups share a time budget; once it is spent, the remaining wallets
-	// use a cached alias or none. A bad entry is skipped instead of failing the whole list.
+	// A bad entry is skipped instead of failing the whole list. Missing aliases are queued.
 	for (const wallet of rawWallets) {
 		try {
 			const { address } = wallet.wi;
-			const alias = Date.now() < aliasDeadline ? await getAlias(address) : peekAlias(address);
 			const balanceRaw =
 				wallet?.wi?.balances?.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
 					?.total || '0';
 
-			wallets.push({
+			entries.push({
 				address,
-				alias: alias ?? '',
 				balance: removeZeros(balanceRaw),
 				is_watch_only: !!wallet.wi.is_watch_only,
 				is_auditable: !!wallet.wi.is_auditable,
 				wallet_id: wallet.wallet_id,
 				walletKey: walletKeyOf(wallet),
 			});
+
+			if (!isFresh(address)) {
+				queueAliasLookup(address);
+			}
 		} catch (error) {
 			console.error('Skipping unreadable wallet entry:', error);
 		}
 	}
 
-	if (rawWallets.length > 0 && wallets.length === 0) {
+	if (rawWallets.length > 0 && entries.length === 0) {
 		throw new Error('No readable wallet entries');
 	}
 
-	return wallets;
+	// Give queued lookups a moment, so a responsive wallet shows aliases on the first poll.
+	// Anything slower shows up on a later poll.
+	if (aliasQueueRunning) {
+		await withinMs(aliasQueueIdle, LIST_ALIAS_WAIT_MS, undefined);
+	}
+
+	return entries.map(({ address, ...rest }) => ({
+		address,
+		alias: peekAlias(address) ?? '',
+		...rest,
+	}));
 };
 
 export const getActiveWalletKey = async (): Promise<string | null> => {

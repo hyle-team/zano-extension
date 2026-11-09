@@ -3,6 +3,7 @@ import { goBack } from 'react-chrome-extension-router';
 import styles from './styles.module.scss';
 import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import { Store } from '../../store/store-reducer';
+import { useStableWalletAlias } from '../../hooks/useStableWalletAlias';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import Button from '../UI/Button/Button';
 import InfoTooltip from '../UI/InfoTooltip';
@@ -12,6 +13,7 @@ import { useAlias } from './hook/useAlias';
 
 const AliasManagePage = ({ mode = 'create' }) => {
 	const { state } = useContext(Store);
+	const walletAlias = useStableWalletAlias();
 
 	const {
 		fee,
@@ -26,7 +28,7 @@ const AliasManagePage = ({ mode = 'create' }) => {
 	} = useAlias({
 		mode,
 		walletAddress: state.wallet.address,
-		walletAlias: state.wallet.alias,
+		walletAlias,
 	});
 
 	const displayAlias = aliasInput.value ? `@${aliasInput.value}` : '';

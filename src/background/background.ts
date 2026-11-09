@@ -1243,7 +1243,7 @@ async function processRequest(
 				const { address } = await getWalletData();
 				const ownAlias = await getAliasByAddress(address);
 
-				if (ownAlias?.status === 'OK') {
+				if (!ownAlias || typeof ownAlias !== 'object' || ownAlias.status === 'OK') {
 					throw new Error('Wallet already have an alias');
 				}
 			} catch {

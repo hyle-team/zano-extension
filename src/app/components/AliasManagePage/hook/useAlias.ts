@@ -83,7 +83,7 @@ export const useAlias = ({
 	}, [debouncedAlias, mode]);
 
 	useEffect(() => {
-		if (mode !== 'edit') return;
+		if (mode !== 'edit' || !walletAlias) return;
 
 		(async () => {
 			const data = await fetchBackground({

@@ -1,18 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { goBack } from 'react-chrome-extension-router';
 import styles from './styles.module.scss';
 import RoutersNav from '../UI/RoutersNav/RoutersNav';
 import MyInput, { inputDataProps } from '../UI/MyInput/MyInput';
 import Button from '../UI/Button/Button';
 import InfoTooltip from '../UI/InfoTooltip';
-import { Store } from '../../store/store-reducer';
 import successImg from '../../assets/images/success-round.png';
 import errorImg from '../../assets/images/failed-round.png';
 import { useAliasTransfer } from './hook/useAliasTransfer';
+import { useStableWalletAlias } from '../../hooks/useStableWalletAlias';
 
 const AliasTransfer = () => {
-	const { state } = useContext(Store);
-	const walletAlias = state.wallet?.alias;
+	const walletAlias = useStableWalletAlias();
 
 	const {
 		onTransfer,
@@ -64,7 +63,7 @@ const AliasTransfer = () => {
 					noActiveBorder
 					placeholder="Alias"
 					label="Alias"
-					value={`@${state.wallet.alias}`}
+					value={`@${walletAlias}`}
 				/>
 
 				<MyInput
