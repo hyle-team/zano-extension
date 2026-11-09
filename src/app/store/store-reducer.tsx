@@ -42,6 +42,7 @@ interface Wallet {
 	assets: Asset[];
 	transactions: Transaction[];
 	isWatchOnly?: boolean;
+	aliasUnknown?: boolean;
 	isAuditable?: boolean;
 }
 

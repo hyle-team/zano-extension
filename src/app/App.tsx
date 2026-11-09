@@ -129,17 +129,16 @@ function App() {
 				return;
 			}
 
-			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
-
-			if (walletsList?.data) {
-				updateWalletsList(dispatch as dispatchType, walletsList.data);
-				updateWalletsListError(dispatch as dispatchType, false);
-			} else {
-				updateWalletsListError(dispatch as dispatchType, true);
-			}
-
-			const { address, alias, balance, transactions, assets, isWatchOnly, isAuditable } =
-				walletData.data;
+			const {
+				address,
+				alias,
+				aliasUnknown,
+				balance,
+				transactions,
+				assets,
+				isWatchOnly,
+				isAuditable,
+			} = walletData.data;
 
 			// console.log("WALLET DATA:");
 			// console.log(walletData.data);
@@ -147,6 +146,7 @@ function App() {
 			updateWalletData(dispatch as dispatchType, {
 				address,
 				alias,
+				aliasUnknown,
 				balance,
 				assets,
 				transactions,
@@ -162,6 +162,18 @@ function App() {
 			console.log('wallet data updated');
 			updateLoading(dispatch as dispatchType, false);
 			setFirstWalletLoaded(true);
+
+			// The list only feeds the wallet switcher. Load it after the active wallet is shown,
+			// so a slow or failing list cannot hold up the wallet itself.
+			const walletsList = await fetchBackground({ method: 'GET_WALLETS' });
+
+			// A wallet is open (GET_WALLET_DATA succeeded), so an empty list means it failed.
+			if (Array.isArray(walletsList?.data) && walletsList.data.length > 0) {
+				updateWalletsList(dispatch as dispatchType, walletsList.data);
+				updateWalletsListError(dispatch as dispatchType, false);
+			} else {
+				updateWalletsListError(dispatch as dispatchType, true);
+			}
 		};
 
 		const intervalId = setInterval(async () => {

@@ -104,7 +104,8 @@ const Wallet = ({ setConnectOpened }: { setConnectOpened: Dispatch<SetStateActio
 		: undefined;
 
 	const hasAlias = Boolean(state.wallet.alias);
-	const canCreateAlias = !hasAlias && !isTrackingWallet;
+	// Unknown is not "none": never offer Create alias while the lookup is failing.
+	const canCreateAlias = !hasAlias && !isTrackingWallet && !state.wallet.aliasUnknown;
 	const showAliasBlock = hasAlias || canCreateAlias;
 
 	return (

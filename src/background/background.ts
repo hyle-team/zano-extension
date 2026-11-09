@@ -675,7 +675,8 @@ async function processRequest(
 				}
 
 				return sendResponse({ data: filtered });
-			} catch {
+			} catch (error) {
+				console.error('Error fetching wallet data:', error);
 				return sendResponse({
 					error: 'Failed to get wallet data',
 				});
@@ -1238,9 +1239,11 @@ async function processRequest(
 					throw new Error('Alias already exists');
 				}
 
-				const alreadyHaveAlias = (await getWalletData()).alias;
+				// Fresh lookup on purpose: getWalletData() reports an unknown alias as ''.
+				const { address } = await getWalletData();
+				const ownAlias = await getAliasByAddress(address);
 
-				if (alreadyHaveAlias) {
+				if (ownAlias?.status === 'OK') {
 					throw new Error('Wallet already have an alias');
 				}
 			} catch {

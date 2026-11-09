@@ -79,6 +79,7 @@ interface fetchDataProps {
 export const fetchData = async (
 	method: string,
 	params: string | fetchDataProps | object = {},
+	signal?: AbortSignal,
 ): Promise<Response> => {
 	const httpBody: string = JSON.stringify({
 		jsonrpc: '2.0',
@@ -94,6 +95,7 @@ export const fetchData = async (
 			'Zano-Access-Token': generateAccessToken(httpBody),
 		},
 		body: httpBody,
+		signal,
 	});
 };
 
@@ -115,20 +117,22 @@ const fetchTxData = async () => {
 };
 
 // Aliases are display data and rarely change, but the popup polls every second and the
-// desktop wallet's RPC server is small. Cache lookups, and never let a failed lookup fail
-// the request that needed it: fall back to the last known alias, or none.
+// desktop wallet's RPC server is small. A successful lookup is cached for a minute. A failed
+// one resolves to null ("unknown"), never to a stale alias, and is retried after a few
+// seconds. Concurrent callers share one in-flight lookup. Anything that needs an
+// authoritative answer (e.g. the CREATE_ALIAS guard) must use getAliasByAddress instead.
 const ALIAS_CACHE_TTL_MS = 60_000;
-const aliasCache = new Map<string, { alias: string; expiresAt: number }>();
+const ALIAS_FAILURE_RETRY_MS = 5_000;
+const ALIAS_LOOKUP_TIMEOUT_MS = 2_000;
+const aliasCache = new Map<string, { alias: string | null; expiresAt: number }>();
+const aliasLookups = new Map<string, Promise<string | null>>();
 
-export const getAlias = async (address: string): Promise<string> => {
-	const cached = aliasCache.get(address);
-
-	if (cached && cached.expiresAt > Date.now()) {
-		return cached.alias;
-	}
+const lookupAlias = async (address: string): Promise<string | null> => {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), ALIAS_LOOKUP_TIMEOUT_MS);
 
 	try {
-		const response = await fetchData('get_alias_by_address', address);
+		const response = await fetchData('get_alias_by_address', address, controller.signal);
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -140,7 +144,12 @@ export const getAlias = async (address: string): Promise<string> => {
 
 		if (status === 'OK') {
 			const firstAlias = data.result.alias_info_list?.[0]?.alias;
-			alias = typeof firstAlias === 'string' ? firstAlias : '';
+
+			if (typeof firstAlias !== 'string' || !firstAlias) {
+				throw new Error('Malformed alias lookup response');
+			}
+
+			alias = firstAlias;
 		} else if (status !== 'NOT_FOUND') {
 			throw new Error(`Unexpected alias lookup status: ${status ?? 'none'}`);
 		}
@@ -149,8 +158,36 @@ export const getAlias = async (address: string): Promise<string> => {
 		return alias;
 	} catch (error) {
 		console.warn('Alias lookup failed:', error);
-		return cached?.alias ?? '';
+		aliasCache.set(address, { alias: null, expiresAt: Date.now() + ALIAS_FAILURE_RETRY_MS });
+		return null;
+	} finally {
+		clearTimeout(timeout);
 	}
+};
+
+// Resolves to the address's alias, '' when it has none, or null when that is unknown.
+export const getAlias = (address: string): Promise<string | null> => {
+	const cached = aliasCache.get(address);
+
+	if (cached && cached.expiresAt > Date.now()) {
+		return Promise.resolve(cached.alias);
+	}
+
+	const pending = aliasLookups.get(address);
+
+	if (pending) {
+		return pending;
+	}
+
+	const lookup = lookupAlias(address).finally(() => aliasLookups.delete(address));
+	aliasLookups.set(address, lookup);
+	return lookup;
+};
+
+// The cached alias without a lookup: alias, '' or null (unknown or expired).
+const peekAlias = (address: string): string | null => {
+	const cached = aliasCache.get(address);
+	return cached && cached.expiresAt > Date.now() ? cached.alias : null;
 };
 
 export const getAliasDetails = async (alias: string) => {
@@ -179,22 +216,27 @@ const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 	return data?.result?.wallets || [];
 };
 
+const WALLET_LIST_ALIAS_BUDGET_MS = 3_000;
+
 export const getWallets = async () => {
 	const rawWallets = await fetchRawWallets();
 	const wallets = [];
+	const aliasDeadline = Date.now() + WALLET_LIST_ALIAS_BUDGET_MS;
 
 	// One wallet at a time: these requests share the desktop's RPC server with the rest of
-	// the poll. A bad entry is skipped instead of failing the whole list.
+	// the poll. Alias lookups share a time budget; once it is spent, the remaining wallets
+	// use a cached alias or none. A bad entry is skipped instead of failing the whole list.
 	for (const wallet of rawWallets) {
 		try {
-			const alias = await getAlias(wallet.wi.address);
+			const { address } = wallet.wi;
+			const alias = Date.now() < aliasDeadline ? await getAlias(address) : peekAlias(address);
 			const balanceRaw =
 				wallet?.wi?.balances?.find((asset) => asset.asset_info.asset_id === ZANO_ASSET_ID)
 					?.total || '0';
 
 			wallets.push({
-				address: wallet.wi.address,
-				alias,
+				address,
+				alias: alias ?? '',
 				balance: removeZeros(balanceRaw),
 				is_watch_only: !!wallet.wi.is_watch_only,
 				is_auditable: !!wallet.wi.is_auditable,
@@ -403,7 +445,8 @@ export const getWalletData = async () => {
 
 	return {
 		address,
-		alias,
+		alias: alias ?? '',
+		aliasUnknown: alias === null,
 		balance,
 		transactions,
 		assets,
