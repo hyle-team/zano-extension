@@ -128,6 +128,7 @@ const ALIAS_FAILURE_RETRY_MS = 5_000;
 const ALIAS_LOOKUP_TIMEOUT_MS = 15_000;
 const ACTIVE_ALIAS_WAIT_MS = 2_000;
 const LIST_ALIAS_WAIT_MS = 500;
+const ALIAS_STALE_LIMIT_MS = 15_000;
 const aliasCache = new Map<string, { alias: string | null; expiresAt: number }>();
 const aliasLookups = new Map<string, { lookup: Promise<string | null>; startedAt: number }>();
 
@@ -174,9 +175,18 @@ const isFresh = (address: string): boolean => {
 	return !!cached && cached.expiresAt > Date.now();
 };
 
-// The alias to show without a lookup: alias, '' (none) or null (unknown). An expired entry
-// is still shown; every reader starts a refresh for it, and the refresh replaces it.
-const peekAlias = (address: string): string | null => aliasCache.get(address)?.alias ?? null;
+// The alias to show without a lookup: alias, '' (none) or null (unknown). An expired entry is
+// still shown while its refresh is pending (every reader starts or queues one), but never more
+// than ALIAS_STALE_LIMIT_MS past expiry, however long the refresh takes to start.
+const peekAlias = (address: string): string | null => {
+	const cached = aliasCache.get(address);
+
+	if (!cached || cached.expiresAt + ALIAS_STALE_LIMIT_MS <= Date.now()) {
+		return null;
+	}
+
+	return cached.alias;
+};
 
 // Starts the lookup for an address, or joins the one in flight. Never rejects.
 const requestAlias = (address: string): { lookup: Promise<string | null>; startedAt: number } => {
@@ -209,9 +219,9 @@ const withinMs = async <T>(value: Promise<T>, ms: number, fallback: T): Promise<
 };
 
 // Resolves to the address's alias, '' when it has none, or null when that is unknown. While
-// an expired alias is being refreshed, it is returned at once. Otherwise a lookup is waited
-// for at most ACTIVE_ALIAS_WAIT_MS from when it started, so a stuck lookup delays one poll,
-// not every poll. A slower lookup keeps running and is cached when it ends.
+// an expired alias may still be shown (see peekAlias), it is returned at once and refreshed.
+// Otherwise a lookup is waited for at most ACTIVE_ALIAS_WAIT_MS from when it started, so a
+// stuck lookup delays one poll, not every poll. A slower lookup keeps running and is cached.
 export const getAlias = async (address: string): Promise<string | null> => {
 	if (isFresh(address)) {
 		return peekAlias(address);
@@ -251,8 +261,11 @@ const runAliasQueue = async (): Promise<void> => {
 	}
 };
 
-const queueAliasLookup = (address: string): void => {
-	if (!aliasQueue.includes(address)) {
+// Returns true when the address was added (false when it was already queued).
+const queueAliasLookup = (address: string): boolean => {
+	const added = !aliasQueue.includes(address);
+
+	if (added) {
 		aliasQueue.push(address);
 	}
 
@@ -260,6 +273,8 @@ const queueAliasLookup = (address: string): void => {
 		aliasQueueRunning = true;
 		runAliasQueue();
 	}
+
+	return added;
 };
 
 // Resolves when the queue is empty, or after `ms`. Leaves nothing attached either way.
@@ -330,12 +345,13 @@ export const getWallets = async () => {
 			});
 
 			// A lookup already in flight is not queued again; its result is cached when it ends.
-			if (!isFresh(address) && !aliasLookups.has(address)) {
-				if (peekAlias(address) === null) {
-					waitForAliases = true;
-				}
-
-				queueAliasLookup(address);
+			if (
+				!isFresh(address) &&
+				!aliasLookups.has(address) &&
+				queueAliasLookup(address) &&
+				peekAlias(address) === null
+			) {
+				waitForAliases = true;
 			}
 		} catch (error) {
 			console.error('Skipping unreadable wallet entry:', error);
@@ -346,12 +362,19 @@ export const getWallets = async () => {
 		throw new Error('No readable wallet entries');
 	}
 
-	// When this call starts a lookup for an alias with nothing to show yet, give the queue a
+	// When this call queues a lookup for an alias with nothing to show yet, give the queue a
 	// moment, so a responsive wallet shows aliases on the first poll. Anything slower shows up
 	// on a later poll.
 	if (waitForAliases) {
 		await waitForAliasQueue(LIST_ALIAS_WAIT_MS);
 	}
+
+	// Rows whose alias expired during the wait are queued too, without waiting again.
+	entries.forEach(({ address }) => {
+		if (!isFresh(address) && !aliasLookups.has(address)) {
+			queueAliasLookup(address);
+		}
+	});
 
 	return entries.map(({ address, ...rest }) => ({
 		address,
