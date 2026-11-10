@@ -98,6 +98,8 @@ export const useAlias = ({
 	}, [mode, walletAlias]);
 
 	const submit = async () => {
+		if (mode === 'edit' && !walletAlias) return;
+
 		setIsSubmitting(true);
 
 		try {
@@ -152,7 +154,13 @@ export const useAlias = ({
 
 	const isDisabled = useMemo(() => {
 		if (mode === 'edit') {
-			return commentInput.isEmpty || notEnoughFee || isSubmitting || !isCommentChanged;
+			return (
+				!walletAlias ||
+				commentInput.isEmpty ||
+				notEnoughFee ||
+				isSubmitting ||
+				!isCommentChanged
+			);
 		}
 
 		return (
@@ -165,6 +173,7 @@ export const useAlias = ({
 		);
 	}, [
 		mode,
+		walletAlias,
 		aliasInput,
 		commentInput.isEmpty,
 		isAliasRegistred,

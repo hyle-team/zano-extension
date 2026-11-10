@@ -117,10 +117,12 @@ const fetchTxData = async () => {
 };
 
 // Aliases are display data and rarely change, but the popup polls every second and the
-// desktop wallet's RPC server is small. A successful lookup is cached for a minute. A failed
-// one resolves to null ("unknown"), never to a stale alias, and is retried after a few
-// seconds. Concurrent callers share one in-flight lookup. Anything that needs an
-// authoritative answer (e.g. the CREATE_ALIAS guard) must use getAliasByAddress instead.
+// desktop wallet's RPC server is small. A successful lookup is cached for a minute; after
+// that it is refreshed, and the last successful alias is still shown until the refresh
+// finishes. A failed lookup resolves to null ("unknown"), replacing any earlier alias, so a
+// stale alias is never shown after a failure; it is retried after a few seconds. Concurrent
+// callers share one in-flight lookup. Anything that needs an authoritative answer (e.g. the
+// CREATE_ALIAS guard) must use getAliasByAddress instead.
 const ALIAS_CACHE_TTL_MS = 60_000;
 const ALIAS_FAILURE_RETRY_MS = 5_000;
 const ALIAS_LOOKUP_TIMEOUT_MS = 15_000;
@@ -172,9 +174,9 @@ const isFresh = (address: string): boolean => {
 	return !!cached && cached.expiresAt > Date.now();
 };
 
-// The cached alias without a lookup: alias, '' or null (unknown or expired).
-const peekAlias = (address: string): string | null =>
-	isFresh(address) ? (aliasCache.get(address)?.alias ?? null) : null;
+// The alias to show without a lookup: alias, '' (none) or null (unknown). An expired entry
+// is still shown; every reader starts a refresh for it, and the refresh replaces it.
+const peekAlias = (address: string): string | null => aliasCache.get(address)?.alias ?? null;
 
 // Starts the lookup for an address, or joins the one in flight. Never rejects.
 const requestAlias = (address: string): { lookup: Promise<string | null>; startedAt: number } => {
@@ -206,15 +208,22 @@ const withinMs = async <T>(value: Promise<T>, ms: number, fallback: T): Promise<
 	}
 };
 
-// Resolves to the address's alias, '' when it has none, or null when that is unknown. A
-// lookup is waited for at most ACTIVE_ALIAS_WAIT_MS from when it started, so a stuck lookup
-// delays one poll, not every poll. A slower lookup keeps running and is cached when it ends.
+// Resolves to the address's alias, '' when it has none, or null when that is unknown. While
+// an expired alias is being refreshed, it is returned at once. Otherwise a lookup is waited
+// for at most ACTIVE_ALIAS_WAIT_MS from when it started, so a stuck lookup delays one poll,
+// not every poll. A slower lookup keeps running and is cached when it ends.
 export const getAlias = async (address: string): Promise<string | null> => {
 	if (isFresh(address)) {
 		return peekAlias(address);
 	}
 
 	const { lookup, startedAt } = requestAlias(address);
+	const lastKnown = peekAlias(address);
+
+	if (lastKnown !== null) {
+		return lastKnown;
+	}
+
 	const remaining = ACTIVE_ALIAS_WAIT_MS - (Date.now() - startedAt);
 
 	return remaining > 0 ? withinMs(lookup, remaining, null) : null;
@@ -222,35 +231,55 @@ export const getAlias = async (address: string): Promise<string | null> => {
 
 // Aliases for the wallet list are looked up in the background, one at a time and in the
 // order they were queued, so the list never waits for them and every wallet gets its turn.
+// The queue moves on after ACTIVE_ALIAS_WAIT_MS; a slower lookup keeps running on its own.
 const aliasQueue: string[] = [];
 let aliasQueueRunning = false;
-let aliasQueueIdle: Promise<void> = Promise.resolve();
+const aliasQueueIdleListeners = new Set<() => void>();
+
+const runAliasQueue = async (): Promise<void> => {
+	try {
+		while (aliasQueue.length > 0) {
+			const next = aliasQueue.shift() as string;
+
+			if (!isFresh(next) && !aliasLookups.has(next)) {
+				await withinMs(requestAlias(next).lookup, ACTIVE_ALIAS_WAIT_MS, null);
+			}
+		}
+	} finally {
+		aliasQueueRunning = false;
+		aliasQueueIdleListeners.forEach((notify) => notify());
+	}
+};
 
 const queueAliasLookup = (address: string): void => {
 	if (!aliasQueue.includes(address)) {
 		aliasQueue.push(address);
 	}
 
-	if (aliasQueueRunning) {
-		return;
+	if (!aliasQueueRunning) {
+		aliasQueueRunning = true;
+		runAliasQueue();
 	}
-
-	aliasQueueRunning = true;
-
-	aliasQueueIdle = (async () => {
-		try {
-			while (aliasQueue.length > 0) {
-				const next = aliasQueue.shift() as string;
-
-				if (!isFresh(next)) {
-					await requestAlias(next).lookup;
-				}
-			}
-		} finally {
-			aliasQueueRunning = false;
-		}
-	})();
 };
+
+// Resolves when the queue is empty, or after `ms`. Leaves nothing attached either way.
+const waitForAliasQueue = (ms: number): Promise<void> =>
+	new Promise((resolve) => {
+		if (!aliasQueueRunning) {
+			resolve();
+			return;
+		}
+
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const done = () => {
+			clearTimeout(timer);
+			aliasQueueIdleListeners.delete(done);
+			resolve();
+		};
+
+		timer = setTimeout(done, ms);
+		aliasQueueIdleListeners.add(done);
+	});
 
 export const getAliasDetails = async (alias: string) => {
 	const response = await fetchData('get_alias_details', { alias });
@@ -281,6 +310,7 @@ const fetchRawWallets = async (): Promise<WalletRaw[]> => {
 export const getWallets = async () => {
 	const rawWallets = await fetchRawWallets();
 	const entries = [];
+	let waitForAliases = false;
 
 	// A bad entry is skipped instead of failing the whole list. Missing aliases are queued.
 	for (const wallet of rawWallets) {
@@ -299,7 +329,12 @@ export const getWallets = async () => {
 				walletKey: walletKeyOf(wallet),
 			});
 
-			if (!isFresh(address)) {
+			// A lookup already in flight is not queued again; its result is cached when it ends.
+			if (!isFresh(address) && !aliasLookups.has(address)) {
+				if (peekAlias(address) === null) {
+					waitForAliases = true;
+				}
+
 				queueAliasLookup(address);
 			}
 		} catch (error) {
@@ -311,10 +346,11 @@ export const getWallets = async () => {
 		throw new Error('No readable wallet entries');
 	}
 
-	// Give queued lookups a moment, so a responsive wallet shows aliases on the first poll.
-	// Anything slower shows up on a later poll.
-	if (aliasQueueRunning) {
-		await withinMs(aliasQueueIdle, LIST_ALIAS_WAIT_MS, undefined);
+	// When this call starts a lookup for an alias with nothing to show yet, give the queue a
+	// moment, so a responsive wallet shows aliases on the first poll. Anything slower shows up
+	// on a later poll.
+	if (waitForAliases) {
+		await waitForAliasQueue(LIST_ALIAS_WAIT_MS);
 	}
 
 	return entries.map(({ address, ...rest }) => ({
